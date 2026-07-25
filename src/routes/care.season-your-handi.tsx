@@ -107,7 +107,7 @@ function SeasonHandiPage() {
           <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
             <Link to="/" hash="collection" className="hover:text-clay transition-colors">Collection</Link>
             <Link to="/workshops" className="hover:text-clay transition-colors">Workshops</Link>
-            <Link to="/care/season-your-handi" className="text-clay">Care Guide</Link>
+            <Link to="/" hash="story" className="hover:text-clay transition-colors">Story</Link>
           </div>
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}`}

@@ -159,11 +159,8 @@ function Index() {
           </a>
           <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
             <a href="#collection" className="hover:text-clay transition-colors">Collection</a>
-            <a href="#craft" className="hover:text-clay transition-colors">The Craft</a>
             <Link to="/workshops" className="hover:text-clay transition-colors">Workshops</Link>
-            <Link to="/care/season-your-handi" className="hover:text-clay transition-colors">Care Guide</Link>
             <a href="#story" className="hover:text-clay transition-colors">Story</a>
-            <a href="/journal/benefits-of-clay-water-pots" className="hover:text-clay transition-colors">Journal</a>
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -470,10 +467,9 @@ function Index() {
             <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Explore</div>
             <ul className="space-y-3 text-cream/80">
               <li><a href="#collection" className="hover:text-gold transition-colors">Collection</a></li>
-              <li><a href="#craft" className="hover:text-gold transition-colors">The Craft</a></li>
               <li><Link to="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
               <li><a href="#story" className="hover:text-gold transition-colors">Story</a></li>
-              <li><a href="/journal/benefits-of-clay-water-pots" className="hover:text-gold transition-colors">Journal</a></li>
+              <li><Link to="/care/season-your-handi" className="hover:text-gold transition-colors">Care Guide</Link></li>
             </ul>
           </div>
 
