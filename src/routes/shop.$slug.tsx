@@ -269,7 +269,7 @@ function ProductDetail() {
                       src={x.img}
                       alt={x.name}
                       loading="lazy"
-                      className="w-full h-full object-contain p-6 transition-transform duration-[1400ms] group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.25)]"
+                      className="w-full h-full object-contain p-2 transition-transform duration-[1400ms] group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.25)]"
                     />
                   </div>
                   <div className="mt-4 flex items-baseline justify-between">
