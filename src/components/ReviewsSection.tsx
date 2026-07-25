@@ -1,5 +1,182 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getReviewsForProduct, getReviewSummary, type Review } from "@/lib/reviews";
+
+function Lightbox({
+  photos,
+  index,
+  onClose,
+  onPrev,
+  onNext,
+  productName,
+}: {
+  photos: { src: string; author: string }[];
+  index: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  productName: string;
+}) {
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    setZoom(1);
+    setOffset({ x: 0, y: 0 });
+  }, [index]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowLeft") onPrev();
+      else if (e.key === "ArrowRight") onNext();
+      else if (e.key === "+" || e.key === "=") setZoom((z) => Math.min(4, z + 0.5));
+      else if (e.key === "-") setZoom((z) => Math.max(1, z - 0.5));
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose, onPrev, onNext]);
+
+  const current = photos[index];
+  if (!current) return null;
+
+  const zoomIn = () => setZoom((z) => Math.min(4, z + 0.5));
+  const zoomOut = () =>
+    setZoom((z) => {
+      const nz = Math.max(1, z - 0.5);
+      if (nz === 1) setOffset({ x: 0, y: 0 });
+      return nz;
+    });
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Customer photo gallery"
+      className="fixed inset-0 z-[100] bg-ink/95 backdrop-blur-sm flex items-center justify-center animate-fade-up"
+      onClick={onClose}
+    >
+      {/* Top bar */}
+      <div
+        className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 text-cream"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="text-xs tracking-[0.3em] uppercase opacity-80">
+          {index + 1} / {photos.length} · by {current.author}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={zoomOut}
+            aria-label="Zoom out"
+            className="w-10 h-10 rounded-full border border-cream/30 hover:bg-cream/10 flex items-center justify-center text-lg"
+          >
+            −
+          </button>
+          <span className="text-xs tabular-nums w-10 text-center">{Math.round(zoom * 100)}%</span>
+          <button
+            type="button"
+            onClick={zoomIn}
+            aria-label="Zoom in"
+            className="w-10 h-10 rounded-full border border-cream/30 hover:bg-cream/10 flex items-center justify-center text-lg"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close gallery"
+            className="ml-2 w-10 h-10 rounded-full border border-cream/30 hover:bg-cream/10 flex items-center justify-center text-lg"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* Prev / Next */}
+      {photos.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPrev();
+            }}
+            aria-label="Previous photo"
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-cream/30 text-cream hover:bg-cream/10 flex items-center justify-center text-2xl"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNext();
+            }}
+            aria-label="Next photo"
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-cream/30 text-cream hover:bg-cream/10 flex items-center justify-center text-2xl"
+          >
+            ›
+          </button>
+        </>
+      )}
+
+      {/* Image */}
+      <div
+        className="max-w-[90vw] max-h-[80vh] overflow-hidden select-none"
+        onClick={(e) => e.stopPropagation()}
+        onDoubleClick={() => (zoom === 1 ? zoomIn() : (setZoom(1), setOffset({ x: 0, y: 0 })))}
+        onMouseDown={(e) => zoom > 1 && setDragging({ x: e.clientX - offset.x, y: e.clientY - offset.y })}
+        onMouseMove={(e) => dragging && setOffset({ x: e.clientX - dragging.x, y: e.clientY - dragging.y })}
+        onMouseUp={() => setDragging(null)}
+        onMouseLeave={() => setDragging(null)}
+        style={{ cursor: zoom > 1 ? (dragging ? "grabbing" : "grab") : "zoom-in" }}
+      >
+        <img
+          src={current.src}
+          alt={`Customer photo of ${productName} by ${current.author}`}
+          draggable={false}
+          style={{
+            transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+            transition: dragging ? "none" : "transform 0.2s ease",
+          }}
+          className="max-w-[90vw] max-h-[80vh] object-contain"
+        />
+      </div>
+
+      {/* Thumbnails */}
+      {photos.length > 1 && (
+        <div
+          className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 px-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {photos.map((p, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => {
+                const diff = i - index;
+                if (diff > 0) for (let k = 0; k < diff; k++) onNext();
+                else for (let k = 0; k < -diff; k++) onPrev();
+              }}
+              aria-label={`Show photo ${i + 1}`}
+              className={`w-12 h-12 rounded-lg overflow-hidden ring-2 transition ${
+                i === index ? "ring-gold" : "ring-cream/20 hover:ring-cream/50"
+              }`}
+            >
+              <img src={p.src} alt="" className="w-full h-full object-contain bg-cream/10" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Stars({
   value,
@@ -58,10 +235,23 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
   const summary = useMemo(() => getReviewSummary(slug), [slug]);
   const [filter, setFilter] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [visible, setVisible] = useState(4);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const filtered = filter === 0 ? reviews : reviews.filter((r) => r.rating === filter);
   const shown = filtered.slice(0, visible);
   const maxCount = Math.max(1, ...Object.values(summary.distribution));
+
+  const galleryPhotos = useMemo(
+    () =>
+      filtered
+        .filter((r) => !!r.photo)
+        .map((r) => ({ src: r.photo as string, author: r.name })),
+    [filtered],
+  );
+  const openLightbox = (photo: string) => {
+    const idx = galleryPhotos.findIndex((p) => p.src === photo);
+    if (idx >= 0) setLightboxIndex(idx);
+  };
 
   return (
     <section
@@ -188,12 +378,11 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
               <p className="mt-2 text-foreground/85 leading-relaxed">{r.body}</p>
 
               {r.photo && (
-                <a
-                  href={r.photo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-block rounded-xl overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] ring-1 ring-earth/10 hover:ring-earth/30 transition"
-                  aria-label={`Customer photo of ${name} from ${r.name}`}
+                <button
+                  type="button"
+                  onClick={() => openLightbox(r.photo!)}
+                  className="mt-4 inline-block rounded-xl overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] ring-1 ring-earth/10 hover:ring-earth/40 hover:scale-[1.02] transition"
+                  aria-label={`Open photo of ${name} from ${r.name} in gallery`}
                 >
                   <img
                     src={r.photo}
@@ -201,7 +390,7 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
                     loading="lazy"
                     className="w-28 h-28 object-contain p-2"
                   />
-                </a>
+                </button>
               )}
             </article>
           ))}
@@ -219,6 +408,23 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
           )}
         </div>
       </div>
+
+      {lightboxIndex !== null && galleryPhotos.length > 0 && (
+        <Lightbox
+          photos={galleryPhotos}
+          index={lightboxIndex}
+          productName={name}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() =>
+            setLightboxIndex((i) =>
+              i === null ? i : (i - 1 + galleryPhotos.length) % galleryPhotos.length,
+            )
+          }
+          onNext={() =>
+            setLightboxIndex((i) => (i === null ? i : (i + 1) % galleryPhotos.length))
+          }
+        />
+      )}
     </section>
   );
 }
