@@ -159,11 +159,8 @@ function Index() {
           </a>
           <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
             <a href="#collection" className="hover:text-clay transition-colors">Collection</a>
-            <a href="#craft" className="hover:text-clay transition-colors">The Craft</a>
             <Link to="/workshops" className="hover:text-clay transition-colors">Workshops</Link>
-            <Link to="/care/season-your-handi" className="hover:text-clay transition-colors">Care Guide</Link>
             <a href="#story" className="hover:text-clay transition-colors">Story</a>
-            <a href="/journal/benefits-of-clay-water-pots" className="hover:text-clay transition-colors">Journal</a>
           </div>
           <div className="flex items-center gap-3">
             <a
