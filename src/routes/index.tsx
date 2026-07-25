@@ -3,22 +3,15 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import heroPot from "@/assets/hero-pot.jpg";
 import handsClay from "@/assets/hands-clay.jpg";
-import matkaStand from "@/assets/matka-stand.jpg.asset.json";
-import kulhadSet from "@/assets/kulhad-set.jpg.asset.json";
-import bottleJug from "@/assets/bottle-jug.jpg.asset.json";
-import handiDuo from "@/assets/handi-duo.jpg.asset.json";
-import handiSmall from "@/assets/handi-small.jpg.asset.json";
-import sieveDome from "@/assets/sieve-dome.jpg.asset.json";
-
-const SITE_URL = "https://kumbhaja.lovable.app";
+import potImg from "@/assets/pot-transparent.png.asset.json";
 
 const productSeed = [
-  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: matkaStand.url },
-  { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: kulhadSet.url },
-  { name: "Bottle & Jug", tag: "Serveware · Duo", priceNum: 1480, img: bottleJug.url },
-  { name: "Handi", tag: "Cookware · Set of 2", priceNum: 1120, img: handiDuo.url },
-  { name: "Chhoti Handi", tag: "Serving Bowl", priceNum: 540, img: handiSmall.url },
-  { name: "Steam Dome", tag: "Idli / Steamer", priceNum: 860, img: sieveDome.url },
+  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: potImg.url },
+  { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: potImg.url },
+  { name: "Bottle & Jug", tag: "Serveware · Duo", priceNum: 1480, img: potImg.url },
+  { name: "Handi", tag: "Cookware · Set of 2", priceNum: 1120, img: potImg.url },
+  { name: "Chhoti Handi", tag: "Serving Bowl", priceNum: 540, img: potImg.url },
+  { name: "Steam Dome", tag: "Idli / Steamer", priceNum: 860, img: potImg.url },
 ];
 
 export const Route = createFileRoute("/")({
