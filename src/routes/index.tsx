@@ -270,16 +270,16 @@ function Index() {
       </section>
 
       {/* COLLECTION */}
-      <section id="collection" className="py-32 px-6 md:px-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 border-t border-clay/25 pt-16 pb-20 mb-16">
+      <section id="collection" className="py-20 md:py-32 px-6 md:px-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 lg:gap-x-16 border-t border-clay/25 pt-12 md:pt-16 pb-12 md:pb-20 mb-12 md:mb-16">
           <div className="lg:col-span-8 flex flex-col">
-            <header className="mb-10 flex items-center gap-4">
+            <header className="mb-6 md:mb-10 flex items-center gap-4">
               <span className="h-px w-8 bg-clay"></span>
               <span className="text-[10px] tracking-[0.3em] uppercase text-clay font-medium">
                 The Collection
               </span>
             </header>
-            <h2 className="font-display text-6xl md:text-7xl lg:text-8xl leading-[0.95] text-earth tracking-tight text-balance">
+            <h2 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[1.02] md:leading-[0.95] text-earth tracking-tight text-balance">
               Objects that <span className="italic font-light">breathe</span>,<br className="hidden md:block" />
               made to be lived with.
             </h2>
