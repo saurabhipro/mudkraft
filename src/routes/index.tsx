@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import heroPot from "@/assets/hero-pot.jpg";
 import handsClay from "@/assets/hands-clay.jpg";
