@@ -13,6 +13,7 @@ import { Route as WorkshopsRouteImport } from './routes/workshops'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JournalBenefitsOfClayWaterPotsRouteImport } from './routes/journal.benefits-of-clay-water-pots'
+import { Route as CareSeasonYourHandiRouteImport } from './routes/care.season-your-handi'
 
 const WorkshopsRoute = WorkshopsRouteImport.update({
   id: '/workshops',
@@ -35,17 +36,24 @@ const JournalBenefitsOfClayWaterPotsRoute =
     path: '/journal/benefits-of-clay-water-pots',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CareSeasonYourHandiRoute = CareSeasonYourHandiRouteImport.update({
+  id: '/care/season-your-handi',
+  path: '/care/season-your-handi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/workshops': typeof WorkshopsRoute
+  '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/workshops': typeof WorkshopsRoute
+  '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
 }
 export interface FileRoutesById {
@@ -53,6 +61,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/workshops': typeof WorkshopsRoute
+  '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
 }
 export interface FileRouteTypes {
@@ -61,18 +70,21 @@ export interface FileRouteTypes {
     | '/'
     | '/sitemap.xml'
     | '/workshops'
+    | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/sitemap.xml'
     | '/workshops'
+    | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
   id:
     | '__root__'
     | '/'
     | '/sitemap.xml'
     | '/workshops'
+    | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
   fileRoutesById: FileRoutesById
 }
@@ -80,6 +92,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WorkshopsRoute: typeof WorkshopsRoute
+  CareSeasonYourHandiRoute: typeof CareSeasonYourHandiRoute
   JournalBenefitsOfClayWaterPotsRoute: typeof JournalBenefitsOfClayWaterPotsRoute
 }
 
@@ -113,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JournalBenefitsOfClayWaterPotsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/care/season-your-handi': {
+      id: '/care/season-your-handi'
+      path: '/care/season-your-handi'
+      fullPath: '/care/season-your-handi'
+      preLoaderRoute: typeof CareSeasonYourHandiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -120,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WorkshopsRoute: WorkshopsRoute,
+  CareSeasonYourHandiRoute: CareSeasonYourHandiRoute,
   JournalBenefitsOfClayWaterPotsRoute: JournalBenefitsOfClayWaterPotsRoute,
 }
 export const routeTree = rootRouteImport
