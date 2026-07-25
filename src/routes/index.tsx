@@ -437,7 +437,7 @@ function Index() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
-              <span className="text-4xl font-display text-gold leading-none tracking-tight"><span className="font-medium">क</span><span className="italic">umbhaja</span></span>
+              <span className="text-4xl font-display text-gold leading-none tracking-tight"><span className="italic">Mudkraft</span></span>
             </div>
             <p className="mt-6 font-hand text-2xl text-gold">made from earth, made with love</p>
             <p className="mt-4 text-cream/70 leading-relaxed max-w-sm">

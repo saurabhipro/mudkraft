@@ -267,7 +267,7 @@ function SeasonHandiPage() {
           <Link to="/" className="flex items-center gap-3">
             <span className="text-3xl sm:text-4xl md:text-6xl font-display text-gold leading-none tracking-tight">
               <span className="font-medium">क</span>
-              <span className="italic">umbhaja</span>
+              <span className="italic">Mudkraft</span>
             </span>
           </Link>
           <div className="font-hand text-xl text-gold">made from earth, made with love</div>

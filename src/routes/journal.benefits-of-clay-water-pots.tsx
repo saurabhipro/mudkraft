@@ -56,7 +56,7 @@ function Article() {
       <header className="border-b border-border/40">
         <nav className="max-w-3xl mx-auto flex items-center justify-between px-6 py-5">
           <Link to="/" className="flex items-center gap-3">
-            <span className="text-3xl sm:text-4xl md:text-6xl font-display text-earth leading-none tracking-tight"><span className="font-medium">क</span><span className="italic">umbhaja</span></span>
+            <span className="text-3xl sm:text-4xl md:text-6xl font-display text-earth leading-none tracking-tight"><span className="italic">Mudkraft</span></span>
           </Link>
           <Link to="/" className="text-sm text-muted-foreground hover:text-clay">← Back</Link>
         </nav>
