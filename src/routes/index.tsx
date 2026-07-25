@@ -3,7 +3,8 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import handsClay from "@/assets/hands-clay.jpg";
 import potImg from "@/assets/pot-transparent.png.asset.json";
-import matkaStand from "@/assets/matka-stand.jpg.asset.json";
+import waterPotImg from "@/assets/water-pot-transparent.png.asset.json";
+
 import kulhadSet from "@/assets/kulhad-set.jpg.asset.json";
 import bottleJug from "@/assets/bottle-jug.jpg.asset.json";
 import handiDuo from "@/assets/handi-duo.jpg.asset.json";
@@ -13,7 +14,7 @@ import sieveDome from "@/assets/sieve-dome.jpg.asset.json";
 const SITE_URL = "https://kumbhaja.lovable.app";
 
 const productSeed = [
-  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: matkaStand.url },
+  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: waterPotImg.url },
   { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: kulhadSet.url },
   { name: "Bottle & Jug", tag: "Serveware · Duo", priceNum: 1480, img: bottleJug.url },
   { name: "Handi", tag: "Cookware · Set of 2", priceNum: 1120, img: handiDuo.url },
@@ -80,7 +81,7 @@ type Category = "Water" | "Tea" | "Cookware" | "Serveware";
 type Product = { name: string; tag: string; price: string; priceNum: number; img: string; note: string; category: Category };
 
 const products: Product[] = [
-  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", priceNum: 1240, img: matkaStand.url, note: "Cools water the ancient way", category: "Water" },
+  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", priceNum: 1240, img: waterPotImg.url, note: "Cools water the ancient way", category: "Water" },
   { name: "Kulhad", tag: "Tea Cup · Set of 6", price: "₹680", priceNum: 680, img: kulhadSet.url, note: "For chai that tastes of earth", category: "Tea" },
   { name: "Bottle & Jug", tag: "Serveware · Duo", price: "₹1,480", priceNum: 1480, img: bottleJug.url, note: "Water that remembers the river", category: "Serveware" },
   { name: "Handi", tag: "Cookware · Set of 2", price: "₹1,120", priceNum: 1120, img: handiDuo.url, note: "Slow food, slower fire", category: "Cookware" },
@@ -239,9 +240,6 @@ function Index() {
                 className="relative w-full h-full object-contain drop-shadow-[0_40px_60px_rgba(80,40,20,0.35)]"
               />
 
-              <div className="absolute -bottom-3 left-3 sm:-bottom-4 sm:-left-4 bg-cream/95 backdrop-blur px-4 sm:px-5 py-2 sm:py-3 rounded-full text-[10px] sm:text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
-                Est. from the Ganges
-              </div>
             </div>
           </div>
         </div>
