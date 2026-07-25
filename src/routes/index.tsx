@@ -5,6 +5,8 @@ import heroPot from "@/assets/hero-pot.jpg";
 import handsClay from "@/assets/hands-clay.jpg";
 import potImg from "@/assets/pot-transparent.png.asset.json";
 
+const SITE_URL = "https://kumbhaja.lovable.app";
+
 const productSeed = [
   { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: potImg.url },
   { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: potImg.url },
