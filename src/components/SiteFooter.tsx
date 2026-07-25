@@ -71,6 +71,7 @@ export function SiteFooter() {
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Support</div>
           <ul className="space-y-3 text-cream/80">
+            <li><Link to="/track" className="hover:text-gold transition-colors">Track Order</Link></li>
             <li><Link to="/faq" className="hover:text-gold transition-colors">FAQ</Link></li>
             <li><Link to="/shipping-returns" className="hover:text-gold transition-colors">Shipping & Returns</Link></li>
             <li><Link to="/trust" className="hover:text-gold transition-colors">Trust & Privacy</Link></li>
