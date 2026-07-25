@@ -378,12 +378,11 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
               <p className="mt-2 text-foreground/85 leading-relaxed">{r.body}</p>
 
               {r.photo && (
-                <a
-                  href={r.photo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-block rounded-xl overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] ring-1 ring-earth/10 hover:ring-earth/30 transition"
-                  aria-label={`Customer photo of ${name} from ${r.name}`}
+                <button
+                  type="button"
+                  onClick={() => openLightbox(r.photo!)}
+                  className="mt-4 inline-block rounded-xl overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] ring-1 ring-earth/10 hover:ring-earth/40 hover:scale-[1.02] transition"
+                  aria-label={`Open photo of ${name} from ${r.name} in gallery`}
                 >
                   <img
                     src={r.photo}
@@ -391,7 +390,7 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
                     loading="lazy"
                     className="w-28 h-28 object-contain p-2"
                   />
-                </a>
+                </button>
               )}
             </article>
           ))}
