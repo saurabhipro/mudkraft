@@ -5,6 +5,8 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { getProductBySlug, products, type Product } from "@/lib/products";
 import { addToCart, useCartCount } from "@/lib/cart";
 import { ShareButton } from "@/components/ShareButton";
+import { ReviewsSection } from "@/components/ReviewsSection";
+import { getReviewsForProduct, getReviewSummary } from "@/lib/reviews";
 
 const SITE_URL = "https://mudkraft.lovable.app";
 const WHATSAPP_NUMBER = "919990649990";
@@ -59,6 +61,31 @@ export const Route = createFileRoute("/shop/$slug")({
               availability: "https://schema.org/InStock",
               url,
             },
+            aggregateRating: (() => {
+              const s = getReviewSummary(p.slug);
+              return s.count > 0
+                ? {
+                    "@type": "AggregateRating",
+                    ratingValue: s.average.toFixed(1),
+                    reviewCount: s.count,
+                    bestRating: "5",
+                    worstRating: "1",
+                  }
+                : undefined;
+            })(),
+            review: getReviewsForProduct(p.slug).slice(0, 5).map((r) => ({
+              "@type": "Review",
+              reviewRating: {
+                "@type": "Rating",
+                ratingValue: r.rating,
+                bestRating: "5",
+                worstRating: "1",
+              },
+              author: { "@type": "Person", name: r.name },
+              datePublished: r.date,
+              name: r.title,
+              reviewBody: r.body,
+            })),
           }),
         },
       ],
