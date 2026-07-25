@@ -155,7 +155,7 @@ function Index() {
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/40">
         <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-5">
           <a href="#" className="flex items-center gap-3">
-            <span className="text-3xl font-display italic text-earth leading-none">कुम्भज</span>
+            <span className="text-3xl font-display italic text-earth leading-none">क<span className="not-italic">umbhaja</span></span>
             <span className="hidden sm:inline tracking-[0.35em] text-xs font-medium text-earth">KUMBHAJA</span>
           </a>
           <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
@@ -451,7 +451,7 @@ function Index() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
-              <span className="text-4xl font-display italic text-gold leading-none">कुम्भज</span>
+              <span className="text-4xl font-display italic text-gold leading-none">क<span className="not-italic">umbhaja</span></span>
               <span className="tracking-[0.35em] text-xs text-cream/80">KUMBHAJA</span>
             </div>
             <p className="mt-6 font-hand text-2xl text-gold">made from earth, made with love</p>

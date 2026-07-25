@@ -56,7 +56,7 @@ function Article() {
       <header className="border-b border-border/40">
         <nav className="max-w-3xl mx-auto flex items-center justify-between px-6 py-5">
           <Link to="/" className="flex items-center gap-3">
-            <span className="text-3xl font-display italic text-earth leading-none">कुम्भज</span>
+            <span className="text-3xl font-display italic text-earth leading-none">क<span className="not-italic">umbhaja</span></span>
             <span className="hidden sm:inline tracking-[0.35em] text-xs font-medium text-earth">KUMBHAJA</span>
           </Link>
           <Link to="/" className="text-sm text-muted-foreground hover:text-clay">← Back</Link>
