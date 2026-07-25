@@ -393,7 +393,7 @@ function Index() {
       <section id="story" className="py-20 md:py-32 px-6 md:px-10 max-w-4xl mx-auto text-center">
         <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6 md:mb-8">— our story</p>
         <p className="text-2xl sm:text-3xl md:text-5xl font-display italic text-earth leading-[1.2] md:leading-[1.15] text-balance">
-          "In Sanskrit, <span className="not-italic">Mudkraft</span> means the one born of a pot.
+          "<span className="not-italic">Mudkraft</span> is the craft of earth in your hands.
           We think of every home that keeps our clay as another quiet birth —
           of stillness, of ritual, of a slower way to hold what matters."
         </p>
