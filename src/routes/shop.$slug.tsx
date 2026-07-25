@@ -134,14 +134,13 @@ function ProductDetail() {
               alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
               width={1200}
               height={1500}
-              className="w-full h-full object-contain p-10 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)]"
+              className="w-full h-full object-contain p-3 md:p-4 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)]"
             />
             <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-earth/90 text-cream px-3 py-1.5 rounded-full">
               {p.tag}
             </div>
-            <div className="pointer-events-none absolute bottom-5 right-6 text-earth/70 font-display text-xl tracking-wide">
-              <span className="not-italic font-medium">क</span>
-              <span className="italic">umbhaja</span>
+            <div className="pointer-events-none absolute bottom-5 right-6 text-earth/70 font-display italic text-xl tracking-wide">
+              Mudkraft
             </div>
           </div>
         </div>
