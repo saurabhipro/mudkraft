@@ -9,10 +9,21 @@ import handiDuo from "@/assets/handi-duo.jpg.asset.json";
 import handiSmall from "@/assets/handi-small.jpg.asset.json";
 import sieveDome from "@/assets/sieve-dome.jpg.asset.json";
 
+const SITE_URL = "https://kumbhaja.lovable.app";
+
+const productSeed = [
+  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: matkaStand.url },
+  { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: kulhadSet.url },
+  { name: "Bottle & Jug", tag: "Serveware · Duo", priceNum: 1480, img: bottleJug.url },
+  { name: "Handi", tag: "Cookware · Set of 2", priceNum: 1120, img: handiDuo.url },
+  { name: "Chhoti Handi", tag: "Serving Bowl", priceNum: 540, img: handiSmall.url },
+  { name: "Steam Dome", tag: "Idli / Steamer", priceNum: 860, img: sieveDome.url },
+];
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Kumbhaja — Soulful Handcrafted Clay" },
+      { title: "Kumbhaja — Soulful Handcrafted Clay Pots, Kulhads & Matkas" },
       {
         name: "description",
         content:
@@ -25,9 +36,11 @@ export const Route = createFileRoute("/")({
           "Kumbhaja is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL + "/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "canonical", href: SITE_URL + "/" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -35,9 +48,32 @@ export const Route = createFileRoute("/")({
         href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": productSeed.map((p) => ({
+            "@type": "Product",
+            name: p.name,
+            description: `${p.tag} — handcrafted river-clay piece by Kumbhaja.`,
+            image: p.img,
+            brand: { "@type": "Brand", name: "Kumbhaja" },
+            offers: {
+              "@type": "Offer",
+              price: p.priceNum,
+              priceCurrency: "INR",
+              availability: "https://schema.org/InStock",
+              url: SITE_URL + "/#collection",
+            },
+          })),
+        }),
+      },
+    ],
   }),
   component: Index,
 });
+
 
 type Product = { name: string; tag: string; price: string; priceNum: number; img: string; note: string };
 
