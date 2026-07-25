@@ -32,7 +32,7 @@ export const Route = createFileRoute("/workshops")({
   component: WorkshopsPage,
 });
 
-const WHATSAPP_NUMBER = "919999999999";
+const WHATSAPP_NUMBER = "919990649990";
 const ENQUIRY_EMAIL = "hello@kumbhaja.com";
 
 const experiences = [

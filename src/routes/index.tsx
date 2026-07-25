@@ -51,7 +51,7 @@ const products: Product[] = [
 ];
 
 // Replace with your real WhatsApp number (country code + number, no + or spaces)
-const WHATSAPP_NUMBER = "919999999999";
+const WHATSAPP_NUMBER = "919990649990";
 const ENQUIRY_EMAIL = "hello@kumbhaja.com";
 
 type CartItem = Product & { qty: number };
