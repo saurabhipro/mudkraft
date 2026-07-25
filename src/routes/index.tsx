@@ -305,7 +305,7 @@ function Index() {
                   width={900}
                   height={1100}
                   loading="lazy"
-                  className="w-full h-full object-contain p-8 transition-transform duration-[1400ms] ease-out group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.28)]"
+                  className="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-[1400ms] ease-out group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.28)]"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-earth/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -314,10 +314,7 @@ function Index() {
                 </div>
                 {/* brand watermark */}
                 <div className="pointer-events-none absolute bottom-4 right-5 flex items-center gap-1.5 text-earth/70">
-                  <span className="font-display text-xl leading-none tracking-wide">
-                    <span className="font-medium not-italic">क</span>
-                    <span className="italic">umbhaja</span>
-                  </span>
+                  <span className="font-display italic text-xl leading-none tracking-wide">Mudkraft</span>
                 </div>
                 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-cream text-earth px-6 py-3 rounded-full text-xs tracking-widest uppercase shadow-xl whitespace-nowrap">
                   View piece →
