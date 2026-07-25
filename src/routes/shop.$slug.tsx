@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getProductBySlug, products, type Product } from "@/lib/products";
 import { addToCart, useCartCount } from "@/lib/cart";
+import { ShareButton } from "@/components/ShareButton";
 
 const SITE_URL = "https://mudkraft.lovable.app";
 const WHATSAPP_NUMBER = "919990649990";
@@ -199,6 +200,13 @@ function ProductDetail() {
               <WhatsAppIcon className="w-4 h-4" />
               Buy on WhatsApp
             </a>
+
+            <ShareButton
+              title={`${p.name} — Mudkraft`}
+              text={p.description.slice(0, 120)}
+              url={`${SITE_URL}/shop/${p.slug}`}
+              label="Share"
+            />
           </div>
 
           {added && (

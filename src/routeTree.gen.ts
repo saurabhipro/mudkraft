@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkshopsRouteImport } from './routes/workshops'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ShippingReturnsRouteImport } from './routes/shipping-returns'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as BenefitsRouteImport } from './routes/benefits'
 import { Route as IndexRouteImport } from './routes/index'
@@ -32,6 +33,11 @@ const TrustRoute = TrustRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShippingReturnsRoute = ShippingReturnsRouteImport.update({
+  id: '/shipping-returns',
+  path: '/shipping-returns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/benefits': typeof BenefitsRoute
   '/faq': typeof FaqRoute
+  '/shipping-returns': typeof ShippingReturnsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/benefits': typeof BenefitsRoute
   '/faq': typeof FaqRoute
+  '/shipping-returns': typeof ShippingReturnsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/benefits': typeof BenefitsRoute
   '/faq': typeof FaqRoute
+  '/shipping-returns': typeof ShippingReturnsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/'
     | '/benefits'
     | '/faq'
+    | '/shipping-returns'
     | '/sitemap.xml'
     | '/trust'
     | '/workshops'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/benefits'
     | '/faq'
+    | '/shipping-returns'
     | '/sitemap.xml'
     | '/trust'
     | '/workshops'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/'
     | '/benefits'
     | '/faq'
+    | '/shipping-returns'
     | '/sitemap.xml'
     | '/trust'
     | '/workshops'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BenefitsRoute: typeof BenefitsRoute
   FaqRoute: typeof FaqRoute
+  ShippingReturnsRoute: typeof ShippingReturnsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrustRoute: typeof TrustRoute
   WorkshopsRoute: typeof WorkshopsRoute
@@ -169,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shipping-returns': {
+      id: '/shipping-returns'
+      path: '/shipping-returns'
+      fullPath: '/shipping-returns'
+      preLoaderRoute: typeof ShippingReturnsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BenefitsRoute: BenefitsRoute,
   FaqRoute: FaqRoute,
+  ShippingReturnsRoute: ShippingReturnsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrustRoute: TrustRoute,
   WorkshopsRoute: WorkshopsRoute,
