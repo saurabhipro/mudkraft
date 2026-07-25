@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { SiteHeader } from "@/components/SiteHeader";
 import heroPot from "@/assets/hero-pot.jpg";
 import handsClay from "@/assets/hands-clay.jpg";
 import matkaStand from "@/assets/matka-stand.jpg.asset.json";
