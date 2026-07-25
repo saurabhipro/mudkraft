@@ -64,17 +64,6 @@ export const Route = createFileRoute("/")({
 });
 
 
-type Category = "Water" | "Tea" | "Cookware" | "Serveware";
-type Product = { name: string; tag: string; price: string; priceNum: number; img: string; note: string; category: Category };
-
-const products: Product[] = [
-  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", priceNum: 1240, img: waterPotImg.url, note: "Cools water the ancient way", category: "Water" },
-  { name: "Kulhad", tag: "Tea Cup · Set of 6", price: "₹680", priceNum: 680, img: kulhadSet.url, note: "For chai that tastes of earth", category: "Tea" },
-  { name: "Bottle & Jug", tag: "Serveware · Duo", price: "₹1,480", priceNum: 1480, img: bottleJug.url, note: "Water that remembers the river", category: "Serveware" },
-  { name: "Handi", tag: "Cookware · Set of 2", price: "₹1,120", priceNum: 1120, img: handiDuo.url, note: "Slow food, slower fire", category: "Cookware" },
-  { name: "Chhoti Handi", tag: "Serving Bowl", price: "₹540", priceNum: 540, img: handiSmall.url, note: "Little vessel, full ritual", category: "Serveware" },
-  { name: "Steam Dome", tag: "Idli / Steamer", price: "₹860", priceNum: 860, img: sieveDome.url, note: "Breath of the kitchen", category: "Cookware" },
-];
 
 const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", "Serveware"];
 
@@ -82,33 +71,19 @@ const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", 
 const WHATSAPP_NUMBER = "919990649990";
 const ENQUIRY_EMAIL = "hello@kumbhaja.com";
 
-type CartItem = Product & { qty: number };
-
 function Index() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const cart = useCart();
   const [open, setOpen] = useState(false);
   const [customer, setCustomer] = useState({ name: "", phone: "" });
   const [activeCategory, setActiveCategory] = useState<"All" | Category>("All");
   const visibleProducts = activeCategory === "All" ? products : products.filter((p) => p.category === activeCategory);
 
-
   const addToCart = (p: Product) => {
-    setCart((c) => {
-      const existing = c.find((x) => x.name === p.name);
-      if (existing) return c.map((x) => (x.name === p.name ? { ...x, qty: x.qty + 1 } : x));
-      return [...c, { ...p, qty: 1 }];
-    });
+    addToCartStore(p);
     setOpen(true);
   };
-
-  const updateQty = (name: string, delta: number) =>
-    setCart((c) =>
-      c
-        .map((x) => (x.name === name ? { ...x, qty: x.qty + delta } : x))
-        .filter((x) => x.qty > 0)
-    );
-
-  const removeItem = (name: string) => setCart((c) => c.filter((x) => x.name !== name));
+  const updateQty = (slug: string, delta: number) => updateQtyStore(slug, delta);
+  const removeItem = (slug: string) => removeItemStore(slug);
 
   const total = cart.reduce((s, x) => s + x.priceNum * x.qty, 0);
   const count = cart.reduce((s, x) => s + x.qty, 0);
