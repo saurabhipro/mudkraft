@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { getProductBySlug, products, type Product } from "@/lib/products";
 import { addToCart, useCartCount } from "@/lib/cart";
 
-const SITE_URL = "https://kumbhaja.lovable.app";
+const SITE_URL = "https://mudkraft.lovable.app";
 const WHATSAPP_NUMBER = "919990649990";
 
 export const Route = createFileRoute("/shop/$slug")({
@@ -17,14 +17,14 @@ export const Route = createFileRoute("/shop/$slug")({
     if (!loaderData) {
       return {
         meta: [
-          { title: "Piece not found — Kumbhaja" },
+          { title: "Piece not found — Mudkraft" },
           { name: "robots", content: "noindex" },
         ],
       };
     }
     const p = loaderData.product;
     const url = `${SITE_URL}/shop/${p.slug}`;
-    const title = `${p.name} — ${p.tag} · Kumbhaja`;
+    const title = `${p.name} — ${p.tag} · Mudkraft`;
     const description = p.description.slice(0, 155);
     return {
       meta: [
@@ -48,7 +48,7 @@ export const Route = createFileRoute("/shop/$slug")({
             name: p.name,
             description: p.description,
             image: p.img,
-            brand: { "@type": "Brand", name: "Kumbhaja" },
+            brand: { "@type": "Brand", name: "Mudkraft" },
             category: p.category,
             offers: {
               "@type": "Offer",
@@ -77,7 +77,7 @@ function WhatsAppIcon({ className = "" }: { className?: string }) {
 function whatsappBuyNow(p: Product, qty: number) {
   const total = p.priceNum * qty;
   const text = [
-    "Namaste Kumbhaja 🙏",
+    "Namaste Mudkraft 🙏",
     `I'd like to order ${qty} × ${p.name} (${p.tag}).`,
     `Total: ₹${total.toLocaleString("en-IN")}`,
     "",
@@ -131,7 +131,7 @@ function ProductDetail() {
           <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,86%)]">
             <img
               src={p.img}
-              alt={`Handcrafted ${p.name} — ${p.tag} from Kumbhaja`}
+              alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
               width={1200}
               height={1500}
               className="w-full h-full object-contain p-10 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)]"

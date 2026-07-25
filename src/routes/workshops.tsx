@@ -7,13 +7,13 @@ import studentPottery from "@/assets/student-pottery.jpg";
 export const Route = createFileRoute("/workshops")({
   head: () => ({
     meta: [
-      { title: "Workshops & Soil Report — Kumbhaja" },
+      { title: "Workshops & Soil Report — Mudkraft" },
       {
         name: "description",
         content:
-          "Book a Kumbhaja pottery workshop for schools, birthdays and private parties. Read the full soil report of our river clay from the banks of the Ganges.",
+          "Book a Mudkraft pottery workshop for schools, birthdays and private parties. Read the full soil report of our river clay from the banks of the Ganges.",
       },
-      { property: "og:title", content: "Workshops & Soil Report — Kumbhaja" },
+      { property: "og:title", content: "Workshops & Soil Report — Mudkraft" },
       {
         property: "og:description",
         content:
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/workshops")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "canonical", href: "https://kumbhaja.lovable.app/workshops" },
+      { rel: "canonical", href: "https://mudkraft.lovable.app/workshops" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -37,15 +37,15 @@ export const Route = createFileRoute("/workshops")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Course",
-          name: "Kumbhaja Pottery Workshops",
+          name: "Mudkraft Pottery Workshops",
           description:
             "Pottery workshops for schools, birthdays, private parties and corporate offsites — throw on the wheel, hand-build, and take home fired pieces.",
           provider: {
             "@type": "Organization",
-            name: "Kumbhaja",
-            url: "https://kumbhaja.lovable.app",
+            name: "Mudkraft",
+            url: "https://mudkraft.lovable.app",
           },
-          url: "https://kumbhaja.lovable.app/workshops",
+          url: "https://mudkraft.lovable.app/workshops",
           hasCourseInstance: [
             {
               "@type": "CourseInstance",
@@ -80,7 +80,7 @@ export const Route = createFileRoute("/workshops")({
 });
 
 const WHATSAPP_NUMBER = "919990649990";
-const ENQUIRY_EMAIL = "hello@kumbhaja.com";
+const ENQUIRY_EMAIL = "hello@mudkraft.com";
 
 const experiences = [
   {
@@ -161,7 +161,7 @@ function WorkshopsPage() {
   const enquiryText = () =>
     encodeURIComponent(
       [
-        "Namaste Kumbhaja 🙏",
+        "Namaste Mudkraft 🙏",
         `I'd like to book a ${form.type.toLowerCase()} workshop.`,
         form.name && `Name: ${form.name}`,
         form.phone && `Phone: ${form.phone}`,
@@ -285,7 +285,7 @@ function WorkshopsPage() {
           <div className="md:col-span-7 order-2 md:order-1">
             <img
               src={studentPottery}
-              alt="A student shaping a small bowl on the potter's wheel during a Kumbhaja workshop"
+              alt="A student shaping a small bowl on the potter's wheel during a Mudkraft workshop"
               loading="lazy"
               width={1024}
               height={1024}
@@ -422,7 +422,7 @@ function WorkshopsPage() {
             <span className="text-3xl sm:text-4xl md:text-6xl font-display text-gold leading-none tracking-tight"><span className="font-medium">क</span><span className="italic">umbhaja</span></span>
           </Link>
           <div className="font-hand text-xl text-gold">made from earth, made with love</div>
-          <div className="text-xs tracking-widest uppercase text-cream/60">© {new Date().getFullYear()} Kumbhaja Studio</div>
+          <div className="text-xs tracking-widest uppercase text-cream/60">© {new Date().getFullYear()} Mudkraft Studio</div>
         </div>
       </footer>
     </div>

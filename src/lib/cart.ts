@@ -3,7 +3,7 @@ import type { Product } from "./products";
 
 export type CartItem = Product & { qty: number };
 
-const STORAGE_KEY = "kumbhaja.cart.v1";
+const STORAGE_KEY = "mudkraft.cart.v1";
 const isBrowser = typeof window !== "undefined";
 
 let state: CartItem[] = load();

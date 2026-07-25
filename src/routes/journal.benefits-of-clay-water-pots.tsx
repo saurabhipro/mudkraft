@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-const URL = "https://kumbhaja.lovable.app/journal/benefits-of-clay-water-pots";
-const TITLE = "Benefits of Matka Water & How to Season a Clay Pot — Kumbhaja";
+const URL = "https://mudkraft.lovable.app/journal/benefits-of-clay-water-pots";
+const TITLE = "Benefits of Matka Water & How to Season a Clay Pot — Mudkraft";
 const DESCRIPTION =
   "A slow guide to drinking water from an earthen pot — the natural cooling, mineral alkalinity, and gut-friendly benefits of matka water, plus how to season and clean a new clay pot without soap.";
 
@@ -33,13 +33,13 @@ export const Route = createFileRoute("/journal/benefits-of-clay-water-pots")({
           "@type": "Article",
           headline: "Benefits of Matka Water & How to Season a Clay Pot",
           description: DESCRIPTION,
-          author: { "@type": "Organization", name: "Kumbhaja" },
+          author: { "@type": "Organization", name: "Mudkraft" },
           publisher: {
             "@type": "Organization",
-            name: "Kumbhaja",
+            name: "Mudkraft",
             logo: {
               "@type": "ImageObject",
-              url: "https://kumbhaja.lovable.app/favicon.ico",
+              url: "https://mudkraft.lovable.app/favicon.ico",
             },
           },
           mainEntityOfPage: URL,
