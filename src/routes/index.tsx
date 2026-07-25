@@ -393,15 +393,20 @@ function Index() {
             invitation to the studio.
           </p>
           <form className="mt-10 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
             <input
+              id="newsletter-email"
+              name="email"
               type="email"
+              aria-label="Email address"
               placeholder="your@email"
-              className="flex-1 bg-cream/10 border border-cream/30 rounded-full px-6 py-4 text-cream placeholder:text-cream/50 focus:outline-none focus:border-cream transition"
+              className="flex-1 bg-cream/10 border border-cream/40 rounded-full px-6 py-4 text-cream placeholder:text-cream/75 focus:outline-none focus:border-cream transition"
             />
             <button className="bg-cream text-earth px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-gold transition-colors">
               Subscribe
             </button>
           </form>
+
         </div>
       </section>
 
