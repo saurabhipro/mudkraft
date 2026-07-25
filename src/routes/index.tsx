@@ -287,59 +287,60 @@ function Index() {
           })}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-x-8 gap-y-12 md:gap-y-20">
-          {visibleProducts.map((p, i) => (
-            <div
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {visibleProducts.map((p) => (
+            <article
               key={p.slug}
-              className={`group block ${i % 2 === 1 ? "md:translate-y-24" : ""}`}
+              className="group relative flex flex-col rounded-[1.75rem] bg-gradient-to-b from-[hsl(35,40%,94%)] to-[hsl(30,30%,86%)] ring-1 ring-earth/10 shadow-[0_1px_0_hsl(35,50%,98%)_inset,0_30px_60px_-40px_rgba(80,40,20,0.45)] hover:shadow-[0_1px_0_hsl(35,50%,98%)_inset,0_45px_80px_-40px_rgba(80,40,20,0.6)] transition-all duration-700 hover:-translate-y-1 overflow-hidden"
             >
               <Link
                 to="/shop/$slug"
                 params={{ slug: p.slug }}
                 aria-label={`View ${p.name}`}
-                className="relative w-full overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] aspect-[4/5] block text-left"
+                className="relative block aspect-square"
               >
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(35,45%,96%)_0%,transparent_65%)]" />
                 <img
                   src={p.img}
                   alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
                   width={900}
-                  height={1100}
+                  height={900}
                   loading="lazy"
-                  className="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-[1400ms] ease-out group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.28)]"
+                  className="relative w-full h-full object-contain p-5 sm:p-6 transition-transform duration-[1400ms] ease-out group-hover:scale-[1.06] drop-shadow-[0_30px_35px_rgba(80,40,20,0.35)]"
                 />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-earth/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-earth/90 backdrop-blur px-3 py-1.5 rounded-full text-cream">
+                <div className="absolute top-4 left-4 text-[10px] tracking-[0.25em] uppercase bg-earth/90 backdrop-blur px-3 py-1.5 rounded-full text-cream">
                   {p.tag}
                 </div>
-                {/* brand watermark */}
-                <div className="pointer-events-none absolute bottom-4 right-5 flex items-center gap-1.5 text-earth/70">
-                  <span className="font-display italic text-xl leading-none tracking-wide">Mudkraft</span>
-                </div>
-                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-cream text-earth px-6 py-3 rounded-full text-xs tracking-widest uppercase shadow-xl whitespace-nowrap">
-                  View piece →
+                <div className="pointer-events-none absolute bottom-3 right-4 font-display italic text-sm text-earth/50 tracking-wide">
+                  Mudkraft
                 </div>
               </Link>
-              <div className="mt-6 flex items-baseline justify-between gap-6">
-                <div>
-                  <Link to="/shop/$slug" params={{ slug: p.slug }} className="hover:text-clay transition-colors">
-                    <h3 className="text-3xl font-display text-earth">{p.name}</h3>
+
+              <div className="flex items-end justify-between gap-4 px-6 pt-5 pb-6 border-t border-earth/10 bg-cream/40">
+                <div className="min-w-0">
+                  <Link
+                    to="/shop/$slug"
+                    params={{ slug: p.slug }}
+                    className="hover:text-clay transition-colors"
+                  >
+                    <h3 className="text-2xl font-display text-earth truncate">{p.name}</h3>
                   </Link>
-                  <p className="mt-1 font-hand text-clay text-xl">{p.note}</p>
+                  <p className="mt-0.5 font-hand text-clay text-lg truncate">{p.note}</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-display text-earth">{p.price}</div>
+                <div className="shrink-0 text-right">
+                  <div className="text-lg font-display text-earth">{p.price}</div>
                   <button
                     onClick={() => addToCart(p)}
-                    className="mt-1 text-xs tracking-widest uppercase text-muted-foreground hover:text-clay transition-colors"
+                    className="mt-1 text-[10px] tracking-[0.25em] uppercase text-earth/70 hover:text-earth border-b border-earth/30 hover:border-earth transition-colors"
                   >
-                    Add →
+                    Add +
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
+
       </section>
 
       {/* CRAFT */}
