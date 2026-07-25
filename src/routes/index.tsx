@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import handsClay from "@/assets/hands-clay.jpg";
 import potImg from "@/assets/pot-transparent.png.asset.json";
 import waterPotImg from "@/assets/water-pot-transparent.png.asset.json";
-import matkaStand from "@/assets/matka-stand.jpg.asset.json";
+
 import kulhadSet from "@/assets/kulhad-set.jpg.asset.json";
 import bottleJug from "@/assets/bottle-jug.jpg.asset.json";
 import handiDuo from "@/assets/handi-duo.jpg.asset.json";
