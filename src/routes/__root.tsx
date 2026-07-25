@@ -97,7 +97,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "Kumbhaja",
+              url: "https://kumbhaja.lovable.app",
+              logo: "https://kumbhaja.lovable.app/favicon.ico",
+              description:
+                "Slow craft studio shaping pots, kulhads, planters and diyas from river clay.",
+            },
+            {
+              "@type": "WebSite",
+              name: "Kumbhaja",
+              url: "https://kumbhaja.lovable.app",
+            },
+          ],
+        }),
+      },
+    ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

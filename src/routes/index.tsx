@@ -9,10 +9,21 @@ import handiDuo from "@/assets/handi-duo.jpg.asset.json";
 import handiSmall from "@/assets/handi-small.jpg.asset.json";
 import sieveDome from "@/assets/sieve-dome.jpg.asset.json";
 
+const SITE_URL = "https://kumbhaja.lovable.app";
+
+const productSeed = [
+  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: matkaStand.url },
+  { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: kulhadSet.url },
+  { name: "Bottle & Jug", tag: "Serveware · Duo", priceNum: 1480, img: bottleJug.url },
+  { name: "Handi", tag: "Cookware · Set of 2", priceNum: 1120, img: handiDuo.url },
+  { name: "Chhoti Handi", tag: "Serving Bowl", priceNum: 540, img: handiSmall.url },
+  { name: "Steam Dome", tag: "Idli / Steamer", priceNum: 860, img: sieveDome.url },
+];
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Kumbhaja — Soulful Handcrafted Clay" },
+      { title: "Kumbhaja — Soulful Handcrafted Clay Pots, Kulhads & Matkas" },
       {
         name: "description",
         content:
@@ -25,9 +36,11 @@ export const Route = createFileRoute("/")({
           "Kumbhaja is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL + "/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "canonical", href: SITE_URL + "/" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -35,9 +48,32 @@ export const Route = createFileRoute("/")({
         href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": productSeed.map((p) => ({
+            "@type": "Product",
+            name: p.name,
+            description: `${p.tag} — handcrafted river-clay piece by Kumbhaja.`,
+            image: p.img,
+            brand: { "@type": "Brand", name: "Kumbhaja" },
+            offers: {
+              "@type": "Offer",
+              price: p.priceNum,
+              priceCurrency: "INR",
+              availability: "https://schema.org/InStock",
+              url: SITE_URL + "/#collection",
+            },
+          })),
+        }),
+      },
+    ],
   }),
   component: Index,
 });
+
 
 type Product = { name: string; tag: string; price: string; priceNum: number; img: string; note: string };
 
@@ -127,7 +163,7 @@ function Index() {
             <a href="#craft" className="hover:text-clay transition-colors">The Craft</a>
             <Link to="/workshops" className="hover:text-clay transition-colors">Workshops</Link>
             <a href="#story" className="hover:text-clay transition-colors">Story</a>
-            <a href="#journal" className="hover:text-clay transition-colors">Journal</a>
+            <a href="/journal/benefits-of-clay-water-pots" className="hover:text-clay transition-colors">Journal</a>
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -203,8 +239,11 @@ function Index() {
                 alt="Handcrafted terracotta clay pot in warm light"
                 width={1600}
                 height={1808}
+                fetchPriority="high"
+                decoding="async"
                 className="relative w-full h-full object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
               />
+
               <div className="absolute -bottom-4 -left-4 bg-cream/95 backdrop-blur px-5 py-3 rounded-full text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
                 Est. from the Ganges
               </div>
@@ -284,12 +323,13 @@ function Index() {
               >
                 <img
                   src={p.img}
-                  alt={p.name}
+                  alt={`Handcrafted ${p.name} — ${p.tag} from Kumbhaja`}
                   width={900}
                   height={1100}
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
                 />
+
                 <div className="absolute inset-0 bg-gradient-to-t from-earth/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-cream/90 backdrop-blur px-3 py-1.5 rounded-full text-earth">
                   {p.tag}
@@ -389,15 +429,20 @@ function Index() {
             invitation to the studio.
           </p>
           <form className="mt-10 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
             <input
+              id="newsletter-email"
+              name="email"
               type="email"
+              aria-label="Email address"
               placeholder="your@email"
-              className="flex-1 bg-cream/10 border border-cream/30 rounded-full px-6 py-4 text-cream placeholder:text-cream/50 focus:outline-none focus:border-cream transition"
+              className="flex-1 bg-cream/10 border border-cream/40 rounded-full px-6 py-4 text-cream placeholder:text-cream/75 focus:outline-none focus:border-cream transition"
             />
             <button className="bg-cream text-earth px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-gold transition-colors">
               Subscribe
             </button>
           </form>
+
         </div>
       </section>
 
@@ -423,7 +468,7 @@ function Index() {
               <li><a href="#craft" className="hover:text-gold transition-colors">The Craft</a></li>
               <li><Link to="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
               <li><a href="#story" className="hover:text-gold transition-colors">Story</a></li>
-              <li><a href="#journal" className="hover:text-gold transition-colors">Journal</a></li>
+              <li><a href="/journal/benefits-of-clay-water-pots" className="hover:text-gold transition-colors">Journal</a></li>
             </ul>
           </div>
 
