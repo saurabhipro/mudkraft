@@ -221,17 +221,40 @@ function Index() {
 
       {/* COLLECTION */}
       <section id="collection" className="py-32 px-6 md:px-10 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-12 gap-6 mb-20 items-end">
-          <div className="md:col-span-7">
-            <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6">— the collection</p>
-            <h2 className="text-5xl md:text-7xl font-display text-earth text-balance">
-              Objects that <span className="italic">breathe</span>, made<br />to be lived with.
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 border-t border-clay/25 pt-16 pb-20 mb-16">
+          <div className="lg:col-span-8 flex flex-col">
+            <header className="mb-10 flex items-center gap-4">
+              <span className="h-px w-8 bg-clay"></span>
+              <span className="text-[10px] tracking-[0.3em] uppercase text-clay font-medium">
+                The Collection
+              </span>
+            </header>
+            <h2 className="font-display text-6xl md:text-7xl lg:text-8xl leading-[0.95] text-earth tracking-tight text-balance">
+              Objects that <span className="italic font-light">breathe</span>,<br className="hidden md:block" />
+              made to be lived with.
             </h2>
           </div>
-          <p className="md:col-span-4 md:col-start-9 text-muted-foreground text-lg leading-relaxed">
-            Four families of clay — each thrown, dried under sky, and fired in a slow wood kiln.
-          </p>
+
+          <div className="lg:col-span-4 flex flex-col justify-end lg:pb-4">
+            <div className="max-w-sm">
+              <p className="text-sm md:text-base leading-relaxed text-muted-foreground/90">
+                Four families of clay — each thrown, dried under sky, and fired in a slow wood kiln.
+              </p>
+              <div className="mt-8 flex items-center gap-6">
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 rounded-full border border-cream bg-[#D4B996]"></div>
+                  <div className="w-8 h-8 rounded-full border border-cream bg-[#A67C52]"></div>
+                  <div className="w-8 h-8 rounded-full border border-cream bg-[#7D5A44]"></div>
+                  <div className="w-8 h-8 rounded-full border border-cream bg-earth"></div>
+                </div>
+                <span className="text-[10px] uppercase tracking-widest text-clay font-semibold">
+                  Earth Elements
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
+
 
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-20">
           {products.map((p, i) => (
