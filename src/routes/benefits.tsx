@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import alkalineImg from "@/assets/benefit-alkaline.jpg";
 import mineralsImg from "@/assets/benefit-minerals.jpg";
 import coolingImg from "@/assets/benefit-cooling.jpg";

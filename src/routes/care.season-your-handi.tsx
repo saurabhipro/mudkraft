@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import handiSoak from "@/assets/handi-soak.jpg";
 import stepSoak from "@/assets/step-soak.jpg";
 import stepDry from "@/assets/step-dry.jpg";
