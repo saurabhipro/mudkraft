@@ -437,7 +437,32 @@ function Index() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
-              <span className="text-4xl font-display text-gold leading-none tracking-tight"><span className="italic">Mudkraft</span></span>
+              <span className="relative flex items-center justify-center shrink-0">
+                <span
+                  className="relative w-12 h-12 rounded-full flex items-center justify-center shadow-sm overflow-hidden -rotate-6"
+                  style={{ background: "var(--gradient-clay)" }}
+                >
+                  <span
+                    className="absolute inset-0 opacity-25"
+                    style={{
+                      backgroundImage: "radial-gradient(circle at center, #000 1px, transparent 1px)",
+                      backgroundSize: "3px 3px",
+                    }}
+                  />
+                  <span className="relative font-display text-cream text-2xl font-semibold leading-none -mt-0.5">M</span>
+                </span>
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-earth"
+                  style={{ backgroundColor: "var(--gold)" }}
+                />
+              </span>
+              <span className="flex flex-col leading-none">
+                <span className="text-4xl font-display text-gold leading-none tracking-tight">Mud<span className="italic">kraft</span></span>
+                <span className="flex items-center gap-2 mt-2">
+                  <span className="h-px w-5 bg-gold/40" />
+                  <span className="text-[9px] uppercase tracking-[0.28em] text-gold/70 font-sans">Slow Craft Studio</span>
+                </span>
+              </span>
             </div>
             <p className="mt-6 font-hand text-2xl text-gold">made from earth, made with love</p>
             <p className="mt-4 text-cream/70 leading-relaxed max-w-sm">
