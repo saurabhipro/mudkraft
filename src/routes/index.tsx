@@ -163,7 +163,7 @@ function Index() {
             <a href="#craft" className="hover:text-clay transition-colors">The Craft</a>
             <Link to="/workshops" className="hover:text-clay transition-colors">Workshops</Link>
             <a href="#story" className="hover:text-clay transition-colors">Story</a>
-            <a href="#journal" className="hover:text-clay transition-colors">Journal</a>
+            <a href="/journal/benefits-of-clay-water-pots" className="hover:text-clay transition-colors">Journal</a>
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -468,7 +468,7 @@ function Index() {
               <li><a href="#craft" className="hover:text-gold transition-colors">The Craft</a></li>
               <li><Link to="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
               <li><a href="#story" className="hover:text-gold transition-colors">Story</a></li>
-              <li><a href="#journal" className="hover:text-gold transition-colors">Journal</a></li>
+              <li><a href="/journal/benefits-of-clay-water-pots" className="hover:text-gold transition-colors">Journal</a></li>
             </ul>
           </div>
 
