@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import handsClay from "@/assets/hands-clay.jpg";
 import potImg from "@/assets/pot-transparent.png.asset.json";
+import waterPotImg from "@/assets/water-pot-transparent.png.asset.json";
 import matkaStand from "@/assets/matka-stand.jpg.asset.json";
 import kulhadSet from "@/assets/kulhad-set.jpg.asset.json";
 import bottleJug from "@/assets/bottle-jug.jpg.asset.json";
@@ -239,9 +240,6 @@ function Index() {
                 className="relative w-full h-full object-contain drop-shadow-[0_40px_60px_rgba(80,40,20,0.35)]"
               />
 
-              <div className="absolute -bottom-3 left-3 sm:-bottom-4 sm:-left-4 bg-cream/95 backdrop-blur px-4 sm:px-5 py-2 sm:py-3 rounded-full text-[10px] sm:text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
-                Est. from the Ganges
-              </div>
             </div>
           </div>
         </div>
