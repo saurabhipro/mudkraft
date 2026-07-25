@@ -287,12 +287,13 @@ function Index() {
               >
                 <img
                   src={p.img}
-                  alt={p.name}
+                  alt={`Handcrafted ${p.name} — ${p.tag} from Kumbhaja`}
                   width={900}
                   height={1100}
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
                 />
+
                 <div className="absolute inset-0 bg-gradient-to-t from-earth/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-cream/90 backdrop-blur px-3 py-1.5 rounded-full text-earth">
                   {p.tag}
