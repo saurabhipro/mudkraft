@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import heroPot from "@/assets/hero-pot.jpg";
 import handsClay from "@/assets/hands-clay.jpg";
-import productMatka from "@/assets/product-matka.jpg";
-import productKulhad from "@/assets/product-kulhad.jpg";
-import productPlanter from "@/assets/product-planter.jpg";
-import productDiya from "@/assets/product-diya.jpg";
+import matkaStand from "@/assets/matka-stand.jpg.asset.json";
+import kulhadSet from "@/assets/kulhad-set.jpg.asset.json";
+import bottleJug from "@/assets/bottle-jug.jpg.asset.json";
+import handiDuo from "@/assets/handi-duo.jpg.asset.json";
+import handiSmall from "@/assets/handi-small.jpg.asset.json";
+import sieveDome from "@/assets/sieve-dome.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
