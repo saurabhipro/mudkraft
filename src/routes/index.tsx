@@ -335,7 +335,7 @@ function Index() {
                 type="button"
                 onClick={() => addToCart(p)}
                 aria-label={`Add ${p.name} to cart`}
-                className="relative w-full overflow-hidden rounded-[1.5rem] bg-muted aspect-[4/5] block text-left"
+                className="relative w-full overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] aspect-[4/5] block text-left"
               >
                 <img
                   src={p.img}
@@ -343,17 +343,17 @@ function Index() {
                   width={900}
                   height={1100}
                   loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
+                  className="w-full h-full object-contain p-8 transition-transform duration-[1400ms] ease-out group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.28)]"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-earth/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-cream/90 backdrop-blur px-3 py-1.5 rounded-full text-earth">
+                <div className="absolute inset-0 bg-gradient-to-t from-earth/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-earth/90 backdrop-blur px-3 py-1.5 rounded-full text-cream">
                   {p.tag}
                 </div>
                 {/* brand watermark */}
-                <div className="pointer-events-none absolute bottom-4 right-5 flex items-center gap-1.5 text-cream/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]">
-                  <span className="font-display text-2xl leading-none">
-                    <span className="font-medium">क</span>
+                <div className="pointer-events-none absolute bottom-4 right-5 flex items-center gap-1.5 text-earth/70">
+                  <span className="font-display text-xl leading-none tracking-wide">
+                    <span className="font-medium not-italic">क</span>
                     <span className="italic">umbhaja</span>
                   </span>
                 </div>
