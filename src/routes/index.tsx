@@ -358,8 +358,7 @@ function Index() {
       </section>
 
       {/* CRAFT */}
-      <section id="craft" className="relative py-32 mt-20 grain overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-earth" />
+      <section id="craft" className="relative py-32 mt-20 grain overflow-hidden bg-earth">
         <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-6 relative">
             <img
@@ -414,11 +413,11 @@ function Index() {
       </section>
 
       {/* JOURNAL / CTA */}
-      <section id="journal" className="relative py-32 px-6 md:px-10 mx-6 md:mx-10 mb-16 rounded-[2.5rem] grain overflow-hidden">
-        <div
-          className="absolute inset-0 -z-10"
-          style={{ background: "linear-gradient(135deg, oklch(0.58 0.14 42), oklch(0.42 0.11 38))" }}
-        />
+      <section
+        id="journal"
+        className="relative py-32 px-6 md:px-10 mx-6 md:mx-10 mb-16 rounded-[2.5rem] grain overflow-hidden"
+        style={{ background: "linear-gradient(135deg, oklch(0.58 0.14 42), oklch(0.42 0.11 38))" }}
+      >
         <div className="max-w-3xl mx-auto text-center text-cream">
           <h2 className="text-5xl md:text-7xl font-display text-balance">
             Letters from<br /><span className="italic">the kiln.</span>
