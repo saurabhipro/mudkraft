@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Kumbhaja — Soulful Handcrafted Clay" },
+      { name: "description", content: "Kumbhaja is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Kumbhaja — Soulful Handcrafted Clay" },
+      { property: "og:description", content: "Kumbhaja is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Kumbhaja — Soulful Handcrafted Clay" },
+      { name: "twitter:description", content: "Kumbhaja is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/44a880f3-4988-4c78-af48-ec3ff5b5c933/id-preview-cb7a1a7d--74bd44e3-c261-493a-9ca2-45cf5a39e7d2.lovable.app-1784964187746.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/44a880f3-4988-4c78-af48-ec3ff5b5c933/id-preview-cb7a1a7d--74bd44e3-c261-493a-9ca2-45cf5a39e7d2.lovable.app-1784964187746.png" },
     ],
     links: [
       {
