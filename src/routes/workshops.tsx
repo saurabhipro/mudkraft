@@ -289,9 +289,9 @@ function WorkshopsPage() {
       </section>
 
       {/* SOIL REPORT */}
-      <section id="soil" className="relative py-32 grain overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-earth" />
+      <section id="soil" className="relative py-32 grain overflow-hidden bg-earth">
         <div className="max-w-6xl mx-auto px-6 md:px-10 text-cream">
+
           <div className="grid md:grid-cols-12 gap-10 mb-14 items-end">
             <div className="md:col-span-7">
               <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6">— soil report</p>
