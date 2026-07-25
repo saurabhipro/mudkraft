@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SiteHeader } from "@/components/SiteHeader";
 import { useState } from "react";
 import handsClay from "@/assets/hands-clay.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
@@ -180,27 +181,18 @@ function WorkshopsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* NAV */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/40">
-        <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-5">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="text-3xl sm:text-4xl md:text-6xl font-display text-earth leading-none tracking-tight"><span className="font-medium">क</span><span className="italic">umbhaja</span></span>
-          </Link>
-          <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
-            <Link to="/" hash="collection" className="hover:text-clay transition-colors">Collection</Link>
-            <Link to="/workshops" className="text-clay">Workshops</Link>
-            <Link to="/" hash="story" className="hover:text-clay transition-colors">Story</Link>
-          </div>
+      <SiteHeader
+        rightSlot={
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs tracking-widest uppercase bg-earth text-cream px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
+            className="hidden sm:inline-flex items-center text-xs tracking-widest uppercase bg-earth text-cream px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
           >
             Enquire
           </a>
-        </nav>
-      </header>
+        }
+      />
 
       {/* HERO */}
       <section className="relative pt-40 pb-24 grain">

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { SiteHeader } from "@/components/SiteHeader";
 import heroPot from "@/assets/hero-pot.jpg";
 import handsClay from "@/assets/hands-clay.jpg";
 import matkaStand from "@/assets/matka-stand.jpg.asset.json";
@@ -157,18 +158,9 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* NAV */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/40">
-        <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-5">
-          <a href="#" className="flex items-center gap-3">
-            <span className="text-3xl sm:text-4xl md:text-6xl font-display text-earth leading-none tracking-tight"><span className="font-medium">क</span><span className="italic">umbhaja</span></span>
-          </a>
-          <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
-            <a href="#collection" className="hover:text-clay transition-colors">Collection</a>
-            <Link to="/workshops" className="hover:text-clay transition-colors">Workshops</Link>
-            <a href="#story" className="hover:text-clay transition-colors">Story</a>
-          </div>
-          <div className="flex items-center gap-3">
+      <SiteHeader
+        rightSlot={
+          <>
             <a
               href={whatsappEnquiry()}
               target="_blank"
@@ -181,16 +173,16 @@ function Index() {
             </a>
             <button
               onClick={() => setOpen(true)}
-              className="relative inline-flex items-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
+              className="relative inline-flex items-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-4 sm:px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
             >
               Cart
               <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-gold text-earth text-[11px] font-medium">
                 {count}
               </span>
             </button>
-          </div>
-        </nav>
-      </header>
+          </>
+        }
+      />
 
       {/* HERO */}
       <section className="relative min-h-[92vh] flex items-center pt-28 pb-16 grain">
