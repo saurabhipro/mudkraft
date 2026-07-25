@@ -34,10 +34,9 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
       <nav className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-5 sm:px-6 md:px-10 py-4 md:py-5">
-        <Link to="/" className="flex items-center gap-3 min-w-0 shrink" aria-label="Kumbhaja home">
-          <span className="text-3xl sm:text-4xl md:text-6xl font-display text-earth leading-none tracking-tight whitespace-nowrap">
-            <span className="font-medium not-italic">क</span>
-            <span className="italic">umbhaja</span>
+        <Link to="/" className="flex items-center gap-3 min-w-0 shrink" aria-label="Mudkraft home">
+          <span className="text-3xl sm:text-4xl md:text-5xl font-display text-earth leading-none tracking-tight whitespace-nowrap">
+            <span className="italic">Mudkraft</span>
           </span>
         </Link>
 

@@ -6,23 +6,23 @@ import potImg from "@/assets/pot-transparent.png.asset.json";
 import { products, type Category, type Product } from "@/lib/products";
 import { useCart, addToCart as addToCartStore, updateQty as updateQtyStore, removeItem as removeItemStore } from "@/lib/cart";
 
-const SITE_URL = "https://kumbhaja.lovable.app";
+const SITE_URL = "https://mudkraft.lovable.app";
 
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Kumbhaja — Soulful Handcrafted Clay Pots, Kulhads & Matkas" },
+      { title: "Mudkraft — Soulful Handcrafted Clay Pots, Kulhads & Matkas" },
       {
         name: "description",
         content:
-          "Kumbhaja is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
+          "Mudkraft is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
       },
-      { property: "og:title", content: "Kumbhaja — Soulful Handcrafted Clay" },
+      { property: "og:title", content: "Mudkraft — Soulful Handcrafted Clay" },
       {
         property: "og:description",
         content:
-          "Kumbhaja is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
+          "Mudkraft is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL + "/" },
@@ -45,9 +45,9 @@ export const Route = createFileRoute("/")({
           "@graph": products.map((p) => ({
             "@type": "Product",
             name: p.name,
-            description: `${p.tag} — handcrafted river-clay piece by Kumbhaja.`,
+            description: `${p.tag} — handcrafted river-clay piece by Mudkraft.`,
             image: p.img,
-            brand: { "@type": "Brand", name: "Kumbhaja" },
+            brand: { "@type": "Brand", name: "Mudkraft" },
             offers: {
               "@type": "Offer",
               price: p.priceNum,
@@ -69,7 +69,7 @@ const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", 
 
 // Replace with your real WhatsApp number (country code + number, no + or spaces)
 const WHATSAPP_NUMBER = "919990649990";
-const ENQUIRY_EMAIL = "hello@kumbhaja.com";
+const ENQUIRY_EMAIL = "hello@mudkraft.com";
 
 function Index() {
   const cart = useCart();
@@ -91,7 +91,7 @@ function Index() {
 
   const checkoutMessage = () => {
     const lines = [
-      "Namaste Kumbhaja 🙏",
+      "Namaste Mudkraft 🙏",
       "I'd like to place an order:",
       "",
       "— Items —",
@@ -116,7 +116,7 @@ function Index() {
 
   const whatsappEnquiry = () =>
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      "Namaste Kumbhaja 🙏 I'd love to know more about your clay pieces."
+      "Namaste Mudkraft 🙏 I'd love to know more about your clay pieces."
     )}`;
 
   return (
@@ -168,7 +168,7 @@ function Index() {
               into <span className="italic">stillness</span>.
             </h1>
             <p className="mt-6 sm:mt-8 max-w-md text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Kumbhaja is a slow craft studio. Every pot begins as river clay in the hands of
+              Mudkraft is a slow craft studio. Every pot begins as river clay in the hands of
               a potter, and ends as a quiet object in your home.
             </p>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
@@ -301,11 +301,11 @@ function Index() {
               >
                 <img
                   src={p.img}
-                  alt={`Handcrafted ${p.name} — ${p.tag} from Kumbhaja`}
+                  alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
                   width={900}
                   height={1100}
                   loading="lazy"
-                  className="w-full h-full object-contain p-8 transition-transform duration-[1400ms] ease-out group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.28)]"
+                  className="w-full h-full object-contain p-2 sm:p-3 transition-transform duration-[1400ms] ease-out group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.28)]"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-earth/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -314,10 +314,7 @@ function Index() {
                 </div>
                 {/* brand watermark */}
                 <div className="pointer-events-none absolute bottom-4 right-5 flex items-center gap-1.5 text-earth/70">
-                  <span className="font-display text-xl leading-none tracking-wide">
-                    <span className="font-medium not-italic">क</span>
-                    <span className="italic">umbhaja</span>
-                  </span>
+                  <span className="font-display italic text-xl leading-none tracking-wide">Mudkraft</span>
                 </div>
                 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-cream text-earth px-6 py-3 rounded-full text-xs tracking-widest uppercase shadow-xl whitespace-nowrap">
                   View piece →
@@ -396,7 +393,7 @@ function Index() {
       <section id="story" className="py-20 md:py-32 px-6 md:px-10 max-w-4xl mx-auto text-center">
         <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6 md:mb-8">— our story</p>
         <p className="text-2xl sm:text-3xl md:text-5xl font-display italic text-earth leading-[1.2] md:leading-[1.15] text-balance">
-          "In Sanskrit, <span className="not-italic">Kumbhaja</span> means the one born of a pot.
+          "<span className="not-italic">Mudkraft</span> is the craft of earth in your hands.
           We think of every home that keeps our clay as another quiet birth —
           of stillness, of ritual, of a slower way to hold what matters."
         </p>
@@ -440,7 +437,7 @@ function Index() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
-              <span className="text-4xl font-display text-gold leading-none tracking-tight"><span className="font-medium">क</span><span className="italic">umbhaja</span></span>
+              <span className="text-4xl font-display text-gold leading-none tracking-tight"><span className="italic">Mudkraft</span></span>
             </div>
             <p className="mt-6 font-hand text-2xl text-gold">made from earth, made with love</p>
             <p className="mt-4 text-cream/70 leading-relaxed max-w-sm">
@@ -497,7 +494,7 @@ function Index() {
         </div>
 
         <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-cream/15 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cream/60">
-          <div>© {new Date().getFullYear()} Kumbhaja Studio · Khurja, India</div>
+          <div>© {new Date().getFullYear()} Mudkraft Studio · Khurja, India</div>
           <div className="tracking-[0.3em] uppercase">Handmade · Slow · Soulful</div>
         </div>
 

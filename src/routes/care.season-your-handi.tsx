@@ -5,13 +5,13 @@ import handiSoak from "@/assets/handi-soak.jpg";
 export const Route = createFileRoute("/care/season-your-handi")({
   head: () => ({
     meta: [
-      { title: "How to Season a Clay Handi (So It Never Cracks) — Kumbhaja" },
+      { title: "How to Season a Clay Handi (So It Never Cracks) — Mudkraft" },
       {
         name: "description",
         content:
           "A step-by-step ritual to cure your new clay handi before cooking — soak, dry, first rice, and daily care. Follow it once and your handi will last for years without cracking.",
       },
-      { property: "og:title", content: "How to Season a Clay Handi — Kumbhaja" },
+      { property: "og:title", content: "How to Season a Clay Handi — Mudkraft" },
       {
         property: "og:description",
         content:
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/care/season-your-handi")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "canonical", href: "https://kumbhaja.lovable.app/care/season-your-handi" },
+      { rel: "canonical", href: "https://mudkraft.lovable.app/care/season-your-handi" },
     ],
     scripts: [
       {
@@ -88,7 +88,7 @@ const steps = [
     n: "05",
     title: "Daily care, forever",
     time: "a lifetime",
-    body: "Wash with warm water and a soft cloth — no dish soap, no scrubber. Sun-dry after washing. Always heat from cold on a low flame; a heat diffuser helps on gas or induction. Once a month, re-oil the inside. Treated this way, a Kumbhaja handi will feed your family for many years.",
+    body: "Wash with warm water and a soft cloth — no dish soap, no scrubber. Sun-dry after washing. Always heat from cold on a low flame; a heat diffuser helps on gas or induction. Once a month, re-oil the inside. Treated this way, a Mudkraft handi will feed your family for many years.",
     tip: "If you ever see a tiny hairline, soak overnight in rice water — it re-seals itself.",
   },
 ];
@@ -244,7 +244,7 @@ function SeasonHandiPage() {
         </h2>
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Namaste 🙏 I need help seasoning my Kumbhaja handi.")}`}
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Namaste 🙏 I need help seasoning my Mudkraft handi.")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-earth text-cream px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-clay transition-colors"
@@ -265,13 +265,12 @@ function SeasonHandiPage() {
       <footer className="bg-earth text-cream px-6 md:px-10 pt-16 pb-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Link to="/" className="flex items-center gap-3">
-            <span className="text-3xl sm:text-4xl md:text-6xl font-display text-gold leading-none tracking-tight">
-              <span className="font-medium">क</span>
-              <span className="italic">umbhaja</span>
+            <span className="text-3xl sm:text-4xl md:text-5xl font-display italic text-gold leading-none tracking-tight">
+              Mudkraft
             </span>
           </Link>
           <div className="font-hand text-xl text-gold">made from earth, made with love</div>
-          <div className="text-xs tracking-widest uppercase text-cream/60">© {new Date().getFullYear()} Kumbhaja Studio</div>
+          <div className="text-xs tracking-widest uppercase text-cream/60">© {new Date().getFullYear()} Mudkraft Studio</div>
         </div>
       </footer>
     </div>

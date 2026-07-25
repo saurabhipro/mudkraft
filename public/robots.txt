@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kumbhaja.lovable.app/sitemap.xml
+Sitemap: https://mudkraft.lovable.app/sitemap.xml
