@@ -149,6 +149,7 @@ function Article() {
           </Link>
         </div>
       </article>
+      <SiteFooter />
     </div>
   );
 }

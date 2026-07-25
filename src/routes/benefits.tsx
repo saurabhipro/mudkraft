@@ -225,6 +225,7 @@ function BenefitsPage() {
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

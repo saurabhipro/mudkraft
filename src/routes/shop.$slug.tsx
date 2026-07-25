@@ -308,6 +308,7 @@ function NotFoundPiece() {
           Browse the Collection
         </Link>
       </div>
+      <SiteFooter />
     </div>
   );
 }
