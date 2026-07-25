@@ -410,14 +410,14 @@ function Index() {
       </section>
 
       {/* STORY */}
-      <section id="story" className="py-32 px-6 md:px-10 max-w-4xl mx-auto text-center">
-        <p className="text-xs tracking-[0.4em] uppercase text-clay mb-8">— our story</p>
-        <p className="text-3xl md:text-5xl font-display italic text-earth leading-[1.15] text-balance">
+      <section id="story" className="py-20 md:py-32 px-6 md:px-10 max-w-4xl mx-auto text-center">
+        <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6 md:mb-8">— our story</p>
+        <p className="text-2xl sm:text-3xl md:text-5xl font-display italic text-earth leading-[1.2] md:leading-[1.15] text-balance">
           "In Sanskrit, <span className="not-italic">Kumbhaja</span> means the one born of a pot.
           We think of every home that keeps our clay as another quiet birth —
           of stillness, of ritual, of a slower way to hold what matters."
         </p>
-        <div className="mt-10 font-hand text-2xl text-clay">— Ananya, founder</div>
+        <div className="mt-8 md:mt-10 font-hand text-2xl text-clay">— Ananya, founder</div>
       </section>
 
       {/* JOURNAL / CTA */}
