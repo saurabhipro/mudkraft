@@ -235,10 +235,23 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
   const summary = useMemo(() => getReviewSummary(slug), [slug]);
   const [filter, setFilter] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [visible, setVisible] = useState(4);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const filtered = filter === 0 ? reviews : reviews.filter((r) => r.rating === filter);
   const shown = filtered.slice(0, visible);
   const maxCount = Math.max(1, ...Object.values(summary.distribution));
+
+  const galleryPhotos = useMemo(
+    () =>
+      filtered
+        .filter((r) => !!r.photo)
+        .map((r) => ({ src: r.photo as string, author: r.name })),
+    [filtered],
+  );
+  const openLightbox = (photo: string) => {
+    const idx = galleryPhotos.findIndex((p) => p.src === photo);
+    if (idx >= 0) setLightboxIndex(idx);
+  };
 
   return (
     <section
