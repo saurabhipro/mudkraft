@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import handiSoak from "@/assets/handi-soak.jpg";
 import stepSoak from "@/assets/step-soak.jpg";
 import stepDry from "@/assets/step-dry.jpg";
@@ -284,18 +285,7 @@ function SeasonHandiPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-earth text-cream px-6 md:px-10 pt-16 pb-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="text-3xl sm:text-4xl md:text-5xl font-display italic text-gold leading-none tracking-tight">
-              Mudkraft
-            </span>
-          </Link>
-          <div className="font-hand text-xl text-gold">made from earth, made with love</div>
-          <div className="text-xs tracking-widest uppercase text-cream/60">© {new Date().getFullYear()} Mudkraft Studio</div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

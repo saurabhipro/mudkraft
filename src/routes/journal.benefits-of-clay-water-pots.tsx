@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SiteFooter } from "@/components/SiteFooter";
 
 const URL = "https://mudkraft.lovable.app/journal/benefits-of-clay-water-pots";
 const TITLE = "Benefits of Matka Water & How to Season a Clay Pot — Mudkraft";
@@ -149,6 +150,7 @@ function Article() {
           </Link>
         </div>
       </article>
+      <SiteFooter />
     </div>
   );
 }

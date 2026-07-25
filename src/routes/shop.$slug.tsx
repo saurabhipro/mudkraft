@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { getProductBySlug, products, type Product } from "@/lib/products";
 import { addToCart, useCartCount } from "@/lib/cart";
 
@@ -307,6 +308,7 @@ function NotFoundPiece() {
           Browse the Collection
         </Link>
       </div>
+      <SiteFooter />
     </div>
   );
 }

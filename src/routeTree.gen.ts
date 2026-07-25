@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkshopsRouteImport } from './routes/workshops'
+import { Route as TrustRouteImport } from './routes/trust'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as BenefitsRouteImport } from './routes/benefits'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
@@ -22,9 +24,19 @@ const WorkshopsRoute = WorkshopsRouteImport.update({
   path: '/workshops',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrustRoute = TrustRouteImport.update({
+  id: '/trust',
+  path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BenefitsRoute = BenefitsRouteImport.update({
@@ -57,7 +69,9 @@ const CareSeasonYourHandiRoute = CareSeasonYourHandiRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/benefits': typeof BenefitsRoute
+  '/faq': typeof FaqRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
@@ -66,7 +80,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/benefits': typeof BenefitsRoute
+  '/faq': typeof FaqRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
@@ -76,7 +92,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/benefits': typeof BenefitsRoute
+  '/faq': typeof FaqRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
@@ -87,7 +105,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/benefits'
+    | '/faq'
     | '/sitemap.xml'
+    | '/trust'
     | '/workshops'
     | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
@@ -96,7 +116,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/benefits'
+    | '/faq'
     | '/sitemap.xml'
+    | '/trust'
     | '/workshops'
     | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
@@ -105,7 +127,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/benefits'
+    | '/faq'
     | '/sitemap.xml'
+    | '/trust'
     | '/workshops'
     | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
@@ -115,7 +139,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BenefitsRoute: typeof BenefitsRoute
+  FaqRoute: typeof FaqRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TrustRoute: typeof TrustRoute
   WorkshopsRoute: typeof WorkshopsRoute
   CareSeasonYourHandiRoute: typeof CareSeasonYourHandiRoute
   JournalBenefitsOfClayWaterPotsRoute: typeof JournalBenefitsOfClayWaterPotsRoute
@@ -131,11 +157,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkshopsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/trust': {
+      id: '/trust'
+      path: '/trust'
+      fullPath: '/trust'
+      preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/benefits': {
@@ -179,7 +219,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BenefitsRoute: BenefitsRoute,
+  FaqRoute: FaqRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TrustRoute: TrustRoute,
   WorkshopsRoute: WorkshopsRoute,
   CareSeasonYourHandiRoute: CareSeasonYourHandiRoute,
   JournalBenefitsOfClayWaterPotsRoute: JournalBenefitsOfClayWaterPotsRoute,
