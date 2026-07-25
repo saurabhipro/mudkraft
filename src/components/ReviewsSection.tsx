@@ -1,0 +1,224 @@
+import { useMemo, useState } from "react";
+import { getReviewsForProduct, getReviewSummary, type Review } from "@/lib/reviews";
+
+function Stars({
+  value,
+  size = "sm",
+  ariaLabel,
+}: {
+  value: number;
+  size?: "sm" | "md" | "lg";
+  ariaLabel?: string;
+}) {
+  const px = size === "lg" ? "w-6 h-6" : size === "md" ? "w-5 h-5" : "w-4 h-4";
+  const full = Math.floor(value);
+  const hasHalf = value - full >= 0.25 && value - full < 0.75;
+  return (
+    <span
+      role="img"
+      aria-label={ariaLabel ?? `${value.toFixed(1)} out of 5 stars`}
+      className="inline-flex items-center gap-0.5 text-gold"
+    >
+      {[0, 1, 2, 3, 4].map((i) => {
+        const filled = i < full;
+        const half = !filled && i === full && hasHalf;
+        return (
+          <svg key={i} viewBox="0 0 24 24" className={px} aria-hidden="true">
+            <defs>
+              <linearGradient id={`half-${i}-${value}`}>
+                <stop offset="50%" stopColor="currentColor" />
+                <stop offset="50%" stopColor="rgba(0,0,0,0.15)" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.5l1.1-6.5L2.6 9.4l6.5-.9L12 2.6z"
+              fill={filled ? "currentColor" : half ? `url(#half-${i}-${value})` : "rgba(0,0,0,0.15)"}
+            />
+          </svg>
+        );
+      })}
+    </span>
+  );
+}
+
+function formatDate(iso: string) {
+  try {
+    return new Date(iso).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
+  const reviews = useMemo(() => getReviewsForProduct(slug), [slug]);
+  const summary = useMemo(() => getReviewSummary(slug), [slug]);
+  const [filter, setFilter] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
+  const [visible, setVisible] = useState(4);
+
+  const filtered = filter === 0 ? reviews : reviews.filter((r) => r.rating === filter);
+  const shown = filtered.slice(0, visible);
+  const maxCount = Math.max(1, ...Object.values(summary.distribution));
+
+  return (
+    <section
+      id="reviews"
+      className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-24 border-t border-border"
+      aria-labelledby="reviews-heading"
+    >
+      <div className="grid md:grid-cols-3 gap-10 md:gap-16">
+        {/* Summary */}
+        <div className="md:col-span-1">
+          <div className="text-xs tracking-[0.3em] uppercase text-clay">Voices from the kitchen</div>
+          <h2 id="reviews-heading" className="mt-3 font-display text-4xl md:text-5xl text-earth leading-[1.05]">
+            What people <span className="italic">say</span>
+          </h2>
+
+          <div className="mt-6 flex items-center gap-3">
+            <div className="font-display text-5xl text-earth leading-none">{summary.average.toFixed(1)}</div>
+            <div>
+              <Stars value={summary.average} size="md" />
+              <div className="text-xs text-muted-foreground mt-1">
+                Based on {summary.count} review{summary.count === 1 ? "" : "s"}
+              </div>
+            </div>
+          </div>
+
+          {/* Distribution bars */}
+          <div className="mt-6 space-y-1.5">
+            {[5, 4, 3, 2, 1].map((star) => {
+              const s = star as 1 | 2 | 3 | 4 | 5;
+              const count = summary.distribution[s];
+              const pct = (count / maxCount) * 100;
+              const active = filter === s;
+              return (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => {
+                    setFilter(active ? 0 : s);
+                    setVisible(4);
+                  }}
+                  className={`w-full flex items-center gap-3 text-xs group ${active ? "text-earth" : "text-muted-foreground hover:text-earth"}`}
+                  aria-pressed={active}
+                  aria-label={`Show only ${star}-star reviews`}
+                >
+                  <span className="w-8 text-left tabular-nums">{star} ★</span>
+                  <span className="flex-1 h-1.5 rounded-full bg-earth/10 overflow-hidden">
+                    <span
+                      className={`block h-full rounded-full ${active ? "bg-earth" : "bg-earth/50 group-hover:bg-earth/70"} transition-colors`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </span>
+                  <span className="w-6 text-right tabular-nums">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {filter !== 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilter(0);
+                setVisible(4);
+              }}
+              className="mt-4 text-xs tracking-widest uppercase text-clay hover:text-earth"
+            >
+              Clear filter ×
+            </button>
+          )}
+
+          <p className="mt-8 text-xs text-muted-foreground leading-relaxed">
+            Reviews are shared by customers with their consent. Photos show real pieces —
+            small variations in colour and shape are part of the hand-thrown process.
+          </p>
+        </div>
+
+        {/* List */}
+        <div className="md:col-span-2 space-y-6">
+          {shown.length === 0 && (
+            <div className="rounded-2xl border border-earth/15 bg-cream/60 p-8 text-center text-muted-foreground">
+              No reviews with this rating yet.
+            </div>
+          )}
+
+          {shown.map((r: Review) => (
+            <article
+              key={r.id}
+              className="rounded-2xl border border-earth/15 bg-cream/60 p-6 md:p-7"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full bg-earth text-cream flex items-center justify-center font-display text-lg"
+                      aria-hidden="true"
+                    >
+                      {r.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-display text-lg text-earth leading-tight">{r.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {r.city}
+                        {r.verified && (
+                          <span className="ml-2 inline-flex items-center gap-1 text-earth/80">
+                            <svg viewBox="0 0 24 24" className="w-3 h-3" fill="currentColor" aria-hidden="true">
+                              <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                            </svg>
+                            Verified buyer
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <Stars value={r.rating} ariaLabel={`${r.rating} out of 5 stars`} />
+                  <div className="mt-1 text-[11px] tracking-widest uppercase text-muted-foreground">
+                    {formatDate(r.date)}
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="mt-4 font-display text-xl text-earth">{r.title}</h3>
+              <p className="mt-2 text-foreground/85 leading-relaxed">{r.body}</p>
+
+              {r.photo && (
+                <a
+                  href={r.photo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-block rounded-xl overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] ring-1 ring-earth/10 hover:ring-earth/30 transition"
+                  aria-label={`Customer photo of ${name} from ${r.name}`}
+                >
+                  <img
+                    src={r.photo}
+                    alt={`Customer photo of ${name}`}
+                    loading="lazy"
+                    className="w-28 h-28 object-contain p-2"
+                  />
+                </a>
+              )}
+            </article>
+          ))}
+
+          {filtered.length > visible && (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setVisible((v) => v + 4)}
+                className="inline-flex items-center gap-2 border border-earth/30 text-earth px-6 py-3 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
+              >
+                Load more reviews
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
