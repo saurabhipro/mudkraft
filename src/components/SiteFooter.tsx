@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ShareButton } from "@/components/ShareButton";
 
 const WHATSAPP_NUMBER = "919990649990";
 const ENQUIRY_EMAIL = "hello@mudkraft.com";
@@ -71,6 +72,7 @@ export function SiteFooter() {
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Support</div>
           <ul className="space-y-3 text-cream/80">
             <li><Link to="/faq" className="hover:text-gold transition-colors">FAQ</Link></li>
+            <li><Link to="/shipping-returns" className="hover:text-gold transition-colors">Shipping & Returns</Link></li>
             <li><Link to="/trust" className="hover:text-gold transition-colors">Trust & Privacy</Link></li>
             <li>
               <a
@@ -98,7 +100,12 @@ export function SiteFooter() {
 
       <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-cream/15 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cream/60">
         <div>© {new Date().getFullYear()} Mudkraft Studio · Khurja, India</div>
-        <div className="tracking-[0.3em] uppercase">Handmade · Slow · Soulful</div>
+        <div className="flex items-center gap-4">
+          <span className="tracking-[0.3em] uppercase hidden sm:inline">Handmade · Slow · Soulful</span>
+          <span className="text-cream [&_button]:text-cream/70 [&_button:hover]:text-gold">
+            <ShareButton title="Mudkraft — Slow Craft Studio" text="Handcrafted clay from the banks of the Ganges." label="Share" compact />
+          </span>
+        </div>
       </div>
 
       {/* Floating WhatsApp */}
