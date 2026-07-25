@@ -358,8 +358,7 @@ function Index() {
       </section>
 
       {/* CRAFT */}
-      <section id="craft" className="relative py-32 mt-20 grain overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-earth" />
+      <section id="craft" className="relative py-32 mt-20 grain overflow-hidden bg-earth">
         <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-6 relative">
             <img
