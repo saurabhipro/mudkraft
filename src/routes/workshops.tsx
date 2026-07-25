@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SiteHeader } from "@/components/SiteHeader";
 import { useState } from "react";
 import handsClay from "@/assets/hands-clay.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
