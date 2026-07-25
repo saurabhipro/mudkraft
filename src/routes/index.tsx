@@ -363,8 +363,8 @@ function Index() {
       </section>
 
       {/* CRAFT */}
-      <section id="craft" className="relative py-32 mt-20 grain overflow-hidden bg-earth">
-        <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-12 items-center">
+      <section id="craft" className="relative py-20 md:py-32 mt-10 md:mt-20 grain overflow-hidden bg-earth">
+        <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-10 md:gap-12 items-center">
           <div className="md:col-span-6 relative">
             <img
               src={handsClay}
@@ -374,31 +374,34 @@ function Index() {
               loading="lazy"
               className="w-full aspect-[4/5] object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.6)]"
             />
-            <div className="absolute -bottom-6 -right-6 bg-clay text-cream px-6 py-4 rounded-2xl font-display italic text-xl max-w-[200px]">
+            <div className="hidden md:block absolute -bottom-6 -right-6 bg-clay text-cream px-6 py-4 rounded-2xl font-display italic text-xl max-w-[220px]">
               "The wheel remembers what the hand forgets."
             </div>
           </div>
 
           <div className="md:col-span-6 text-cream">
+            <p className="md:hidden font-display italic text-clay text-xl leading-snug mb-6 border-l-2 border-gold/60 pl-4">
+              "The wheel remembers what the hand forgets."
+            </p>
             <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6">— the craft</p>
-            <h2 className="text-5xl md:text-6xl font-display text-balance">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-display text-balance leading-tight">
               Seven generations,<br />
               <span className="italic text-gold">one wheel.</span>
             </h2>
-            <p className="mt-8 text-lg text-cream/70 leading-relaxed max-w-md">
+            <p className="mt-6 md:mt-8 text-base md:text-lg text-cream/70 leading-relaxed max-w-md">
               We work with a single family of potters in Khurja, whose ancestors have thrown pots
               on the same wheel for over 180 years. No moulds. No machines. Only clay, water, fire, and time.
             </p>
 
-            <div className="mt-12 grid grid-cols-3 gap-8 border-t border-cream/20 pt-8">
+            <div className="mt-10 md:mt-12 grid grid-cols-3 gap-4 sm:gap-8 border-t border-cream/20 pt-6 md:pt-8">
               {[
                 { n: "180+", l: "years of craft" },
                 { n: "12", l: "master potters" },
                 { n: "48h", l: "of slow firing" },
               ].map((s) => (
                 <div key={s.l}>
-                  <div className="text-4xl md:text-5xl font-display text-gold">{s.n}</div>
-                  <div className="mt-2 text-xs tracking-widest uppercase text-cream/60">{s.l}</div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-display text-gold">{s.n}</div>
+                  <div className="mt-2 text-[10px] sm:text-xs tracking-widest uppercase text-cream/60">{s.l}</div>
                 </div>
               ))}
             </div>
