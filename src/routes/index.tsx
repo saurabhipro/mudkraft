@@ -476,6 +476,7 @@ function Index() {
             <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Explore</div>
             <ul className="space-y-3 text-cream/80">
               <li><a href="#collection" className="hover:text-gold transition-colors">Collection</a></li>
+              <li><Link to="/benefits" className="hover:text-gold transition-colors">Benefits of Clay</Link></li>
               <li><Link to="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
               <li><a href="#story" className="hover:text-gold transition-colors">Story</a></li>
               <li><Link to="/care/season-your-handi" className="hover:text-gold transition-colors">Care Guide</Link></li>

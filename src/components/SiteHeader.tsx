@@ -8,6 +8,7 @@ type NavItem = { label: string; to: string; hash?: string; match: (path: string,
 
 const NAV: NavItem[] = [
   { label: "Collection", to: "/", hash: "collection", match: (p, h) => p === "/" && h === "collection" },
+  { label: "Benefits", to: "/benefits", match: (p) => p.startsWith("/benefits") },
   { label: "Workshops", to: "/workshops", match: (p) => p.startsWith("/workshops") },
   { label: "Story", to: "/", hash: "story", match: (p, h) => p === "/" && h === "story" },
 ];
