@@ -290,13 +290,13 @@ function Index() {
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-12 md:gap-y-20">
           {visibleProducts.map((p, i) => (
             <div
-              key={p.name}
+              key={p.slug}
               className={`group block ${i % 2 === 1 ? "md:translate-y-24" : ""}`}
             >
-              <button
-                type="button"
-                onClick={() => addToCart(p)}
-                aria-label={`Add ${p.name} to cart`}
+              <Link
+                to="/shop/$slug"
+                params={{ slug: p.slug }}
+                aria-label={`View ${p.name}`}
                 className="relative w-full overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] aspect-[4/5] block text-left"
               >
                 <img
@@ -320,12 +320,14 @@ function Index() {
                   </span>
                 </div>
                 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-cream text-earth px-6 py-3 rounded-full text-xs tracking-widest uppercase shadow-xl whitespace-nowrap">
-                  + Add to cart
+                  View piece →
                 </div>
-              </button>
+              </Link>
               <div className="mt-6 flex items-baseline justify-between gap-6">
                 <div>
-                  <h3 className="text-3xl font-display text-earth">{p.name}</h3>
+                  <Link to="/shop/$slug" params={{ slug: p.slug }} className="hover:text-clay transition-colors">
+                    <h3 className="text-3xl font-display text-earth">{p.name}</h3>
+                  </Link>
                   <p className="mt-1 font-hand text-clay text-xl">{p.note}</p>
                 </div>
                 <div className="text-right">
