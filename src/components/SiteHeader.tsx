@@ -34,9 +34,42 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
       <nav className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-5 sm:px-6 md:px-10 py-4 md:py-5">
-        <Link to="/" className="flex items-center gap-3 min-w-0 shrink" aria-label="Mudkraft home">
-          <span className="text-3xl sm:text-4xl md:text-5xl font-display text-earth leading-none tracking-tight whitespace-nowrap">
-            <span className="italic">Mudkraft</span>
+        <Link to="/" className="flex items-center gap-3 min-w-0 shrink group" aria-label="Mudkraft home">
+          {/* Craft Seal Mark */}
+          <span className="relative flex items-center justify-center shrink-0">
+            <span
+              className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shadow-sm overflow-hidden -rotate-6 transition-transform duration-500 group-hover:rotate-0"
+              style={{ background: "var(--gradient-clay)" }}
+            >
+              <span
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: "radial-gradient(circle at center, #000 1px, transparent 1px)",
+                  backgroundSize: "3px 3px",
+                }}
+              />
+              <span className="relative font-display text-cream text-xl sm:text-2xl font-semibold leading-none -mt-0.5">
+                M
+              </span>
+            </span>
+            {/* Gold kiln mark dot */}
+            <span
+              className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background"
+              style={{ backgroundColor: "var(--gold)" }}
+            />
+          </span>
+
+          {/* Wordmark */}
+          <span className="flex flex-col leading-none min-w-0">
+            <span className="font-display text-earth text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight leading-none whitespace-nowrap">
+              Mud<span className="italic">kraft</span>
+            </span>
+            <span className="hidden sm:flex items-center gap-2 mt-1.5">
+              <span className="h-px w-5 bg-clay/40" />
+              <span className="text-[9px] uppercase tracking-[0.28em] text-earth/60 font-sans">
+                Slow Craft Studio
+              </span>
+            </span>
           </span>
         </Link>
 
