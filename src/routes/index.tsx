@@ -73,12 +73,12 @@ type Category = "Water" | "Tea" | "Cookware" | "Serveware";
 type Product = { name: string; tag: string; price: string; priceNum: number; img: string; note: string; category: Category };
 
 const products: Product[] = [
-  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", priceNum: 1240, img: matkaStand.url, note: "Cools water the ancient way", category: "Water" },
-  { name: "Kulhad", tag: "Tea Cup · Set of 6", price: "₹680", priceNum: 680, img: kulhadSet.url, note: "For chai that tastes of earth", category: "Tea" },
-  { name: "Bottle & Jug", tag: "Serveware · Duo", price: "₹1,480", priceNum: 1480, img: bottleJug.url, note: "Water that remembers the river", category: "Serveware" },
-  { name: "Handi", tag: "Cookware · Set of 2", price: "₹1,120", priceNum: 1120, img: handiDuo.url, note: "Slow food, slower fire", category: "Cookware" },
-  { name: "Chhoti Handi", tag: "Serving Bowl", price: "₹540", priceNum: 540, img: handiSmall.url, note: "Little vessel, full ritual", category: "Serveware" },
-  { name: "Steam Dome", tag: "Idli / Steamer", price: "₹860", priceNum: 860, img: sieveDome.url, note: "Breath of the kitchen", category: "Cookware" },
+  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", priceNum: 1240, img: potImg.url, note: "Cools water the ancient way", category: "Water" },
+  { name: "Kulhad", tag: "Tea Cup · Set of 6", price: "₹680", priceNum: 680, img: potImg.url, note: "For chai that tastes of earth", category: "Tea" },
+  { name: "Bottle & Jug", tag: "Serveware · Duo", price: "₹1,480", priceNum: 1480, img: potImg.url, note: "Water that remembers the river", category: "Serveware" },
+  { name: "Handi", tag: "Cookware · Set of 2", price: "₹1,120", priceNum: 1120, img: potImg.url, note: "Slow food, slower fire", category: "Cookware" },
+  { name: "Chhoti Handi", tag: "Serving Bowl", price: "₹540", priceNum: 540, img: potImg.url, note: "Little vessel, full ritual", category: "Serveware" },
+  { name: "Steam Dome", tag: "Idli / Steamer", price: "₹860", priceNum: 860, img: potImg.url, note: "Breath of the kitchen", category: "Cookware" },
 ];
 
 const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", "Serveware"];
