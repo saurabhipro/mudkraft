@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkshopsRouteImport } from './routes/workshops'
 import { Route as TrustRouteImport } from './routes/trust'
+import { Route as TrackRouteImport } from './routes/track'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShippingReturnsRouteImport } from './routes/shipping-returns'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -28,6 +29,11 @@ const WorkshopsRoute = WorkshopsRouteImport.update({
 const TrustRoute = TrustRouteImport.update({
   id: '/trust',
   path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/shipping-returns': typeof ShippingReturnsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/track': typeof TrackRoute
   '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/shipping-returns': typeof ShippingReturnsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/track': typeof TrackRoute
   '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/shipping-returns': typeof ShippingReturnsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/track': typeof TrackRoute
   '/trust': typeof TrustRoute
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/shipping-returns'
     | '/sitemap.xml'
+    | '/track'
     | '/trust'
     | '/workshops'
     | '/care/season-your-handi'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/shipping-returns'
     | '/sitemap.xml'
+    | '/track'
     | '/trust'
     | '/workshops'
     | '/care/season-your-handi'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/shipping-returns'
     | '/sitemap.xml'
+    | '/track'
     | '/trust'
     | '/workshops'
     | '/care/season-your-handi'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   ShippingReturnsRoute: typeof ShippingReturnsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TrackRoute: typeof TrackRoute
   TrustRoute: typeof TrustRoute
   WorkshopsRoute: typeof WorkshopsRoute
   CareSeasonYourHandiRoute: typeof CareSeasonYourHandiRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/trust'
       fullPath: '/trust'
       preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   ShippingReturnsRoute: ShippingReturnsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TrackRoute: TrackRoute,
   TrustRoute: TrustRoute,
   WorkshopsRoute: WorkshopsRoute,
   CareSeasonYourHandiRoute: CareSeasonYourHandiRoute,
