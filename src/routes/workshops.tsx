@@ -288,6 +288,33 @@ function WorkshopsPage() {
         </div>
       </section>
 
+      {/* STUDENT AT THE WHEEL */}
+      <section className="px-6 md:px-10 max-w-7xl mx-auto pb-16">
+        <div className="grid md:grid-cols-12 gap-10 items-center">
+          <div className="md:col-span-7 order-2 md:order-1">
+            <img
+              src={studentPottery}
+              alt="A student shaping a small bowl on the potter's wheel during a Kumbhaja workshop"
+              loading="lazy"
+              width={1024}
+              height={1024}
+              className="w-full aspect-[4/3] object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
+            />
+          </div>
+          <div className="md:col-span-5 order-1 md:order-2">
+            <p className="font-hand text-clay text-2xl mb-4">— your first bowl</p>
+            <h2 className="text-4xl md:text-5xl font-display text-earth leading-tight text-balance">
+              A student, a wheel, and <span className="italic text-clay-deep">one quiet hour</span> with the earth.
+            </h2>
+            <p className="mt-6 text-muted-foreground leading-relaxed">
+              Most people who sit at our wheel have never touched wet clay before. By the end of the session, they walk out holding something they made — still soft, a little uneven, entirely theirs.
+            </p>
+          </div>
+        </div>
+      </section>
+
+
+
       {/* SOIL REPORT */}
       <section id="soil" className="relative py-32 grain overflow-hidden bg-earth">
         <div className="max-w-6xl mx-auto px-6 md:px-10 text-cream">
