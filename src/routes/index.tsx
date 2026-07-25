@@ -306,7 +306,7 @@ function Index() {
         </div>
 
 
-        <div className="grid md:grid-cols-2 gap-x-8 gap-y-20">
+        <div className="grid md:grid-cols-2 gap-x-8 gap-y-12 md:gap-y-20">
           {products.map((p, i) => (
             <div
               key={p.name}
