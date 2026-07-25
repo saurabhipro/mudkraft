@@ -8,14 +8,6 @@ import { useCart, addToCart as addToCartStore, updateQty as updateQtyStore, remo
 
 const SITE_URL = "https://kumbhaja.lovable.app";
 
-const productSeed = [
-  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: waterPotImg.url },
-  { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: kulhadSet.url },
-  { name: "Bottle & Jug", tag: "Serveware · Duo", priceNum: 1480, img: bottleJug.url },
-  { name: "Handi", tag: "Cookware · Set of 2", priceNum: 1120, img: handiDuo.url },
-  { name: "Chhoti Handi", tag: "Serving Bowl", priceNum: 540, img: handiSmall.url },
-  { name: "Steam Dome", tag: "Idli / Steamer", priceNum: 860, img: sieveDome.url },
-];
 
 export const Route = createFileRoute("/")({
   head: () => ({
