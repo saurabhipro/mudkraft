@@ -230,13 +230,13 @@ function Index() {
                 style={{ background: "radial-gradient(circle, oklch(0.58 0.14 42 / 0.5), transparent 70%)" }}
               />
               <img
-                src={heroPot}
-                alt="Handcrafted terracotta clay pot in warm light"
+                src={potImg.url}
+                alt="Handcrafted terracotta clay pot"
                 width={1600}
                 height={1808}
                 fetchPriority="high"
                 decoding="async"
-                className="relative w-full h-full object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
+                className="relative w-full h-full object-contain drop-shadow-[0_40px_60px_rgba(80,40,20,0.35)]"
               />
 
               <div className="absolute -bottom-3 left-3 sm:-bottom-4 sm:-left-4 bg-cream/95 backdrop-blur px-4 sm:px-5 py-2 sm:py-3 rounded-full text-[10px] sm:text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
