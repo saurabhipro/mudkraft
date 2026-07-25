@@ -184,7 +184,6 @@ function WorkshopsPage() {
         <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-5">
           <Link to="/" className="flex items-center gap-3">
             <span className="text-3xl font-display italic text-earth leading-none">क<span className="not-italic">umbhaja</span></span>
-            <span className="hidden sm:inline tracking-[0.35em] text-xs font-medium text-earth">KUMBHAJA</span>
           </Link>
           <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
             <Link to="/" hash="collection" className="hover:text-clay transition-colors">Collection</Link>
@@ -402,7 +401,6 @@ function WorkshopsPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Link to="/" className="flex items-center gap-3">
             <span className="text-3xl font-display italic text-gold">क<span className="not-italic">umbhaja</span></span>
-            <span className="tracking-[0.35em] text-xs text-cream/80">KUMBHAJA</span>
           </Link>
           <div className="font-hand text-xl text-gold">made from earth, made with love</div>
           <div className="text-xs tracking-widest uppercase text-cream/60">© {new Date().getFullYear()} Kumbhaja Studio</div>
