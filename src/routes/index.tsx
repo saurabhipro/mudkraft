@@ -312,8 +312,31 @@ function Index() {
         </div>
 
 
+        <div className="mb-10 md:mb-14 flex flex-wrap items-center gap-2 md:gap-3">
+          <span className="text-[10px] tracking-[0.3em] uppercase text-clay font-medium mr-2 md:mr-4">Filter</span>
+          {CATEGORIES.map((c) => {
+            const count = c === "All" ? products.length : products.filter((p) => p.category === c).length;
+            const isActive = activeCategory === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setActiveCategory(c)}
+                aria-pressed={isActive}
+                className={`px-4 md:px-5 py-2 rounded-full text-xs md:text-sm tracking-wide transition-all border ${
+                  isActive
+                    ? "bg-earth text-cream border-earth shadow-sm"
+                    : "bg-cream text-earth border-clay/30 hover:border-clay hover:bg-clay/5"
+                }`}
+              >
+                {c} <span className={`ml-1 text-[10px] ${isActive ? "text-cream/70" : "text-muted-foreground"}`}>({count})</span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-12 md:gap-y-20">
-          {products.map((p, i) => (
+          {visibleProducts.map((p, i) => (
             <div
               key={p.name}
               className={`group block ${i % 2 === 1 ? "md:translate-y-24" : ""}`}
