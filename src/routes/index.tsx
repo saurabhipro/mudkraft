@@ -59,6 +59,7 @@ type CartItem = Product & { qty: number };
 function Index() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
+  const [customer, setCustomer] = useState({ name: "", phone: "" });
 
   const addToCart = (p: Product) => {
     setCart((c) => {
@@ -80,19 +81,32 @@ function Index() {
 
   const total = cart.reduce((s, x) => s + x.priceNum * x.qty, 0);
   const count = cart.reduce((s, x) => s + x.qty, 0);
+  const canCheckout = cart.length > 0 && customer.name.trim() && customer.phone.trim();
 
   const checkoutMessage = () => {
     const lines = [
       "Namaste Kumbhaja 🙏",
-      "I'd like to order:",
-      ...cart.map((x) => `• ${x.name} × ${x.qty} — ₹${(x.priceNum * x.qty).toLocaleString("en-IN")}`),
-      `Total: ₹${total.toLocaleString("en-IN")}`,
+      "I'd like to place an order:",
+      "",
+      "— Items —",
+      ...cart.map(
+        (x) => `• ${x.name} × ${x.qty} — ₹${(x.priceNum * x.qty).toLocaleString("en-IN")}`
+      ),
+      "",
+      `Total: ₹${total.toLocaleString("en-IN")} (${count} ${count === 1 ? "piece" : "pieces"})`,
+      "",
+      "— My details —",
+      `Name: ${customer.name.trim()}`,
+      `Phone: ${customer.phone.trim()}`,
+      "",
+      "Please share dispatch & payment details. Dhanyavaad 🙏",
     ];
     return encodeURIComponent(lines.join("\n"));
   };
 
   const whatsappCheckout = () =>
     `https://wa.me/${WHATSAPP_NUMBER}?text=${checkoutMessage()}`;
+
 
   const whatsappEnquiry = () =>
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
