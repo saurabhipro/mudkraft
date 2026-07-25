@@ -203,8 +203,11 @@ function Index() {
                 alt="Handcrafted terracotta clay pot in warm light"
                 width={1600}
                 height={1808}
+                fetchPriority="high"
+                decoding="async"
                 className="relative w-full h-full object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
               />
+
               <div className="absolute -bottom-4 -left-4 bg-cream/95 backdrop-blur px-5 py-3 rounded-full text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
                 Est. from the Ganges
               </div>
