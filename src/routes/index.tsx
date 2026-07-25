@@ -59,6 +59,7 @@ type CartItem = Product & { qty: number };
 function Index() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
+  const [customer, setCustomer] = useState({ name: "", phone: "" });
 
   const addToCart = (p: Product) => {
     setCart((c) => {
@@ -80,19 +81,32 @@ function Index() {
 
   const total = cart.reduce((s, x) => s + x.priceNum * x.qty, 0);
   const count = cart.reduce((s, x) => s + x.qty, 0);
+  const canCheckout = cart.length > 0 && customer.name.trim() && customer.phone.trim();
 
   const checkoutMessage = () => {
     const lines = [
       "Namaste Kumbhaja 🙏",
-      "I'd like to order:",
-      ...cart.map((x) => `• ${x.name} × ${x.qty} — ₹${(x.priceNum * x.qty).toLocaleString("en-IN")}`),
-      `Total: ₹${total.toLocaleString("en-IN")}`,
+      "I'd like to place an order:",
+      "",
+      "— Items —",
+      ...cart.map(
+        (x) => `• ${x.name} × ${x.qty} — ₹${(x.priceNum * x.qty).toLocaleString("en-IN")}`
+      ),
+      "",
+      `Total: ₹${total.toLocaleString("en-IN")} (${count} ${count === 1 ? "piece" : "pieces"})`,
+      "",
+      "— My details —",
+      `Name: ${customer.name.trim()}`,
+      `Phone: ${customer.phone.trim()}`,
+      "",
+      "Please share dispatch & payment details. Dhanyavaad 🙏",
     ];
     return encodeURIComponent(lines.join("\n"));
   };
 
   const whatsappCheckout = () =>
     `https://wa.me/${WHATSAPP_NUMBER}?text=${checkoutMessage()}`;
+
 
   const whatsappEnquiry = () =>
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
@@ -519,13 +533,37 @@ function Index() {
                 <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
                 <span className="font-display text-3xl">₹{total.toLocaleString("en-IN")}</span>
               </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                <label className="block">
+                  <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Your name</span>
+                  <input
+                    type="text"
+                    value={customer.name}
+                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                    placeholder="Aarushi Sharma"
+                    className="mt-1 w-full bg-transparent border-b border-border focus:border-earth outline-none py-2 text-sm text-earth placeholder:text-muted-foreground/60"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Phone (WhatsApp)</span>
+                  <input
+                    type="tel"
+                    value={customer.phone}
+                    onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                    placeholder="+91 98xxx xxxxx"
+                    className="mt-1 w-full bg-transparent border-b border-border focus:border-earth outline-none py-2 text-sm text-earth placeholder:text-muted-foreground/60"
+                  />
+                </label>
+              </div>
+
               <a
-                href={cart.length ? whatsappCheckout() : undefined}
+                href={canCheckout ? whatsappCheckout() : undefined}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-disabled={cart.length === 0}
+                aria-disabled={!canCheckout}
                 className={`w-full inline-flex items-center justify-center gap-2 py-4 rounded-full text-sm tracking-widest uppercase transition ${
-                  cart.length
+                  canCheckout
                     ? "bg-earth text-cream hover:bg-clay"
                     : "bg-muted text-muted-foreground pointer-events-none"
                 }`}
@@ -534,10 +572,14 @@ function Index() {
                 Checkout on WhatsApp
               </a>
               <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
-                We confirm every order personally over WhatsApp — sharing dispatch, packing and
-                payment details before your pieces travel.
+                {cart.length === 0
+                  ? "Add a piece to begin."
+                  : !customer.name.trim() || !customer.phone.trim()
+                  ? "Add your name and phone to send the order."
+                  : "We confirm every order personally over WhatsApp — sharing dispatch, packing and payment details before your pieces travel."}
               </p>
             </div>
+
           </aside>
         </div>
       )}
