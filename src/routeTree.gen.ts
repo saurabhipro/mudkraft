@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkshopsRouteImport } from './routes/workshops'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as JournalBenefitsOfClayWaterPotsRouteImport } from './routes/journal.benefits-of-clay-water-pots'
 import { Route as CareSeasonYourHandiRouteImport } from './routes/care.season-your-handi'
 
@@ -28,6 +29,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopSlugRoute = ShopSlugRouteImport.update({
+  id: '/shop/$slug',
+  path: '/shop/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JournalBenefitsOfClayWaterPotsRoute =
@@ -48,6 +54,7 @@ export interface FileRoutesByFullPath {
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
+  '/shop/$slug': typeof ShopSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -55,6 +62,7 @@ export interface FileRoutesByTo {
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
+  '/shop/$slug': typeof ShopSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -63,6 +71,7 @@ export interface FileRoutesById {
   '/workshops': typeof WorkshopsRoute
   '/care/season-your-handi': typeof CareSeasonYourHandiRoute
   '/journal/benefits-of-clay-water-pots': typeof JournalBenefitsOfClayWaterPotsRoute
+  '/shop/$slug': typeof ShopSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -72,6 +81,7 @@ export interface FileRouteTypes {
     | '/workshops'
     | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
+    | '/shop/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -79,6 +89,7 @@ export interface FileRouteTypes {
     | '/workshops'
     | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
+    | '/shop/$slug'
   id:
     | '__root__'
     | '/'
@@ -86,6 +97,7 @@ export interface FileRouteTypes {
     | '/workshops'
     | '/care/season-your-handi'
     | '/journal/benefits-of-clay-water-pots'
+    | '/shop/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +106,7 @@ export interface RootRouteChildren {
   WorkshopsRoute: typeof WorkshopsRoute
   CareSeasonYourHandiRoute: typeof CareSeasonYourHandiRoute
   JournalBenefitsOfClayWaterPotsRoute: typeof JournalBenefitsOfClayWaterPotsRoute
+  ShopSlugRoute: typeof ShopSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -119,6 +132,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/$slug': {
+      id: '/shop/$slug'
+      path: '/shop/$slug'
+      fullPath: '/shop/$slug'
+      preLoaderRoute: typeof ShopSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journal/benefits-of-clay-water-pots': {
       id: '/journal/benefits-of-clay-water-pots'
       path: '/journal/benefits-of-clay-water-pots'
@@ -142,6 +162,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkshopsRoute: WorkshopsRoute,
   CareSeasonYourHandiRoute: CareSeasonYourHandiRoute,
   JournalBenefitsOfClayWaterPotsRoute: JournalBenefitsOfClayWaterPotsRoute,
+  ShopSlugRoute: ShopSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

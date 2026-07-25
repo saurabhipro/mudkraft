@@ -213,7 +213,7 @@ function ProductDetail() {
           <div className="mt-12 border-t border-border pt-8">
             <h2 className="text-xs tracking-[0.3em] uppercase text-clay">Specifications</h2>
             <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
-              {p.specs.map((s) => (
+              {p.specs.map((s: { label: string; value: string }) => (
                 <div key={s.label} className="flex justify-between gap-4 border-b border-border/60 pb-2">
                   <dt className="text-sm text-muted-foreground">{s.label}</dt>
                   <dd className="text-sm text-earth font-medium text-right">{s.value}</dd>
@@ -225,7 +225,7 @@ function ProductDetail() {
           <div className="mt-8">
             <h2 className="text-xs tracking-[0.3em] uppercase text-clay">Care</h2>
             <ul className="mt-4 space-y-2 text-sm text-foreground/85">
-              {p.care.map((c) => (
+              {p.care.map((c: string) => (
                 <li key={c} className="flex gap-3">
                   <span className="text-clay mt-1">◦</span>
                   <span>{c}</span>
