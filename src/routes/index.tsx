@@ -384,6 +384,7 @@ function Index() {
             <ul className="space-y-3 text-cream/80">
               <li><a href="#collection" className="hover:text-gold transition-colors">Collection</a></li>
               <li><a href="#craft" className="hover:text-gold transition-colors">The Craft</a></li>
+              <li><Link to="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
               <li><a href="#story" className="hover:text-gold transition-colors">Story</a></li>
               <li><a href="#journal" className="hover:text-gold transition-colors">Journal</a></li>
             </ul>
