@@ -3,13 +3,8 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import handsClay from "@/assets/hands-clay.jpg";
 import potImg from "@/assets/pot-transparent.png.asset.json";
-import waterPotImg from "@/assets/water-pot-transparent.png.asset.json";
-
-import kulhadSet from "@/assets/kulhad-set-transparent.png.asset.json";
-import bottleJug from "@/assets/bottle-jug-transparent.png.asset.json";
-import handiDuo from "@/assets/handi-duo-transparent.png.asset.json";
-import handiSmall from "@/assets/handi-small-transparent.png.asset.json";
-import sieveDome from "@/assets/sieve-dome-transparent.png.asset.json";
+import { products, type Category, type Product } from "@/lib/products";
+import { useCart, addToCart as addToCartStore, updateQty as updateQtyStore, removeItem as removeItemStore } from "@/lib/cart";
 
 const SITE_URL = "https://kumbhaja.lovable.app";
 
