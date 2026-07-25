@@ -543,16 +543,16 @@ function Index() {
                 </div>
               )}
               {cart.map((x) => (
-                <div key={x.name} className="flex gap-4 py-3 border-b border-border/60">
-                  <img src={x.img} alt={x.name} className="w-20 h-24 object-cover rounded-lg" />
+                <div key={x.slug} className="flex gap-4 py-3 border-b border-border/60">
+                  <img src={x.img} alt={x.name} className="w-20 h-24 object-contain rounded-lg bg-cream p-1" />
                   <div className="flex-1">
                     <div className="font-display text-lg">{x.name}</div>
                     <div className="text-xs text-muted-foreground">{x.tag}</div>
                     <div className="mt-2 flex items-center gap-3">
-                      <button onClick={() => updateQty(x.name, -1)} className="w-7 h-7 rounded-full border border-border">−</button>
+                      <button onClick={() => updateQty(x.slug, -1)} className="w-7 h-7 rounded-full border border-border">−</button>
                       <span className="text-sm">{x.qty}</span>
-                      <button onClick={() => updateQty(x.name, 1)} className="w-7 h-7 rounded-full border border-border">+</button>
-                      <button onClick={() => removeItem(x.name)} className="ml-auto text-xs text-muted-foreground hover:text-clay">Remove</button>
+                      <button onClick={() => updateQty(x.slug, 1)} className="w-7 h-7 rounded-full border border-border">+</button>
+                      <button onClick={() => removeItem(x.slug)} className="ml-auto text-xs text-muted-foreground hover:text-clay">Remove</button>
                     </div>
                   </div>
                   <div className="font-display text-lg">₹{(x.priceNum * x.qty).toLocaleString("en-IN")}</div>
