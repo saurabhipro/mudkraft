@@ -1,6 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import handiSoak from "@/assets/handi-soak.jpg";
+import stepSoak from "@/assets/step-soak.jpg";
+import stepDry from "@/assets/step-dry.jpg";
+import stepOil from "@/assets/step-oil.jpg";
+import stepRice from "@/assets/step-rice.jpg";
+import stepCare from "@/assets/step-care.jpg";
 
 export const Route = createFileRoute("/care/season-your-handi")({
   head: () => ({
@@ -60,6 +65,8 @@ const steps = [
     n: "01",
     title: "Soak in water",
     time: "12–24 hours",
+    img: stepSoak,
+    alt: "New clay handi fully submerged in a bucket of water",
     body: "Place the new handi in a large tub or bucket and submerge it completely — lid too. Fresh terracotta is thirsty; it will drink water into every pore. This is what stops it from cracking later on the flame.",
     tip: "Small bubbles rising from the clay are a good sign — it's breathing in.",
   },
@@ -67,6 +74,8 @@ const steps = [
     n: "02",
     title: "Dry in the shade",
     time: "6–8 hours",
+    img: stepDry,
+    alt: "Wet terracotta handi upside down on a cloth drying in shade",
     body: "Lift it out, pour off the water, and set it upside-down on a cloth in a shaded spot with good airflow. Never in direct sun — that dries it unevenly and invites hairline cracks. Wait until the surface looks a single, uniform earth colour with no darker damp patches.",
     tip: "In humid weather, give it a full day.",
   },
@@ -74,6 +83,8 @@ const steps = [
     n: "03",
     title: "Oil the inside",
     time: "10 minutes",
+    img: stepOil,
+    alt: "Hands rubbing mustard oil inside a clay handi",
     body: "Rub a thin layer of mustard oil (or coconut oil) all over the inside and lightly on the outside base. Use your fingers — feel the clay. This oil will soak in and form the first non-stick, water-resistant seasoning.",
     tip: "Any cold-pressed cooking oil works. Skip refined oils.",
   },
@@ -81,6 +92,8 @@ const steps = [
     n: "04",
     title: "Cook your first rice",
     time: "45 minutes on low flame",
+    img: stepRice,
+    alt: "Clay handi cooking rice on a low blue gas flame",
     body: "Add ½ cup of rice, 2 cups of water and a pinch of salt. Place the handi on the smallest burner at the lowest flame. Let it come to a slow boil, cover, and cook until the rice is done. The starch will seal the inner pores — this is the traditional sanskaar the pot needs before it can hold your daily food.",
     tip: "Never place a cold handi on a hot flame. Always start cold-to-cold and warm slowly.",
   },
@@ -88,6 +101,8 @@ const steps = [
     n: "05",
     title: "Daily care, forever",
     time: "a lifetime",
+    img: stepCare,
+    alt: "Clean clay handi drying in sunlight beside a soft cotton cloth",
     body: "Wash with warm water and a soft cloth — no dish soap, no scrubber. Sun-dry after washing. Always heat from cold on a low flame; a heat diffuser helps on gas or induction. Once a month, re-oil the inside. Treated this way, a Mudkraft handi will feed your family for many years.",
     tip: "If you ever see a tiny hairline, soak overnight in rice water — it re-seals itself.",
   },
@@ -174,12 +189,20 @@ function SeasonHandiPage() {
           {steps.map((s) => (
             <li
               key={s.n}
-              className="group relative rounded-[1.5rem] border border-border bg-cream/50 p-8 md:p-10 hover:border-clay transition-colors"
+              className="group relative rounded-[1.5rem] border border-border bg-cream/50 p-6 md:p-8 hover:border-clay transition-colors"
             >
-              <div className="grid md:grid-cols-[auto_1fr] gap-6 md:gap-10">
+              <div className="grid md:grid-cols-[8rem_10rem_1fr] gap-6 md:gap-8 items-start">
                 <div className="font-display text-6xl md:text-7xl text-clay/70 leading-none">
                   {s.n}
                 </div>
+                <img
+                  src={s.img}
+                  alt={s.alt}
+                  loading="lazy"
+                  width={800}
+                  height={800}
+                  className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl shadow-[0_20px_40px_-20px_rgba(80,40,20,0.4)]"
+                />
                 <div>
                   <div className="flex flex-wrap items-baseline justify-between gap-3">
                     <h3 className="text-2xl md:text-3xl font-display text-earth">{s.title}</h3>
