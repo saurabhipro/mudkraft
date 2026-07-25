@@ -21,6 +21,7 @@ export const Route = createFileRoute("/workshops")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "canonical", href: "https://kumbhaja.lovable.app/workshops" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -28,7 +29,51 @@ export const Route = createFileRoute("/workshops")({
         href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Course",
+          name: "Kumbhaja Pottery Workshops",
+          description:
+            "Pottery workshops for schools, birthdays, private parties and corporate offsites — throw on the wheel, hand-build, and take home fired pieces.",
+          provider: {
+            "@type": "Organization",
+            name: "Kumbhaja",
+            url: "https://kumbhaja.lovable.app",
+          },
+          url: "https://kumbhaja.lovable.app/workshops",
+          hasCourseInstance: [
+            {
+              "@type": "CourseInstance",
+              name: "School Workshop — Little Hands, Living Earth",
+              courseMode: "onsite",
+              courseWorkload: "PT2H",
+            },
+            {
+              "@type": "CourseInstance",
+              name: "Wheel-side Birthday",
+              courseMode: "onsite",
+              courseWorkload: "PT3H",
+            },
+            {
+              "@type": "CourseInstance",
+              name: "Private Party — The Slow Evening",
+              courseMode: "onsite",
+              courseWorkload: "PT4H",
+            },
+            {
+              "@type": "CourseInstance",
+              name: "Corporate Studio Offsite",
+              courseMode: "onsite",
+            },
+          ],
+        }),
+      },
+    ],
   }),
+
   component: WorkshopsPage,
 });
 
