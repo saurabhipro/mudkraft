@@ -333,6 +333,13 @@ function Index() {
                 <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-cream/90 backdrop-blur px-3 py-1.5 rounded-full text-earth">
                   {p.tag}
                 </div>
+                {/* brand watermark */}
+                <div className="pointer-events-none absolute bottom-4 right-5 flex items-center gap-1.5 text-cream/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]">
+                  <span className="font-display text-2xl leading-none">
+                    <span className="font-medium">क</span>
+                    <span className="italic">umbhaja</span>
+                  </span>
+                </div>
                 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-cream text-earth px-6 py-3 rounded-full text-xs tracking-widest uppercase shadow-xl whitespace-nowrap">
                   + Add to cart
                 </div>
