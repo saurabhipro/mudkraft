@@ -423,11 +423,11 @@ function Index() {
       {/* JOURNAL / CTA */}
       <section
         id="journal"
-        className="relative py-32 px-6 md:px-10 mx-6 md:mx-10 mb-16 rounded-[2.5rem] grain overflow-hidden"
+        className="relative py-20 md:py-32 px-6 md:px-10 mx-4 sm:mx-6 md:mx-10 mb-16 rounded-[2rem] md:rounded-[2.5rem] grain overflow-hidden"
         style={{ background: "linear-gradient(135deg, oklch(0.58 0.14 42), oklch(0.42 0.11 38))" }}
       >
         <div className="max-w-3xl mx-auto text-center text-cream">
-          <h2 className="text-5xl md:text-7xl font-display text-balance">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-display text-balance leading-tight">
             Letters from<br /><span className="italic">the kiln.</span>
           </h2>
           <p className="mt-6 text-cream/80 max-w-md mx-auto">
