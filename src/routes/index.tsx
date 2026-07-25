@@ -187,7 +187,7 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section className="relative min-h-screen flex items-center pt-24 pb-16 grain">
+      <section className="relative min-h-[92vh] flex items-center pt-28 pb-16 grain">
         <div className="absolute inset-0 -z-10">
           <div
             className="absolute inset-0 opacity-90"
@@ -199,34 +199,34 @@ function Index() {
         </div>
 
         <div className="max-w-7xl mx-auto w-full px-6 md:px-10 grid md:grid-cols-12 gap-10 items-center">
-          <div className="md:col-span-6 relative z-10 animate-fade-up">
-            <p className="font-hand text-clay text-2xl mb-6">— shaped by hand, held by earth</p>
-            <h1 className="text-balance text-[clamp(3rem,8vw,7rem)] leading-[0.95] font-display text-earth">
+          <div className="md:col-span-6 relative z-10 animate-fade-up order-2 md:order-1">
+            <p className="font-hand text-clay text-xl sm:text-2xl mb-4 sm:mb-6">— shaped by hand, held by earth</p>
+            <h1 className="text-balance text-[clamp(2.5rem,10vw,7rem)] leading-[0.95] font-display text-earth">
               The soul of<br />
               <span className="italic text-clay-deep">soil</span>, spun<br />
               into <span className="italic">stillness</span>.
             </h1>
-            <p className="mt-8 max-w-md text-lg text-muted-foreground leading-relaxed">
+            <p className="mt-6 sm:mt-8 max-w-md text-base sm:text-lg text-muted-foreground leading-relaxed">
               Kumbhaja is a slow craft studio. Every pot begins as river clay in the hands of
               a potter, and ends as a quiet object in your home.
             </p>
-            <div className="mt-10 flex items-center gap-6">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
               <a
                 href="#collection"
-                className="group relative inline-flex items-center gap-3 bg-earth text-cream px-8 py-4 rounded-full text-sm tracking-widest uppercase overflow-hidden transition-transform hover:-translate-y-0.5"
+                className="group relative inline-flex items-center justify-center gap-3 bg-earth text-cream px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-[11px] sm:text-sm tracking-widest uppercase overflow-hidden transition-transform hover:-translate-y-0.5 whitespace-nowrap w-full sm:w-auto"
               >
                 <span className="relative z-10">Explore the collection</span>
                 <span className="relative z-10 transition-transform group-hover:translate-x-1">→</span>
                 <span className="absolute inset-0 bg-clay translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </a>
-              <a href="#craft" className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay">
+              <a href="#craft" className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay text-center sm:text-left">
                 Watch the wheel
               </a>
             </div>
           </div>
 
-          <div className="md:col-span-6 relative">
-            <div className="relative aspect-[4/5] max-w-lg ml-auto animate-float">
+          <div className="md:col-span-6 relative order-1 md:order-2">
+            <div className="relative aspect-[4/5] max-w-xs sm:max-w-md md:max-w-lg mx-auto md:ml-auto md:mr-0 animate-float">
               <div
                 className="absolute -inset-6 rounded-full blur-3xl opacity-60"
                 style={{ background: "radial-gradient(circle, oklch(0.58 0.14 42 / 0.5), transparent 70%)" }}
@@ -241,14 +241,14 @@ function Index() {
                 className="relative w-full h-full object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
               />
 
-              <div className="absolute -bottom-4 -left-4 bg-cream/95 backdrop-blur px-5 py-3 rounded-full text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
+              <div className="absolute -bottom-3 left-3 sm:-bottom-4 sm:-left-4 bg-cream/95 backdrop-blur px-4 sm:px-5 py-2 sm:py-3 rounded-full text-[10px] sm:text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
                 Est. from the Ganges
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-xs tracking-[0.4em] text-muted-foreground uppercase">
+        <div className="hidden md:block absolute bottom-8 left-1/2 -translate-x-1/2 text-xs tracking-[0.4em] text-muted-foreground uppercase">
           scroll ↓
         </div>
       </section>
@@ -270,16 +270,16 @@ function Index() {
       </section>
 
       {/* COLLECTION */}
-      <section id="collection" className="py-32 px-6 md:px-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-16 border-t border-clay/25 pt-16 pb-20 mb-16">
+      <section id="collection" className="py-20 md:py-32 px-6 md:px-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 lg:gap-x-16 border-t border-clay/25 pt-12 md:pt-16 pb-12 md:pb-20 mb-12 md:mb-16">
           <div className="lg:col-span-8 flex flex-col">
-            <header className="mb-10 flex items-center gap-4">
+            <header className="mb-6 md:mb-10 flex items-center gap-4">
               <span className="h-px w-8 bg-clay"></span>
               <span className="text-[10px] tracking-[0.3em] uppercase text-clay font-medium">
                 The Collection
               </span>
             </header>
-            <h2 className="font-display text-6xl md:text-7xl lg:text-8xl leading-[0.95] text-earth tracking-tight text-balance">
+            <h2 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[1.02] md:leading-[0.95] text-earth tracking-tight text-balance">
               Objects that <span className="italic font-light">breathe</span>,<br className="hidden md:block" />
               made to be lived with.
             </h2>
@@ -306,7 +306,7 @@ function Index() {
         </div>
 
 
-        <div className="grid md:grid-cols-2 gap-x-8 gap-y-20">
+        <div className="grid md:grid-cols-2 gap-x-8 gap-y-12 md:gap-y-20">
           {products.map((p, i) => (
             <div
               key={p.name}
@@ -363,8 +363,8 @@ function Index() {
       </section>
 
       {/* CRAFT */}
-      <section id="craft" className="relative py-32 mt-20 grain overflow-hidden bg-earth">
-        <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-12 items-center">
+      <section id="craft" className="relative py-20 md:py-32 mt-10 md:mt-20 grain overflow-hidden bg-earth">
+        <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-10 md:gap-12 items-center">
           <div className="md:col-span-6 relative">
             <img
               src={handsClay}
@@ -374,31 +374,34 @@ function Index() {
               loading="lazy"
               className="w-full aspect-[4/5] object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.6)]"
             />
-            <div className="absolute -bottom-6 -right-6 bg-clay text-cream px-6 py-4 rounded-2xl font-display italic text-xl max-w-[200px]">
+            <div className="hidden md:block absolute -bottom-6 -right-6 bg-clay text-cream px-6 py-4 rounded-2xl font-display italic text-xl max-w-[220px]">
               "The wheel remembers what the hand forgets."
             </div>
           </div>
 
           <div className="md:col-span-6 text-cream">
+            <p className="md:hidden font-display italic text-clay text-xl leading-snug mb-6 border-l-2 border-gold/60 pl-4">
+              "The wheel remembers what the hand forgets."
+            </p>
             <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6">— the craft</p>
-            <h2 className="text-5xl md:text-6xl font-display text-balance">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-display text-balance leading-tight">
               Seven generations,<br />
               <span className="italic text-gold">one wheel.</span>
             </h2>
-            <p className="mt-8 text-lg text-cream/70 leading-relaxed max-w-md">
+            <p className="mt-6 md:mt-8 text-base md:text-lg text-cream/70 leading-relaxed max-w-md">
               We work with a single family of potters in Khurja, whose ancestors have thrown pots
               on the same wheel for over 180 years. No moulds. No machines. Only clay, water, fire, and time.
             </p>
 
-            <div className="mt-12 grid grid-cols-3 gap-8 border-t border-cream/20 pt-8">
+            <div className="mt-10 md:mt-12 grid grid-cols-3 gap-4 sm:gap-8 border-t border-cream/20 pt-6 md:pt-8">
               {[
                 { n: "180+", l: "years of craft" },
                 { n: "12", l: "master potters" },
                 { n: "48h", l: "of slow firing" },
               ].map((s) => (
                 <div key={s.l}>
-                  <div className="text-4xl md:text-5xl font-display text-gold">{s.n}</div>
-                  <div className="mt-2 text-xs tracking-widest uppercase text-cream/60">{s.l}</div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-display text-gold">{s.n}</div>
+                  <div className="mt-2 text-[10px] sm:text-xs tracking-widest uppercase text-cream/60">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -407,24 +410,24 @@ function Index() {
       </section>
 
       {/* STORY */}
-      <section id="story" className="py-32 px-6 md:px-10 max-w-4xl mx-auto text-center">
-        <p className="text-xs tracking-[0.4em] uppercase text-clay mb-8">— our story</p>
-        <p className="text-3xl md:text-5xl font-display italic text-earth leading-[1.15] text-balance">
+      <section id="story" className="py-20 md:py-32 px-6 md:px-10 max-w-4xl mx-auto text-center">
+        <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6 md:mb-8">— our story</p>
+        <p className="text-2xl sm:text-3xl md:text-5xl font-display italic text-earth leading-[1.2] md:leading-[1.15] text-balance">
           "In Sanskrit, <span className="not-italic">Kumbhaja</span> means the one born of a pot.
           We think of every home that keeps our clay as another quiet birth —
           of stillness, of ritual, of a slower way to hold what matters."
         </p>
-        <div className="mt-10 font-hand text-2xl text-clay">— Ananya, founder</div>
+        <div className="mt-8 md:mt-10 font-hand text-2xl text-clay">— Ananya, founder</div>
       </section>
 
       {/* JOURNAL / CTA */}
       <section
         id="journal"
-        className="relative py-32 px-6 md:px-10 mx-6 md:mx-10 mb-16 rounded-[2.5rem] grain overflow-hidden"
+        className="relative py-20 md:py-32 px-6 md:px-10 mx-4 sm:mx-6 md:mx-10 mb-16 rounded-[2rem] md:rounded-[2.5rem] grain overflow-hidden"
         style={{ background: "linear-gradient(135deg, oklch(0.58 0.14 42), oklch(0.42 0.11 38))" }}
       >
         <div className="max-w-3xl mx-auto text-center text-cream">
-          <h2 className="text-5xl md:text-7xl font-display text-balance">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-display text-balance leading-tight">
             Letters from<br /><span className="italic">the kiln.</span>
           </h2>
           <p className="mt-6 text-cream/80 max-w-md mx-auto">
