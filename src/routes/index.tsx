@@ -50,7 +50,7 @@ export const Route = createFileRoute("/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@graph": productSeed.map((p) => ({
+          "@graph": products.map((p) => ({
             "@type": "Product",
             name: p.name,
             description: `${p.tag} — handcrafted river-clay piece by Kumbhaja.`,
