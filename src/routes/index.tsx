@@ -5,11 +5,11 @@ import handsClay from "@/assets/hands-clay.jpg";
 import potImg from "@/assets/pot-transparent.png.asset.json";
 import waterPotImg from "@/assets/water-pot-transparent.png.asset.json";
 
-import kulhadSet from "@/assets/kulhad-set.jpg.asset.json";
-import bottleJug from "@/assets/bottle-jug.jpg.asset.json";
-import handiDuo from "@/assets/handi-duo.jpg.asset.json";
-import handiSmall from "@/assets/handi-small.jpg.asset.json";
-import sieveDome from "@/assets/sieve-dome.jpg.asset.json";
+import kulhadSet from "@/assets/kulhad-set-transparent.png.asset.json";
+import bottleJug from "@/assets/bottle-jug-transparent.png.asset.json";
+import handiDuo from "@/assets/handi-duo-transparent.png.asset.json";
+import handiSmall from "@/assets/handi-small-transparent.png.asset.json";
+import sieveDome from "@/assets/sieve-dome-transparent.png.asset.json";
 
 const SITE_URL = "https://kumbhaja.lovable.app";
 
