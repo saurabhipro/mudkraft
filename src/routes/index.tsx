@@ -187,7 +187,7 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section className="relative min-h-screen flex items-center pt-24 pb-16 grain">
+      <section className="relative min-h-[92vh] flex items-center pt-28 pb-16 grain">
         <div className="absolute inset-0 -z-10">
           <div
             className="absolute inset-0 opacity-90"
@@ -199,34 +199,34 @@ function Index() {
         </div>
 
         <div className="max-w-7xl mx-auto w-full px-6 md:px-10 grid md:grid-cols-12 gap-10 items-center">
-          <div className="md:col-span-6 relative z-10 animate-fade-up">
-            <p className="font-hand text-clay text-2xl mb-6">— shaped by hand, held by earth</p>
-            <h1 className="text-balance text-[clamp(3rem,8vw,7rem)] leading-[0.95] font-display text-earth">
+          <div className="md:col-span-6 relative z-10 animate-fade-up order-2 md:order-1">
+            <p className="font-hand text-clay text-xl sm:text-2xl mb-4 sm:mb-6">— shaped by hand, held by earth</p>
+            <h1 className="text-balance text-[clamp(2.5rem,10vw,7rem)] leading-[0.95] font-display text-earth">
               The soul of<br />
               <span className="italic text-clay-deep">soil</span>, spun<br />
               into <span className="italic">stillness</span>.
             </h1>
-            <p className="mt-8 max-w-md text-lg text-muted-foreground leading-relaxed">
+            <p className="mt-6 sm:mt-8 max-w-md text-base sm:text-lg text-muted-foreground leading-relaxed">
               Kumbhaja is a slow craft studio. Every pot begins as river clay in the hands of
               a potter, and ends as a quiet object in your home.
             </p>
-            <div className="mt-10 flex items-center gap-6">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
               <a
                 href="#collection"
-                className="group relative inline-flex items-center gap-3 bg-earth text-cream px-8 py-4 rounded-full text-sm tracking-widest uppercase overflow-hidden transition-transform hover:-translate-y-0.5"
+                className="group relative inline-flex items-center justify-center gap-3 bg-earth text-cream px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-[11px] sm:text-sm tracking-widest uppercase overflow-hidden transition-transform hover:-translate-y-0.5 whitespace-nowrap w-full sm:w-auto"
               >
                 <span className="relative z-10">Explore the collection</span>
                 <span className="relative z-10 transition-transform group-hover:translate-x-1">→</span>
                 <span className="absolute inset-0 bg-clay translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </a>
-              <a href="#craft" className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay">
+              <a href="#craft" className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay text-center sm:text-left">
                 Watch the wheel
               </a>
             </div>
           </div>
 
-          <div className="md:col-span-6 relative">
-            <div className="relative aspect-[4/5] max-w-lg ml-auto animate-float">
+          <div className="md:col-span-6 relative order-1 md:order-2">
+            <div className="relative aspect-[4/5] max-w-xs sm:max-w-md md:max-w-lg mx-auto md:ml-auto md:mr-0 animate-float">
               <div
                 className="absolute -inset-6 rounded-full blur-3xl opacity-60"
                 style={{ background: "radial-gradient(circle, oklch(0.58 0.14 42 / 0.5), transparent 70%)" }}
@@ -241,14 +241,14 @@ function Index() {
                 className="relative w-full h-full object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
               />
 
-              <div className="absolute -bottom-4 -left-4 bg-cream/95 backdrop-blur px-5 py-3 rounded-full text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
+              <div className="absolute -bottom-3 left-3 sm:-bottom-4 sm:-left-4 bg-cream/95 backdrop-blur px-4 sm:px-5 py-2 sm:py-3 rounded-full text-[10px] sm:text-xs tracking-widest uppercase text-earth shadow-lg border border-border">
                 Est. from the Ganges
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-xs tracking-[0.4em] text-muted-foreground uppercase">
+        <div className="hidden md:block absolute bottom-8 left-1/2 -translate-x-1/2 text-xs tracking-[0.4em] text-muted-foreground uppercase">
           scroll ↓
         </div>
       </section>
