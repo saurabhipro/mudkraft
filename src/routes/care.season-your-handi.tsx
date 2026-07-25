@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SiteHeader } from "@/components/SiteHeader";
 import handiSoak from "@/assets/handi-soak.jpg";
 
 export const Route = createFileRoute("/care/season-your-handi")({
