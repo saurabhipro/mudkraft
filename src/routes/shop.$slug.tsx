@@ -181,6 +181,27 @@ function ProductDetail() {
           </h1>
           <p className="mt-3 font-hand text-clay text-2xl">{p.note}</p>
 
+          {(() => {
+            const s = getReviewSummary(p.slug);
+            if (!s.count) return null;
+            return (
+              <a
+                href="#reviews"
+                className="mt-4 inline-flex items-center gap-2 text-sm text-earth/80 hover:text-earth"
+              >
+                <span className="inline-flex items-center gap-0.5 text-gold" aria-hidden="true">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <svg key={i} viewBox="0 0 24 24" className="w-4 h-4" fill={i < Math.round(s.average) ? "currentColor" : "rgba(0,0,0,0.15)"}>
+                      <path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.5l1.1-6.5L2.6 9.4l6.5-.9L12 2.6z" />
+                    </svg>
+                  ))}
+                </span>
+                <span className="tabular-nums">{s.average.toFixed(1)}</span>
+                <span className="text-muted-foreground">· {s.count} review{s.count === 1 ? "" : "s"}</span>
+              </a>
+            );
+          })()}
+
           <div className="mt-6 flex items-baseline gap-4">
             <div className="font-display text-4xl text-earth">{p.price}</div>
             <div className="text-xs tracking-widest uppercase text-muted-foreground">Incl. taxes</div>
@@ -276,6 +297,8 @@ function ProductDetail() {
           </div>
         </div>
       </section>
+
+      <ReviewsSection slug={p.slug} name={p.name} />
 
       {alsoLove.length > 0 && (
         <section className="bg-cream/60 py-16 md:py-24 border-t border-border">
