@@ -265,9 +265,8 @@ function SeasonHandiPage() {
       <footer className="bg-earth text-cream px-6 md:px-10 pt-16 pb-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Link to="/" className="flex items-center gap-3">
-            <span className="text-3xl sm:text-4xl md:text-6xl font-display text-gold leading-none tracking-tight">
-              <span className="font-medium">क</span>
-              <span className="italic">Mudkraft</span>
+            <span className="text-3xl sm:text-4xl md:text-5xl font-display italic text-gold leading-none tracking-tight">
+              Mudkraft
             </span>
           </Link>
           <div className="font-hand text-xl text-gold">made from earth, made with love</div>
