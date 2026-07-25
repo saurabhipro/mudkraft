@@ -3,24 +3,11 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import handsClay from "@/assets/hands-clay.jpg";
 import potImg from "@/assets/pot-transparent.png.asset.json";
-import waterPotImg from "@/assets/water-pot-transparent.png.asset.json";
-
-import kulhadSet from "@/assets/kulhad-set-transparent.png.asset.json";
-import bottleJug from "@/assets/bottle-jug-transparent.png.asset.json";
-import handiDuo from "@/assets/handi-duo-transparent.png.asset.json";
-import handiSmall from "@/assets/handi-small-transparent.png.asset.json";
-import sieveDome from "@/assets/sieve-dome-transparent.png.asset.json";
+import { products, type Category, type Product } from "@/lib/products";
+import { useCart, addToCart as addToCartStore, updateQty as updateQtyStore, removeItem as removeItemStore } from "@/lib/cart";
 
 const SITE_URL = "https://kumbhaja.lovable.app";
 
-const productSeed = [
-  { name: "Surahi Matka", tag: "Water Pot", priceNum: 1240, img: waterPotImg.url },
-  { name: "Kulhad", tag: "Tea Cup · Set of 6", priceNum: 680, img: kulhadSet.url },
-  { name: "Bottle & Jug", tag: "Serveware · Duo", priceNum: 1480, img: bottleJug.url },
-  { name: "Handi", tag: "Cookware · Set of 2", priceNum: 1120, img: handiDuo.url },
-  { name: "Chhoti Handi", tag: "Serving Bowl", priceNum: 540, img: handiSmall.url },
-  { name: "Steam Dome", tag: "Idli / Steamer", priceNum: 860, img: sieveDome.url },
-];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,7 +42,7 @@ export const Route = createFileRoute("/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@graph": productSeed.map((p) => ({
+          "@graph": products.map((p) => ({
             "@type": "Product",
             name: p.name,
             description: `${p.tag} — handcrafted river-clay piece by Kumbhaja.`,
@@ -77,17 +64,6 @@ export const Route = createFileRoute("/")({
 });
 
 
-type Category = "Water" | "Tea" | "Cookware" | "Serveware";
-type Product = { name: string; tag: string; price: string; priceNum: number; img: string; note: string; category: Category };
-
-const products: Product[] = [
-  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", priceNum: 1240, img: waterPotImg.url, note: "Cools water the ancient way", category: "Water" },
-  { name: "Kulhad", tag: "Tea Cup · Set of 6", price: "₹680", priceNum: 680, img: kulhadSet.url, note: "For chai that tastes of earth", category: "Tea" },
-  { name: "Bottle & Jug", tag: "Serveware · Duo", price: "₹1,480", priceNum: 1480, img: bottleJug.url, note: "Water that remembers the river", category: "Serveware" },
-  { name: "Handi", tag: "Cookware · Set of 2", price: "₹1,120", priceNum: 1120, img: handiDuo.url, note: "Slow food, slower fire", category: "Cookware" },
-  { name: "Chhoti Handi", tag: "Serving Bowl", price: "₹540", priceNum: 540, img: handiSmall.url, note: "Little vessel, full ritual", category: "Serveware" },
-  { name: "Steam Dome", tag: "Idli / Steamer", price: "₹860", priceNum: 860, img: sieveDome.url, note: "Breath of the kitchen", category: "Cookware" },
-];
 
 const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", "Serveware"];
 
@@ -95,33 +71,19 @@ const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", 
 const WHATSAPP_NUMBER = "919990649990";
 const ENQUIRY_EMAIL = "hello@kumbhaja.com";
 
-type CartItem = Product & { qty: number };
-
 function Index() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const cart = useCart();
   const [open, setOpen] = useState(false);
   const [customer, setCustomer] = useState({ name: "", phone: "" });
   const [activeCategory, setActiveCategory] = useState<"All" | Category>("All");
   const visibleProducts = activeCategory === "All" ? products : products.filter((p) => p.category === activeCategory);
 
-
   const addToCart = (p: Product) => {
-    setCart((c) => {
-      const existing = c.find((x) => x.name === p.name);
-      if (existing) return c.map((x) => (x.name === p.name ? { ...x, qty: x.qty + 1 } : x));
-      return [...c, { ...p, qty: 1 }];
-    });
+    addToCartStore(p);
     setOpen(true);
   };
-
-  const updateQty = (name: string, delta: number) =>
-    setCart((c) =>
-      c
-        .map((x) => (x.name === name ? { ...x, qty: x.qty + delta } : x))
-        .filter((x) => x.qty > 0)
-    );
-
-  const removeItem = (name: string) => setCart((c) => c.filter((x) => x.name !== name));
+  const updateQty = (slug: string, delta: number) => updateQtyStore(slug, delta);
+  const removeItem = (slug: string) => removeItemStore(slug);
 
   const total = cart.reduce((s, x) => s + x.priceNum * x.qty, 0);
   const count = cart.reduce((s, x) => s + x.qty, 0);
@@ -328,13 +290,13 @@ function Index() {
         <div className="grid md:grid-cols-2 gap-x-8 gap-y-12 md:gap-y-20">
           {visibleProducts.map((p, i) => (
             <div
-              key={p.name}
+              key={p.slug}
               className={`group block ${i % 2 === 1 ? "md:translate-y-24" : ""}`}
             >
-              <button
-                type="button"
-                onClick={() => addToCart(p)}
-                aria-label={`Add ${p.name} to cart`}
+              <Link
+                to="/shop/$slug"
+                params={{ slug: p.slug }}
+                aria-label={`View ${p.name}`}
                 className="relative w-full overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-cream to-[hsl(35,35%,88%)] aspect-[4/5] block text-left"
               >
                 <img
@@ -358,12 +320,14 @@ function Index() {
                   </span>
                 </div>
                 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-cream text-earth px-6 py-3 rounded-full text-xs tracking-widest uppercase shadow-xl whitespace-nowrap">
-                  + Add to cart
+                  View piece →
                 </div>
-              </button>
+              </Link>
               <div className="mt-6 flex items-baseline justify-between gap-6">
                 <div>
-                  <h3 className="text-3xl font-display text-earth">{p.name}</h3>
+                  <Link to="/shop/$slug" params={{ slug: p.slug }} className="hover:text-clay transition-colors">
+                    <h3 className="text-3xl font-display text-earth">{p.name}</h3>
+                  </Link>
                   <p className="mt-1 font-hand text-clay text-xl">{p.note}</p>
                 </div>
                 <div className="text-right">
@@ -579,16 +543,16 @@ function Index() {
                 </div>
               )}
               {cart.map((x) => (
-                <div key={x.name} className="flex gap-4 py-3 border-b border-border/60">
-                  <img src={x.img} alt={x.name} className="w-20 h-24 object-cover rounded-lg" />
+                <div key={x.slug} className="flex gap-4 py-3 border-b border-border/60">
+                  <img src={x.img} alt={x.name} className="w-20 h-24 object-contain rounded-lg bg-cream p-1" />
                   <div className="flex-1">
                     <div className="font-display text-lg">{x.name}</div>
                     <div className="text-xs text-muted-foreground">{x.tag}</div>
                     <div className="mt-2 flex items-center gap-3">
-                      <button onClick={() => updateQty(x.name, -1)} className="w-7 h-7 rounded-full border border-border">−</button>
+                      <button onClick={() => updateQty(x.slug, -1)} className="w-7 h-7 rounded-full border border-border">−</button>
                       <span className="text-sm">{x.qty}</span>
-                      <button onClick={() => updateQty(x.name, 1)} className="w-7 h-7 rounded-full border border-border">+</button>
-                      <button onClick={() => removeItem(x.name)} className="ml-auto text-xs text-muted-foreground hover:text-clay">Remove</button>
+                      <button onClick={() => updateQty(x.slug, 1)} className="w-7 h-7 rounded-full border border-border">+</button>
+                      <button onClick={() => removeItem(x.slug)} className="ml-auto text-xs text-muted-foreground hover:text-clay">Remove</button>
                     </div>
                   </div>
                   <div className="font-display text-lg">₹{(x.priceNum * x.qty).toLocaleString("en-IN")}</div>
