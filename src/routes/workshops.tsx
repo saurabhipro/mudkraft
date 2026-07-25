@@ -400,7 +400,7 @@ function WorkshopsPage() {
       <footer className="bg-earth text-cream px-6 md:px-10 pt-16 pb-10 mt-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Link to="/" className="flex items-center gap-3">
-            <span className="text-5xl md:text-6xl font-display italic text-gold">क<span className="not-italic">umbhaja</span></span>
+            <span className="text-5xl md:text-6xl font-display text-gold leading-none tracking-tight"><span className="font-medium">क</span><span className="italic">umbhaja</span></span>
           </Link>
           <div className="font-hand text-xl text-gold">made from earth, made with love</div>
           <div className="text-xs tracking-widest uppercase text-cream/60">© {new Date().getFullYear()} Kumbhaja Studio</div>
