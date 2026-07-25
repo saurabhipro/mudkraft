@@ -408,6 +408,23 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
           )}
         </div>
       </div>
+
+      {lightboxIndex !== null && galleryPhotos.length > 0 && (
+        <Lightbox
+          photos={galleryPhotos}
+          index={lightboxIndex}
+          productName={name}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() =>
+            setLightboxIndex((i) =>
+              i === null ? i : (i - 1 + galleryPhotos.length) % galleryPhotos.length,
+            )
+          }
+          onNext={() =>
+            setLightboxIndex((i) => (i === null ? i : (i + 1) % galleryPhotos.length))
+          }
+        />
+      )}
     </section>
   );
 }
