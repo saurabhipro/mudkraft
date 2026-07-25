@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import heroPot from "@/assets/hero-pot.jpg";
 import handsClay from "@/assets/hands-clay.jpg";
-import productMatka from "@/assets/product-matka.jpg";
-import productKulhad from "@/assets/product-kulhad.jpg";
-import productPlanter from "@/assets/product-planter.jpg";
-import productDiya from "@/assets/product-diya.jpg";
+import matkaStand from "@/assets/matka-stand.jpg.asset.json";
+import kulhadSet from "@/assets/kulhad-set.jpg.asset.json";
+import bottleJug from "@/assets/bottle-jug.jpg.asset.json";
+import handiDuo from "@/assets/handi-duo.jpg.asset.json";
+import handiSmall from "@/assets/handi-small.jpg.asset.json";
+import sieveDome from "@/assets/sieve-dome.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,10 +39,12 @@ export const Route = createFileRoute("/")({
 });
 
 const products = [
-  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", img: productMatka, note: "Cools water the ancient way" },
-  { name: "Kulhad", tag: "Tea Cup · Set of 6", price: "₹680", img: productKulhad, note: "For chai that tastes of earth" },
-  { name: "Bhumi Planter", tag: "Planter", price: "₹920", img: productPlanter, note: "Breathes with the roots" },
-  { name: "Deepa Diya", tag: "Oil Lamp · Set of 12", price: "₹360", img: productDiya, note: "Light from the soil" },
+  { name: "Surahi Matka", tag: "Water Pot", price: "₹1,240", img: matkaStand.url, note: "Cools water the ancient way" },
+  { name: "Kulhad", tag: "Tea Cup · Set of 6", price: "₹680", img: kulhadSet.url, note: "For chai that tastes of earth" },
+  { name: "Bottle & Jug", tag: "Serveware · Duo", price: "₹1,480", img: bottleJug.url, note: "Water that remembers the river" },
+  { name: "Handi", tag: "Cookware · Set of 2", price: "₹1,120", img: handiDuo.url, note: "Slow food, slower fire" },
+  { name: "Chhoti Handi", tag: "Serving Bowl", price: "₹540", img: handiSmall.url, note: "Little vessel, full ritual" },
+  { name: "Steam Dome", tag: "Idli / Steamer", price: "₹860", img: sieveDome.url, note: "Breath of the kitchen" },
 ];
 
 function Index() {
