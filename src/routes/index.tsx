@@ -99,6 +99,9 @@ function Index() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
   const [customer, setCustomer] = useState({ name: "", phone: "" });
+  const [activeCategory, setActiveCategory] = useState<"All" | Category>("All");
+  const visibleProducts = activeCategory === "All" ? products : products.filter((p) => p.category === activeCategory);
+
 
   const addToCart = (p: Product) => {
     setCart((c) => {
