@@ -1,84 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+"use client";
+
+import { useState } from "react";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { useState } from "react";
 import handsClay from "@/assets/hands-clay.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
-
-export const Route = createFileRoute("/workshops")({
-  head: () => ({
-    meta: [
-      { title: "Workshops & Soil Report — Mudkraft" },
-      {
-        name: "description",
-        content:
-          "Book a Mudkraft pottery workshop for schools, birthdays and private parties. Read the full soil report of our river clay from the banks of the Ganges.",
-      },
-      { property: "og:title", content: "Workshops & Soil Report — Mudkraft" },
-      {
-        property: "og:description",
-        content:
-          "Pottery workshops for schools, birthdays and parties — plus the full soil report of our river clay.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "canonical", href: "https://mudkraft.lovable.app/workshops" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap",
-      },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Course",
-          name: "Mudkraft Pottery Workshops",
-          description:
-            "Pottery workshops for schools, birthdays, private parties and corporate offsites — throw on the wheel, hand-build, and take home fired pieces.",
-          provider: {
-            "@type": "Organization",
-            name: "Mudkraft",
-            url: "https://mudkraft.lovable.app",
-          },
-          url: "https://mudkraft.lovable.app/workshops",
-          hasCourseInstance: [
-            {
-              "@type": "CourseInstance",
-              name: "School Workshop — Little Hands, Living Earth",
-              courseMode: "onsite",
-              courseWorkload: "PT2H",
-            },
-            {
-              "@type": "CourseInstance",
-              name: "Wheel-side Birthday",
-              courseMode: "onsite",
-              courseWorkload: "PT3H",
-            },
-            {
-              "@type": "CourseInstance",
-              name: "Private Party — The Slow Evening",
-              courseMode: "onsite",
-              courseWorkload: "PT4H",
-            },
-            {
-              "@type": "CourseInstance",
-              name: "Corporate Studio Offsite",
-              courseMode: "onsite",
-            },
-          ],
-        }),
-      },
-    ],
-  }),
-
-  component: WorkshopsPage,
-});
 
 const WHATSAPP_NUMBER = "919990649990";
 const ENQUIRY_EMAIL = "hello@mudkraft.com";
@@ -148,7 +75,7 @@ const soilRows = [
   { k: "Lab & date", v: "Central Glass & Ceramic Research Inst. · Mar 2026" },
 ];
 
-function WorkshopsPage() {
+export function WorkshopsPage() {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -233,7 +160,7 @@ function WorkshopsPage() {
           </div>
           <div className="md:col-span-5">
             <img
-              src={handsClay}
+              src={handsClay.src}
               alt="Hands on the potter's wheel"
               className="w-full aspect-[4/5] object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
             />
@@ -285,7 +212,7 @@ function WorkshopsPage() {
         <div className="grid md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-7 order-2 md:order-1">
             <img
-              src={studentPottery}
+              src={studentPottery.src}
               alt="A student shaping a small bowl on the potter's wheel during a Mudkraft workshop"
               loading="lazy"
               width={1024}
@@ -355,10 +282,10 @@ function WorkshopsPage() {
         <div className="text-center mb-14">
           <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6">— book with us</p>
           <h2 className="text-4xl md:text-6xl font-display text-earth text-balance">
-            Tell us who's coming.
+            Tell us who&apos;s coming.
           </h2>
           <p className="mt-6 text-muted-foreground max-w-lg mx-auto">
-            Share a few details and we'll come back on WhatsApp within a day with dates,
+            Share a few details and we&apos;ll come back on WhatsApp within a day with dates,
             pricing and a small ritual to hold the booking.
           </p>
         </div>

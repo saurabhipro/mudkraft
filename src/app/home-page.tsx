@@ -1,5 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
 import { useState } from "react";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import handsClay from "@/assets/hands-clay.jpg";
@@ -7,72 +10,12 @@ import potImg from "@/assets/pot-transparent.png.asset.json";
 import { products, type Category, type Product } from "@/lib/products";
 import { useCart, addToCart as addToCartStore, updateQty as updateQtyStore, removeItem as removeItemStore } from "@/lib/cart";
 
-const SITE_URL = "https://mudkraft.lovable.app";
-
-
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Mudkraft — Soulful Handcrafted Clay Pots, Kulhads & Matkas" },
-      {
-        name: "description",
-        content:
-          "Mudkraft is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
-      },
-      { property: "og:title", content: "Mudkraft — Soulful Handcrafted Clay" },
-      {
-        property: "og:description",
-        content:
-          "Mudkraft is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: SITE_URL + "/" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "canonical", href: SITE_URL + "/" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap",
-      },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@graph": products.map((p) => ({
-            "@type": "Product",
-            name: p.name,
-            description: `${p.tag} — handcrafted river-clay piece by Mudkraft.`,
-            image: p.img,
-            brand: { "@type": "Brand", name: "Mudkraft" },
-            offers: {
-              "@type": "Offer",
-              price: p.priceNum,
-              priceCurrency: "INR",
-              availability: "https://schema.org/InStock",
-              url: SITE_URL + "/#collection",
-            },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: Index,
-});
-
-
-
 const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", "Serveware"];
 
 // Replace with your real WhatsApp number (country code + number, no + or spaces)
 const WHATSAPP_NUMBER = "919990649990";
-const ENQUIRY_EMAIL = "hello@mudkraft.com";
 
-function Index() {
+export function HomePage() {
   const cart = useCart();
   const [open, setOpen] = useState(false);
   const [customer, setCustomer] = useState({ name: "", phone: "" });
@@ -295,8 +238,7 @@ function Index() {
               className="group relative flex flex-col rounded-[1.75rem] bg-gradient-to-b from-[hsl(35,40%,94%)] to-[hsl(30,30%,86%)] ring-1 ring-earth/10 shadow-[0_1px_0_hsl(35,50%,98%)_inset,0_30px_60px_-40px_rgba(80,40,20,0.45)] hover:shadow-[0_1px_0_hsl(35,50%,98%)_inset,0_45px_80px_-40px_rgba(80,40,20,0.6)] transition-all duration-700 hover:-translate-y-1 overflow-hidden"
             >
               <Link
-                to="/shop/$slug"
-                params={{ slug: p.slug }}
+                href={`/shop/${p.slug}`}
                 aria-label={`View ${p.name}`}
                 className="relative block aspect-square"
               >
@@ -320,8 +262,7 @@ function Index() {
               <div className="flex items-end justify-between gap-4 px-6 pt-5 pb-6 border-t border-earth/10 bg-cream/40">
                 <div className="min-w-0">
                   <Link
-                    to="/shop/$slug"
-                    params={{ slug: p.slug }}
+                    href={`/shop/${p.slug}`}
                     className="hover:text-clay transition-colors"
                   >
                     <h3 className="text-2xl font-display text-earth truncate">{p.name}</h3>
@@ -349,7 +290,7 @@ function Index() {
         <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-10 md:gap-12 items-center">
           <div className="md:col-span-6 relative">
             <img
-              src={handsClay}
+              src={handsClay.src}
               alt="Potter's hands shaping clay on the wheel"
               width={1408}
               height={1600}
@@ -357,13 +298,13 @@ function Index() {
               className="w-full aspect-[4/5] object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.6)]"
             />
             <div className="hidden md:block absolute -bottom-6 -right-6 bg-clay text-cream px-6 py-4 rounded-2xl font-display italic text-xl max-w-[220px]">
-              "The wheel remembers what the hand forgets."
+              &ldquo;The wheel remembers what the hand forgets.&rdquo;
             </div>
           </div>
 
           <div className="md:col-span-6 text-cream">
             <p className="md:hidden font-display italic text-clay text-xl leading-snug mb-6 border-l-2 border-gold/60 pl-4">
-              "The wheel remembers what the hand forgets."
+              &ldquo;The wheel remembers what the hand forgets.&rdquo;
             </p>
             <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6">— the craft</p>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-display text-balance leading-tight">
@@ -395,9 +336,9 @@ function Index() {
       <section id="story" className="py-20 md:py-32 px-6 md:px-10 max-w-4xl mx-auto text-center">
         <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6 md:mb-8">— our story</p>
         <p className="text-2xl sm:text-3xl md:text-5xl font-display italic text-earth leading-[1.2] md:leading-[1.15] text-balance">
-          "<span className="not-italic">Mudkraft</span> is the craft of earth in your hands.
+          &ldquo;<span className="not-italic">Mudkraft</span> is the craft of earth in your hands.
           We think of every home that keeps our clay as another quiet birth —
-          of stillness, of ritual, of a slower way to hold what matters."
+          of stillness, of ritual, of a slower way to hold what matters.&rdquo;
         </p>
         <div className="mt-8 md:mt-10 font-hand text-2xl text-clay">— Ananya, founder</div>
       </section>

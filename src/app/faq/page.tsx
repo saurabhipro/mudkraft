@@ -1,34 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import type { Metadata } from "next";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { OG_IMAGE } from "@/lib/seo";
 
-export const Route = createFileRoute("/faq")({
-  head: () => ({
-    meta: [
-      { title: "FAQ — Mudkraft" },
-      { name: "description", content: "Answers about our handcrafted clay pots, seasoning, shipping, care, and workshops." },
-      { property: "og:title", content: "FAQ — Mudkraft" },
-      { property: "og:description", content: "Answers about our handcrafted clay pots, seasoning, shipping, care, and workshops." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: FAQS.map((f) => ({
-            "@type": "Question",
-            name: f.q,
-            acceptedAnswer: { "@type": "Answer", text: f.a },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: FAQPage,
-});
+const TITLE = "FAQ — Mudkraft";
+const DESCRIPTION =
+  "Answers about our handcrafted clay pots, seasoning, shipping, care, and workshops.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: { title: TITLE, description: DESCRIPTION, type: "website", images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE] },
+};
 
 const FAQS: { q: string; a: string }[] = [
   {
@@ -73,9 +58,23 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
-function FAQPage() {
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
+export default function FAQPage() {
   return (
     <div className="min-h-screen bg-cream text-earth">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <SiteHeader />
 
       <section className="pt-32 md:pt-40 pb-16 px-6 md:px-10 max-w-4xl mx-auto">

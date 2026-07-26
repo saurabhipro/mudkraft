@@ -1,99 +1,17 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
 import { useState } from "react";
+
 import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
-import { getProductBySlug, products, type Product } from "@/lib/products";
+import { products, type Product } from "@/lib/products";
 import { addToCart, useCartCount } from "@/lib/cart";
 import { ShareButton } from "@/components/ShareButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
-import { getReviewsForProduct, getReviewSummary } from "@/lib/reviews";
+import { getReviewSummary } from "@/lib/reviews";
+import { SITE_URL } from "@/lib/seo";
 
-const SITE_URL = "https://mudkraft.lovable.app";
 const WHATSAPP_NUMBER = "919990649990";
-
-export const Route = createFileRoute("/shop/$slug")({
-  loader: ({ params }) => {
-    const product = getProductBySlug(params.slug);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) {
-      return {
-        meta: [
-          { title: "Piece not found — Mudkraft" },
-          { name: "robots", content: "noindex" },
-        ],
-      };
-    }
-    const p = loaderData.product;
-    const url = `${SITE_URL}/shop/${p.slug}`;
-    const title = `${p.name} — ${p.tag} · Mudkraft`;
-    const description = p.description.slice(0, 155);
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "product" },
-        { property: "og:url", content: url },
-        { property: "og:image", content: p.img },
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:image", content: p.img },
-      ],
-      links: [{ rel: "canonical", href: url }],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            name: p.name,
-            description: p.description,
-            image: p.img,
-            brand: { "@type": "Brand", name: "Mudkraft" },
-            category: p.category,
-            offers: {
-              "@type": "Offer",
-              price: p.priceNum,
-              priceCurrency: "INR",
-              availability: "https://schema.org/InStock",
-              url,
-            },
-            aggregateRating: (() => {
-              const s = getReviewSummary(p.slug);
-              return s.count > 0
-                ? {
-                    "@type": "AggregateRating",
-                    ratingValue: s.average.toFixed(1),
-                    reviewCount: s.count,
-                    bestRating: "5",
-                    worstRating: "1",
-                  }
-                : undefined;
-            })(),
-            review: getReviewsForProduct(p.slug).slice(0, 5).map((r) => ({
-              "@type": "Review",
-              reviewRating: {
-                "@type": "Rating",
-                ratingValue: r.rating,
-                bestRating: "5",
-                worstRating: "1",
-              },
-              author: { "@type": "Person", name: r.name },
-              datePublished: r.date,
-              name: r.title,
-              reviewBody: r.body,
-            })),
-          }),
-        },
-      ],
-    };
-  },
-  component: ProductDetail,
-  notFoundComponent: NotFoundPiece,
-});
 
 function WhatsAppIcon({ className = "" }: { className?: string }) {
   return (
@@ -115,8 +33,7 @@ function whatsappBuyNow(p: Product, qty: number) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
 
-function ProductDetail() {
-  const { product: p } = Route.useLoaderData();
+export function ProductDetail({ product: p }: { product: Product }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const cartCount = useCartCount();
@@ -136,7 +53,7 @@ function ProductDetail() {
       <SiteHeader
         rightSlot={
           <Link
-            to="/"
+            href="/"
             className="relative inline-flex items-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-4 sm:px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
           >
             Basket
@@ -148,9 +65,9 @@ function ProductDetail() {
       />
 
       <nav className="max-w-7xl mx-auto px-6 md:px-10 pt-6 text-xs tracking-widest uppercase text-muted-foreground">
-        <Link to="/" className="hover:text-earth">Home</Link>
+        <Link href="/" className="hover:text-earth">Home</Link>
         <span className="mx-2">·</span>
-        <Link to="/" hash="collection" className="hover:text-earth">Collection</Link>
+        <Link href="/#collection" className="hover:text-earth">Collection</Link>
         <span className="mx-2">·</span>
         <span className="text-earth">{p.name}</span>
       </nav>
@@ -208,7 +125,7 @@ function ProductDetail() {
           </div>
 
           <p className="mt-8 text-lg leading-relaxed text-foreground/85">{p.description}</p>
-          <p className="mt-4 font-display italic text-earth/80 text-lg">"{p.story}"</p>
+          <p className="mt-4 font-display italic text-earth/80 text-lg">&ldquo;{p.story}&rdquo;</p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <div className="inline-flex items-center rounded-full border border-earth/25 bg-cream">
@@ -259,7 +176,7 @@ function ProductDetail() {
 
           {added && (
             <Link
-              to="/"
+              href="/"
               className="mt-4 inline-block text-xs tracking-widest uppercase text-clay hover:text-earth"
             >
               View basket →
@@ -289,7 +206,7 @@ function ProductDetail() {
               ))}
             </ul>
             <Link
-              to="/care/season-your-handi"
+              href="/care/season-your-handi"
               className="mt-4 inline-block text-xs tracking-widest uppercase text-earth hover:text-clay border-b border-earth/40"
             >
               Read the full care guide →
@@ -308,8 +225,7 @@ function ProductDetail() {
                 You may also <span className="italic">love</span>
               </h2>
               <Link
-                to="/"
-                hash="collection"
+                href="/#collection"
                 className="text-xs tracking-widest uppercase text-muted-foreground hover:text-earth"
               >
                 All pieces →
@@ -319,8 +235,7 @@ function ProductDetail() {
               {alsoLove.map((x) => (
                 <Link
                   key={x.slug}
-                  to="/shop/$slug"
-                  params={{ slug: x.slug }}
+                  href={`/shop/${x.slug}`}
                   className="group block"
                 >
                   <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,88%)]">
@@ -344,29 +259,6 @@ function ProductDetail() {
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-function NotFoundPiece() {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
-      <div className="max-w-3xl mx-auto px-6 py-24 text-center">
-        <div className="text-xs tracking-[0.3em] uppercase text-clay">404</div>
-        <h1 className="mt-4 font-display text-5xl text-earth">This piece has wandered off</h1>
-        <p className="mt-4 text-muted-foreground">
-          The clay piece you're looking for isn't in our collection right now.
-        </p>
-        <Link
-          to="/"
-          hash="collection"
-          className="mt-8 inline-flex items-center gap-2 bg-earth text-cream px-6 py-3 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition"
-        >
-          Browse the Collection
-        </Link>
-      </div>
-      <SiteFooter />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { ShareButton } from "@/components/ShareButton";
 
 const WHATSAPP_NUMBER = "919990649990";
@@ -22,7 +22,7 @@ export function SiteFooter() {
     <footer className="relative bg-earth text-cream px-6 md:px-10 pt-20 pb-10 mt-10">
       <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
         <div className="md:col-span-2">
-          <Link to="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <span className="relative flex items-center justify-center shrink-0">
               <span
                 className="relative w-12 h-12 rounded-full flex items-center justify-center shadow-sm overflow-hidden -rotate-6"
@@ -60,21 +60,21 @@ export function SiteFooter() {
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Explore</div>
           <ul className="space-y-3 text-cream/80">
-            <li><Link to="/" hash="collection" className="hover:text-gold transition-colors">Collection</Link></li>
-            <li><Link to="/benefits" className="hover:text-gold transition-colors">Benefits of Clay</Link></li>
-            <li><Link to="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
-            <li><Link to="/" hash="story" className="hover:text-gold transition-colors">Story</Link></li>
-            <li><Link to="/care/season-your-handi" className="hover:text-gold transition-colors">Care Guide</Link></li>
+            <li><Link href="/#collection" className="hover:text-gold transition-colors">Collection</Link></li>
+            <li><Link href="/benefits" className="hover:text-gold transition-colors">Benefits of Clay</Link></li>
+            <li><Link href="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
+            <li><Link href="/#story" className="hover:text-gold transition-colors">Story</Link></li>
+            <li><Link href="/care/season-your-handi" className="hover:text-gold transition-colors">Care Guide</Link></li>
           </ul>
         </div>
 
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Support</div>
           <ul className="space-y-3 text-cream/80">
-            <li><Link to="/track" className="hover:text-gold transition-colors">Track Order</Link></li>
-            <li><Link to="/faq" className="hover:text-gold transition-colors">FAQ</Link></li>
-            <li><Link to="/shipping-returns" className="hover:text-gold transition-colors">Shipping & Returns</Link></li>
-            <li><Link to="/trust" className="hover:text-gold transition-colors">Trust & Privacy</Link></li>
+            <li><Link href="/track" className="hover:text-gold transition-colors">Track Order</Link></li>
+            <li><Link href="/faq" className="hover:text-gold transition-colors">FAQ</Link></li>
+            <li><Link href="/shipping-returns" className="hover:text-gold transition-colors">Shipping & Returns</Link></li>
+            <li><Link href="/trust" className="hover:text-gold transition-colors">Trust & Privacy</Link></li>
             <li>
               <a
                 href={whatsappEnquiry()}

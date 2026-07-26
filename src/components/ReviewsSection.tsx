@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { getReviewsForProduct, getReviewSummary, type Review } from "@/lib/reviews";
 

@@ -1,22 +1,26 @@
-import { createFileRoute } from "@tanstack/react-router";
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { OG_IMAGE } from "@/lib/seo";
 
-export const Route = createFileRoute("/trust")({
-  head: () => ({
-    meta: [
-      { title: "Trust & Privacy — Mudkraft" },
-      { name: "description", content: "How Mudkraft handles your data, orders, payments, and privacy. Maintained by the Mudkraft studio team." },
-      { property: "og:title", content: "Trust & Privacy — Mudkraft" },
-      { property: "og:description", content: "How Mudkraft handles your data, orders, payments, and privacy." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: TrustPage,
-});
+const TITLE = "Trust & Privacy — Mudkraft";
 
-type Section = { label: string; heading: string; body: React.ReactNode };
+export const metadata: Metadata = {
+  title: TITLE,
+  description:
+    "How Mudkraft handles your data, orders, payments, and privacy. Maintained by the Mudkraft studio team.",
+  openGraph: {
+    title: TITLE,
+    description: "How Mudkraft handles your data, orders, payments, and privacy.",
+    type: "website",
+    images: [OG_IMAGE],
+  },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE] },
+};
+
+type Section = { label: string; heading: string; body: ReactNode };
 
 const SECTIONS: Section[] = [
   {
@@ -38,7 +42,7 @@ const SECTIONS: Section[] = [
         <p>When you place an order or enquiry through WhatsApp, we receive the name, phone number,
         and shipping address you send us, along with the items you selected. We store this only to
         prepare and ship your order.</p>
-        <p className="mt-3">The cart on this website lives in your browser's local storage. It does
+        <p className="mt-3">The cart on this website lives in your browser&apos;s local storage. It does
         not leave your device until you tap Checkout and send us the message on WhatsApp.</p>
       </>
     ),
@@ -127,7 +131,7 @@ const SECTIONS: Section[] = [
   },
 ];
 
-function TrustPage() {
+export default function TrustPage() {
   return (
     <div className="min-h-screen bg-cream text-earth">
       <SiteHeader />
@@ -139,7 +143,7 @@ function TrustPage() {
           <span className="italic font-light">clear promises.</span>
         </h1>
         <p className="mt-6 text-lg text-earth/70 max-w-2xl">
-          We're a family workshop, not a marketing machine. Here is exactly what happens with
+          We&apos;re a family workshop, not a marketing machine. Here is exactly what happens with
           your details, your order, and your money when you buy from Mudkraft.
         </p>
       </section>

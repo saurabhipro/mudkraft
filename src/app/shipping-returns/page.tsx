@@ -1,29 +1,25 @@
-import { createFileRoute } from "@tanstack/react-router";
+import type { Metadata } from "next";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButton } from "@/components/ShareButton";
+import { OG_IMAGE } from "@/lib/seo";
 
-export const Route = createFileRoute("/shipping-returns")({
-  head: () => ({
-    meta: [
-      { title: "Shipping & Returns — Mudkraft" },
-      {
-        name: "description",
-        content:
-          "How Mudkraft packs, ships, and stands behind every hand-thrown clay piece — timelines, charges, breakage policy, and returns.",
-      },
-      { property: "og:title", content: "Shipping & Returns — Mudkraft" },
-      {
-        property: "og:description",
-        content:
-          "Timelines, charges, breakage-in-transit policy, and returns for our hand-thrown clay pieces.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: ShippingReturnsPage,
-});
+const TITLE = "Shipping & Returns — Mudkraft";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description:
+    "How Mudkraft packs, ships, and stands behind every hand-thrown clay piece — timelines, charges, breakage policy, and returns.",
+  openGraph: {
+    title: TITLE,
+    description:
+      "Timelines, charges, breakage-in-transit policy, and returns for our hand-thrown clay pieces.",
+    type: "website",
+    images: [OG_IMAGE],
+  },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE] },
+};
 
 const SHIP_ZONES: { zone: string; days: string; charge: string }[] = [
   { zone: "Delhi NCR", days: "2–4 working days", charge: "Free above ₹1,499" },
@@ -32,7 +28,7 @@ const SHIP_ZONES: { zone: string; days: string; charge: string }[] = [
   { zone: "International", days: "10–21 working days", charge: "Quoted on WhatsApp" },
 ];
 
-function ShippingReturnsPage() {
+export default function ShippingReturnsPage() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader />
@@ -109,7 +105,8 @@ function ShippingReturnsPage() {
         <p className="text-foreground/85 leading-relaxed">
           Each pot is thrown by hand, so small variations in colour, fire-marks, and shape are part
           of the piece — not defects. We photograph honestly and pack with love. If anything feels
-          off when you unbox, message us — we'd rather make it right than sell you a "perfect" pot.
+          off when you unbox, message us — we&apos;d rather make it right than sell you a
+          &ldquo;perfect&rdquo; pot.
         </p>
       </section>
 

@@ -1,6 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import type { Metadata } from "next";
+import Link from "next/link";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { OG_IMAGE } from "@/lib/seo";
 import alkalineImg from "@/assets/benefit-alkaline.jpg";
 import mineralsImg from "@/assets/benefit-minerals.jpg";
 import coolingImg from "@/assets/benefit-cooling.jpg";
@@ -11,21 +14,19 @@ const TITLE = "Benefits of Earthen Clay Pots — Alkaline Water, Nutrients & Nat
 const DESCRIPTION =
   "Discover the health benefits of drinking and cooking in unglazed clay pots — naturally alkaline water, preserved nutrients, gentle mineral enrichment, and electricity-free cooling. A slow guide from Mudkraft.";
 
-export const Route = createFileRoute("/benefits")({
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "article" },
-      { property: "og:url", content: URL },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: URL }],
-  }),
-  component: BenefitsPage,
-});
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: URL },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    type: "article",
+    url: URL,
+    images: [OG_IMAGE],
+  },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE] },
+};
 
 type Benefit = {
   eyebrow: string;
@@ -47,7 +48,7 @@ const BENEFITS: Benefit[] = [
       "Eases acidity, heartburn and bloating",
       "Tastes rounder, sweeter — never metallic",
     ],
-    image: alkalineImg,
+    image: alkalineImg.src,
     alt: "Overhead view of clear water resting inside a terracotta matka in warm morning light",
   },
   {
@@ -60,7 +61,7 @@ const BENEFITS: Benefit[] = [
       "No chlorine aftertaste, no plastic leaching",
       "The pot literally gives back to the water",
     ],
-    image: mineralsImg,
+    image: mineralsImg.src,
     alt: "Macro close-up of porous terracotta wall showing tiny channels in warm red-brown clay",
   },
   {
@@ -73,7 +74,7 @@ const BENEFITS: Benefit[] = [
       "No refrigerator, no power, no plastic bottle",
       "Perfect for Indian summers — the old way",
     ],
-    image: coolingImg,
+    image: coolingImg.src,
     alt: "Hands pouring cool water from a clay bottle into a small clay cup in a warm Indian kitchen",
   },
   {
@@ -86,12 +87,12 @@ const BENEFITS: Benefit[] = [
       "Needs 30–40% less oil than metal cookware",
       "Alkaline clay balances the acidity of tomato & tamarind curries",
     ],
-    image: nutrientsImg,
+    image: nutrientsImg.src,
     alt: "A terracotta handi cooking dal on a low blue flame, gentle steam rising",
   },
 ];
 
-function BenefitsPage() {
+export default function BenefitsPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
@@ -210,14 +211,13 @@ function BenefitsPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
-              to="/"
-              hash="collection"
+              href="/#collection"
               className="inline-block bg-earth text-cream px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-clay transition-colors"
             >
               Shop the collection
             </Link>
             <Link
-              to="/journal/benefits-of-clay-water-pots"
+              href="/journal/benefits-of-clay-water-pots"
               className="inline-block border border-earth/30 text-earth px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
             >
               Read the full journal

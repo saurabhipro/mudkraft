@@ -1,65 +1,58 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { SiteFooter } from "@/components/SiteFooter";
+import type { Metadata } from "next";
+import Link from "next/link";
 
-const URL = "https://mudkraft.lovable.app/journal/benefits-of-clay-water-pots";
+import { SiteFooter } from "@/components/SiteFooter";
+import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+
+const URL = `${SITE_URL}/journal/benefits-of-clay-water-pots`;
 const TITLE = "Benefits of Matka Water & How to Season a Clay Pot — Mudkraft";
 const DESCRIPTION =
   "A slow guide to drinking water from an earthen pot — the natural cooling, mineral alkalinity, and gut-friendly benefits of matka water, plus how to season and clean a new clay pot without soap.";
 
-export const Route = createFileRoute("/journal/benefits-of-clay-water-pots")({
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "article" },
-      { property: "og:url", content: URL },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "canonical", href: URL },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap",
-      },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: "Benefits of Matka Water & How to Season a Clay Pot",
-          description: DESCRIPTION,
-          author: { "@type": "Organization", name: "Mudkraft" },
-          publisher: {
-            "@type": "Organization",
-            name: "Mudkraft",
-            logo: {
-              "@type": "ImageObject",
-              url: "https://mudkraft.lovable.app/favicon.ico",
-            },
-          },
-          mainEntityOfPage: URL,
-        }),
-      },
-    ],
-  }),
-  component: Article,
-});
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: URL },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    type: "article",
+    url: URL,
+    images: [OG_IMAGE],
+  },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE] },
+};
 
-function Article() {
+const articleJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: "Benefits of Matka Water & How to Season a Clay Pot",
+  description: DESCRIPTION,
+  author: { "@type": "Organization", name: "Mudkraft" },
+  publisher: {
+    "@type": "Organization",
+    name: "Mudkraft",
+    logo: {
+      "@type": "ImageObject",
+      url: `${SITE_URL}/favicon.ico`,
+    },
+  },
+  mainEntityOfPage: URL,
+};
+
+export default function ArticlePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <header className="border-b border-border/40">
         <nav className="max-w-3xl mx-auto flex items-center justify-between px-6 py-5">
-          <Link to="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <span className="text-3xl sm:text-4xl md:text-6xl font-display text-earth leading-none tracking-tight"><span className="italic">Mudkraft</span></span>
           </Link>
-          <Link to="/" className="text-sm text-muted-foreground hover:text-clay">← Back</Link>
+          <Link href="/" className="text-sm text-muted-foreground hover:text-clay">← Back</Link>
         </nav>
       </header>
 
@@ -89,7 +82,7 @@ function Article() {
               which helps balance acidity and soothe the gut.
             </li>
             <li>
-              <strong>Trace minerals.</strong> As water passes through the pot's walls, it picks up small amounts
+              <strong>Trace minerals.</strong> As water passes through the pot&apos;s walls, it picks up small amounts
               of iron, magnesium and calcium from the clay — a mild, natural mineralisation.
             </li>
             <li>
@@ -142,8 +135,7 @@ function Article() {
 
         <div className="mt-16 border-t border-border pt-10 text-center">
           <Link
-            to="/"
-            hash="collection"
+            href="/#collection"
             className="inline-block bg-earth text-cream px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-clay transition-colors"
           >
             Shop the matka collection

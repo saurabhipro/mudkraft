@@ -1,27 +1,50 @@
-import { useState, useEffect, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+"use client";
+
+import { useState, useEffect, useSyncExternalStore, type ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 const WHATSAPP_NUMBER = "919990649990";
 
-type NavItem = { label: string; to: string; hash?: string; match: (path: string, hash: string) => boolean };
+type NavItem = { label: string; href: string; match: (path: string, hash: string) => boolean };
 
 const NAV: NavItem[] = [
-  { label: "Collection", to: "/", hash: "collection", match: (p, h) => p === "/" && h === "collection" },
-  { label: "Benefits", to: "/benefits", match: (p) => p.startsWith("/benefits") },
-  { label: "Workshops", to: "/workshops", match: (p) => p.startsWith("/workshops") },
-  { label: "Story", to: "/", hash: "story", match: (p, h) => p === "/" && h === "story" },
+  { label: "Collection", href: "/#collection", match: (p, h) => p === "/" && h === "collection" },
+  { label: "Benefits", href: "/benefits", match: (p) => p.startsWith("/benefits") },
+  { label: "Workshops", href: "/workshops", match: (p) => p.startsWith("/workshops") },
+  { label: "Story", href: "/#story", match: (p, h) => p === "/" && h === "story" },
 ];
+
+// next/navigation exposes the path but not the fragment, and the active-nav dots
+// key off the fragment, so read it from the browser directly. Route changes that
+// only swap the fragment arrive via pushState rather than "hashchange", but those
+// also re-render this component, at which point the snapshot is re-read.
+function subscribeToHash(onStoreChange: () => void) {
+  window.addEventListener("hashchange", onStoreChange);
+  return () => window.removeEventListener("hashchange", onStoreChange);
+}
+
+const getHashSnapshot = () => window.location.hash.replace(/^#/, "");
+const getServerHashSnapshot = () => "";
+
+function useHash() {
+  return useSyncExternalStore(subscribeToHash, getHashSnapshot, getServerHashSnapshot);
+}
 
 export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { location } = useRouterState();
-  const path = location.pathname;
-  const hash = location.hash?.replace(/^#/, "") ?? "";
+  const path = usePathname();
+  const hash = useHash();
 
-  useEffect(() => {
+  // Collapse the mobile sheet whenever the route changes, including navigations
+  // that start outside this component (browser back, in-page fragment links).
+  const route = `${path}#${hash}`;
+  const [renderedRoute, setRenderedRoute] = useState(route);
+  if (route !== renderedRoute) {
+    setRenderedRoute(route);
     setMobileOpen(false);
-  }, [path, hash]);
+  }
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -35,7 +58,7 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
       <nav className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-5 sm:px-6 md:px-10 py-4 md:py-5">
-        <Link to="/" className="flex items-center gap-3 min-w-0 shrink group" aria-label="Mudkraft home">
+        <Link href="/" className="flex items-center gap-3 min-w-0 shrink group" aria-label="Mudkraft home">
           {/* Craft Seal Mark */}
           <span className="relative flex items-center justify-center shrink-0">
             <span
@@ -78,8 +101,7 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
           {NAV.map((item) => (
             <Link
               key={item.label}
-              to={item.to}
-              hash={item.hash}
+              href={item.href}
               className={`relative transition-colors ${
                 isActive(item) ? "text-clay" : "hover:text-clay"
               }`}
@@ -116,8 +138,7 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
           {NAV.map((item) => (
             <Link
               key={item.label}
-              to={item.to}
-              hash={item.hash}
+              href={item.href}
               onClick={() => setMobileOpen(false)}
               className={`flex items-center justify-between py-4 text-lg font-display tracking-tight ${
                 isActive(item) ? "text-clay" : "text-earth"

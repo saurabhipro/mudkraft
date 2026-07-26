@@ -1,33 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+"use client";
+
 import { useMemo, useState } from "react";
 import { z } from "zod";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButton } from "@/components/ShareButton";
 
 const WHATSAPP_NUMBER = "919990649990";
-
-export const Route = createFileRoute("/track")({
-  head: () => ({
-    meta: [
-      { title: "Track Your Order — Mudkraft" },
-      {
-        name: "description",
-        content:
-          "Check the status of your Mudkraft clay order. Enter your order number and email, or track directly with your courier AWB.",
-      },
-      { property: "og:title", content: "Track Your Order — Mudkraft" },
-      {
-        property: "og:description",
-        content:
-          "Check the status of your Mudkraft clay order using your order number and email.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: TrackPage,
-});
 
 // Validation
 const orderSchema = z.object({
@@ -114,7 +94,7 @@ function whatsappTrack(orderNumber: string, email: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
 
-function TrackPage() {
+export function TrackPage() {
   // Order form
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
@@ -178,8 +158,8 @@ function TrackPage() {
           />
         </div>
         <p className="mt-5 text-lg leading-relaxed text-foreground/80 max-w-2xl">
-          Enter your order number and email and we'll pull up the latest status over WhatsApp. If
-          you already have a courier AWB, jump straight to the courier's tracker below.
+          Enter your order number and email and we&apos;ll pull up the latest status over WhatsApp. If
+          you already have a courier AWB, jump straight to the courier&apos;s tracker below.
         </p>
       </section>
 
@@ -332,8 +312,8 @@ function TrackPage() {
         <div className="rounded-3xl border border-earth/15 bg-cream/60 p-6 md:p-8 text-earth">
           <div className="text-xs tracking-[0.3em] uppercase text-clay">Need help?</div>
           <p className="mt-3 text-foreground/85 leading-relaxed">
-            Can't find your order number, or something feels off? Message the studio directly and
-            we'll sort it out.
+            Can&apos;t find your order number, or something feels off? Message the studio directly and
+            we&apos;ll sort it out.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <a
