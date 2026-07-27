@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
-const WHATSAPP_NUMBER = "919990649990";
+import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
+
+import { HeaderAccount } from "./HeaderAccount";
 
 type NavItem = { label: string; href: string; match: (path: string, hash: string) => boolean };
 
@@ -116,6 +118,7 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {rightSlot}
+          <HeaderAccount />
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}

@@ -6,62 +6,46 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import handsClay from "@/assets/hands-clay.jpg";
-import potImg from "@/assets/pot-transparent.png.asset.json";
-import { products, type Category, type Product } from "@/lib/products";
-import { useCart, addToCart as addToCartStore, updateQty as updateQtyStore, removeItem as removeItemStore } from "@/lib/cart";
+import heroBanner from "@/assets/hero-pot.jpg";
+import { formatPaise } from "@/lib/money";
+import { displayImage, type ProductView } from "@/lib/product-view";
+import {
+  useCart,
+  addToCart as addToCartStore,
+  updateQty as updateQtyStore,
+  removeItem as removeItemStore,
+} from "@/lib/cart";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { whatsappLink } from "@/lib/whatsapp";
 
-const CATEGORIES: Array<"All" | Category> = ["All", "Water", "Tea", "Cookware", "Serveware"];
-
-// Replace with your real WhatsApp number (country code + number, no + or spaces)
-const WHATSAPP_NUMBER = "919990649990";
-
-export function HomePage() {
+export function HomePage({
+  products,
+  categories,
+}: {
+  products: ProductView[];
+  categories: string[];
+}) {
   const cart = useCart();
   const [open, setOpen] = useState(false);
-  const [customer, setCustomer] = useState({ name: "", phone: "" });
-  const [activeCategory, setActiveCategory] = useState<"All" | Category>("All");
-  const visibleProducts = activeCategory === "All" ? products : products.filter((p) => p.category === activeCategory);
+  const [activeCategory, setActiveCategory] = useState<string>("All");
 
-  const addToCart = (p: Product) => {
+  // Categories come from the database, so a category added in the admin panel
+  // appears here without a code change.
+  const filterOptions = ["All", ...categories];
+  const visibleProducts =
+    activeCategory === "All" ? products : products.filter((p) => p.category === activeCategory);
+
+  const addToCart = (p: ProductView) => {
     addToCartStore(p);
     setOpen(true);
   };
   const updateQty = (slug: string, delta: number) => updateQtyStore(slug, delta);
   const removeItem = (slug: string) => removeItemStore(slug);
 
-  const total = cart.reduce((s, x) => s + x.priceNum * x.qty, 0);
+  const totalPaise = cart.reduce((s, x) => s + x.pricePaise * x.qty, 0);
   const count = cart.reduce((s, x) => s + x.qty, 0);
-  const canCheckout = cart.length > 0 && customer.name.trim() && customer.phone.trim();
-
-  const checkoutMessage = () => {
-    const lines = [
-      "Namaste Mudkraft 🙏",
-      "I'd like to place an order:",
-      "",
-      "— Items —",
-      ...cart.map(
-        (x) => `• ${x.name} × ${x.qty} — ₹${(x.priceNum * x.qty).toLocaleString("en-IN")}`
-      ),
-      "",
-      `Total: ₹${total.toLocaleString("en-IN")} (${count} ${count === 1 ? "piece" : "pieces"})`,
-      "",
-      "— My details —",
-      `Name: ${customer.name.trim()}`,
-      `Phone: ${customer.phone.trim()}`,
-      "",
-      "Please share dispatch & payment details. Dhanyavaad 🙏",
-    ];
-    return encodeURIComponent(lines.join("\n"));
-  };
-
-  const whatsappCheckout = () =>
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${checkoutMessage()}`;
-
-
   const whatsappEnquiry = () =>
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      "Namaste Mudkraft 🙏 I'd love to know more about your clay pieces."
-    )}`;
+    whatsappLink(["Namaste Mudkraft 🙏 I'd love to know more about your clay pieces."]);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -92,65 +76,79 @@ export function HomePage() {
       />
 
       {/* HERO */}
-      <section className="relative min-h-[92vh] flex items-center pt-28 pb-16 grain">
-        <div className="absolute inset-0 -z-10">
-          <div
-            className="absolute inset-0 opacity-90"
-            style={{
-              background:
-                "radial-gradient(ellipse at 70% 40%, oklch(0.88 0.06 65) 0%, oklch(0.955 0.018 75) 60%)",
-            }}
-          />
-        </div>
+      <section className="relative isolate flex min-h-[92vh] items-center overflow-hidden pt-28 pb-16 grain">
+        {/* The source is portrait and the section is wide, so on desktop this is
+            cropped top and bottom no matter what. Biasing the focal point above
+            centre keeps the rim and the carved shoulder in frame rather than
+            landing on an anonymous slice of the belly. */}
+        <img
+          src={heroBanner.src}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 -z-20 h-full w-full object-cover object-[50%_38%]"
+        />
 
-        <div className="max-w-7xl mx-auto w-full px-6 md:px-10 grid md:grid-cols-12 gap-10 items-center">
-          <div className="md:col-span-6 relative z-10 animate-fade-up order-2 md:order-1">
-            <p className="font-hand text-clay text-xl sm:text-2xl mb-4 sm:mb-6">— shaped by hand, held by earth</p>
-            <h1 className="text-balance text-[clamp(2.5rem,10vw,7rem)] leading-[0.95] font-display text-earth">
-              The soul of<br />
-              <span className="italic text-clay-deep">soil</span>, spun<br />
+        {/* Warm rather than neutral, so the firelight in the photograph is damped
+            instead of greyed. The horizontal pass carries the headline on
+            desktop; on mobile the text sits over the middle of the frame, where a
+            side gradient does nothing, so a flat veil takes over below md. */}
+        <div
+          className="absolute inset-0 -z-10 hidden md:block"
+          style={{
+            background:
+              "linear-gradient(100deg, oklch(0.18 0.02 40 / 0.94) 0%, oklch(0.18 0.02 40 / 0.8) 38%, oklch(0.18 0.02 40 / 0.3) 70%, oklch(0.18 0.02 40 / 0.08) 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0 -z-10 md:hidden"
+          style={{
+            background:
+              "linear-gradient(to bottom, oklch(0.18 0.02 40 / 0.55) 0%, oklch(0.18 0.02 40 / 0.82) 100%)",
+          }}
+        />
+
+        <div className="max-w-7xl mx-auto w-full px-6 md:px-10">
+          <div className="relative z-10 max-w-2xl animate-fade-up">
+            <p className="font-hand text-gold text-xl sm:text-2xl mb-4 sm:mb-6">
+              — shaped by hand, held by earth
+            </p>
+            <h1 className="text-balance text-[clamp(2.5rem,9vw,6.5rem)] leading-[0.95] font-display text-cream">
+              The soul of
+              <br />
+              <span className="italic text-gold">soil</span>, spun
+              <br />
               into <span className="italic">stillness</span>.
             </h1>
-            <p className="mt-6 sm:mt-8 max-w-md text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Mudkraft is a slow craft studio. Every pot begins as river clay in the hands of
-              a potter, and ends as a quiet object in your home.
+            <p className="mt-6 sm:mt-8 max-w-md text-base sm:text-lg text-cream/75 leading-relaxed">
+              Mudkraft is a slow craft studio. Every pot begins as river clay in the hands of a
+              potter, and ends as a quiet object in your home.
             </p>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
               <a
                 href="#collection"
-                className="group relative inline-flex items-center justify-center gap-3 bg-earth text-cream px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-[11px] sm:text-sm tracking-widest uppercase overflow-hidden transition-transform hover:-translate-y-0.5 whitespace-nowrap w-full sm:w-auto"
+                className="group relative inline-flex items-center justify-center gap-3 bg-cream text-earth px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-[11px] sm:text-sm tracking-widest uppercase overflow-hidden transition-transform hover:-translate-y-0.5 whitespace-nowrap w-full sm:w-auto"
               >
-                <span className="relative z-10">Explore the collection</span>
-                <span className="relative z-10 transition-transform group-hover:translate-x-1">→</span>
+                <span className="relative z-10 transition-colors duration-500 group-hover:text-cream">
+                  Explore the collection
+                </span>
+                <span className="relative z-10 transition-all duration-500 group-hover:translate-x-1 group-hover:text-cream">
+                  →
+                </span>
                 <span className="absolute inset-0 bg-clay translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
               </a>
-              <a href="#craft" className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay text-center sm:text-left">
+              <a
+                href="#craft"
+                className="text-sm text-cream/90 underline underline-offset-4 decoration-gold/50 hover:decoration-gold text-center sm:text-left"
+              >
                 Watch the wheel
               </a>
             </div>
           </div>
-
-          <div className="md:col-span-6 relative order-1 md:order-2">
-            <div className="relative aspect-[4/5] max-w-xs sm:max-w-md md:max-w-lg mx-auto md:ml-auto md:mr-0 animate-float">
-              <div
-                className="absolute -inset-6 rounded-full blur-3xl opacity-60"
-                style={{ background: "radial-gradient(circle, oklch(0.58 0.14 42 / 0.5), transparent 70%)" }}
-              />
-              <img
-                src={potImg.url}
-                alt="Handcrafted terracotta clay pot"
-                width={1600}
-                height={1808}
-                fetchPriority="high"
-                decoding="async"
-                className="relative w-full h-full object-contain drop-shadow-[0_40px_60px_rgba(80,40,20,0.35)]"
-              />
-
-            </div>
-          </div>
         </div>
 
-        <div className="hidden md:block absolute bottom-8 left-1/2 -translate-x-1/2 text-xs tracking-[0.4em] text-muted-foreground uppercase">
+        <div className="hidden md:block absolute bottom-8 left-1/2 -translate-x-1/2 text-xs tracking-[0.4em] text-cream/55 uppercase">
           scroll ↓
         </div>
       </section>
@@ -160,12 +158,18 @@ export function HomePage() {
         <div className="flex animate-marquee whitespace-nowrap gap-16 text-earth/70 font-display italic text-2xl md:text-3xl">
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={i} className="flex gap-16 pr-16">
-              <span>river clay</span><span>·</span>
-              <span>wood fired</span><span>·</span>
-              <span>hand thrown</span><span>·</span>
-              <span>seven generations</span><span>·</span>
-              <span>slow made</span><span>·</span>
-              <span>earth born</span><span>·</span>
+              <span>river clay</span>
+              <span>·</span>
+              <span>wood fired</span>
+              <span>·</span>
+              <span>hand thrown</span>
+              <span>·</span>
+              <span>seven generations</span>
+              <span>·</span>
+              <span>slow made</span>
+              <span>·</span>
+              <span>earth born</span>
+              <span>·</span>
             </div>
           ))}
         </div>
@@ -182,7 +186,8 @@ export function HomePage() {
               </span>
             </header>
             <h2 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[1.02] md:leading-[0.95] text-earth tracking-tight text-balance">
-              Objects that <span className="italic font-light">breathe</span>,<br className="hidden md:block" />
+              Objects that <span className="italic font-light">breathe</span>,
+              <br className="hidden md:block" />
               made to be lived with.
             </h2>
           </div>
@@ -207,11 +212,13 @@ export function HomePage() {
           </div>
         </div>
 
-
         <div className="mb-10 md:mb-14 flex flex-wrap items-center gap-2 md:gap-3">
-          <span className="text-[10px] tracking-[0.3em] uppercase text-clay font-medium mr-2 md:mr-4">Filter</span>
-          {CATEGORIES.map((c) => {
-            const count = c === "All" ? products.length : products.filter((p) => p.category === c).length;
+          <span className="text-[10px] tracking-[0.3em] uppercase text-clay font-medium mr-2 md:mr-4">
+            Filter
+          </span>
+          {filterOptions.map((c) => {
+            const count =
+              c === "All" ? products.length : products.filter((p) => p.category === c).length;
             const isActive = activeCategory === c;
             return (
               <button
@@ -225,7 +232,12 @@ export function HomePage() {
                     : "bg-cream text-earth border-clay/30 hover:border-clay hover:bg-clay/5"
                 }`}
               >
-                {c} <span className={`ml-1 text-[10px] ${isActive ? "text-cream/70" : "text-muted-foreground"}`}>({count})</span>
+                {c}{" "}
+                <span
+                  className={`ml-1 text-[10px] ${isActive ? "text-cream/70" : "text-muted-foreground"}`}
+                >
+                  ({count})
+                </span>
               </button>
             );
           })}
@@ -243,14 +255,20 @@ export function HomePage() {
                 className="relative block aspect-square"
               >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(35,45%,96%)_0%,transparent_65%)]" />
-                <img
-                  src={p.img}
-                  alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
-                  width={900}
-                  height={900}
-                  loading="lazy"
-                  className="relative w-full h-full object-contain p-5 sm:p-6 transition-transform duration-[1400ms] ease-out group-hover:scale-[1.06] drop-shadow-[0_30px_35px_rgba(80,40,20,0.35)]"
-                />
+                {displayImage(p) ? (
+                  <img
+                    src={displayImage(p)!}
+                    alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
+                    width={900}
+                    height={900}
+                    loading="lazy"
+                    className="relative w-full h-full object-contain p-5 sm:p-6 transition-transform duration-[1400ms] ease-out group-hover:scale-[1.06] drop-shadow-[0_30px_35px_rgba(80,40,20,0.35)]"
+                  />
+                ) : (
+                  <div className="relative w-full h-full grid place-items-center text-earth/30 font-hand text-2xl">
+                    photograph coming soon
+                  </div>
+                )}
                 <div className="absolute top-4 left-4 text-[10px] tracking-[0.25em] uppercase bg-earth/90 backdrop-blur px-3 py-1.5 rounded-full text-cream">
                   {p.tag}
                 </div>
@@ -261,10 +279,7 @@ export function HomePage() {
 
               <div className="flex items-end justify-between gap-4 px-6 pt-5 pb-6 border-t border-earth/10 bg-cream/40">
                 <div className="min-w-0">
-                  <Link
-                    href={`/shop/${p.slug}`}
-                    className="hover:text-clay transition-colors"
-                  >
+                  <Link href={`/shop/${p.slug}`} className="hover:text-clay transition-colors">
                     <h3 className="text-2xl font-display text-earth truncate">{p.name}</h3>
                   </Link>
                   <p className="mt-0.5 font-hand text-clay text-lg truncate">{p.note}</p>
@@ -282,11 +297,13 @@ export function HomePage() {
             </article>
           ))}
         </div>
-
       </section>
 
       {/* CRAFT */}
-      <section id="craft" className="relative py-20 md:py-32 mt-10 md:mt-20 grain overflow-hidden bg-earth">
+      <section
+        id="craft"
+        className="relative py-20 md:py-32 mt-10 md:mt-20 grain overflow-hidden bg-earth"
+      >
         <div className="max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-12 gap-10 md:gap-12 items-center">
           <div className="md:col-span-6 relative">
             <img
@@ -308,12 +325,14 @@ export function HomePage() {
             </p>
             <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6">— the craft</p>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-display text-balance leading-tight">
-              Seven generations,<br />
+              Seven generations,
+              <br />
               <span className="italic text-gold">one wheel.</span>
             </h2>
             <p className="mt-6 md:mt-8 text-base md:text-lg text-cream/70 leading-relaxed max-w-md">
-              We work with a single family of potters in Khurja, whose ancestors have thrown pots
-              on the same wheel for over 180 years. No moulds. No machines. Only clay, water, fire, and time.
+              We work with a single family of potters in Khurja, whose ancestors have thrown pots on
+              the same wheel for over 180 years. No moulds. No machines. Only clay, water, fire, and
+              time.
             </p>
 
             <div className="mt-10 md:mt-12 grid grid-cols-3 gap-4 sm:gap-8 border-t border-cream/20 pt-6 md:pt-8">
@@ -323,8 +342,12 @@ export function HomePage() {
                 { n: "48h", l: "of slow firing" },
               ].map((s) => (
                 <div key={s.l}>
-                  <div className="text-3xl sm:text-4xl md:text-5xl font-display text-gold">{s.n}</div>
-                  <div className="mt-2 text-[10px] sm:text-xs tracking-widest uppercase text-cream/60">{s.l}</div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-display text-gold">
+                    {s.n}
+                  </div>
+                  <div className="mt-2 text-[10px] sm:text-xs tracking-widest uppercase text-cream/60">
+                    {s.l}
+                  </div>
                 </div>
               ))}
             </div>
@@ -337,8 +360,8 @@ export function HomePage() {
         <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6 md:mb-8">— our story</p>
         <p className="text-2xl sm:text-3xl md:text-5xl font-display italic text-earth leading-[1.2] md:leading-[1.15] text-balance">
           &ldquo;<span className="not-italic">Mudkraft</span> is the craft of earth in your hands.
-          We think of every home that keeps our clay as another quiet birth —
-          of stillness, of ritual, of a slower way to hold what matters.&rdquo;
+          We think of every home that keeps our clay as another quiet birth — of stillness, of
+          ritual, of a slower way to hold what matters.&rdquo;
         </p>
         <div className="mt-8 md:mt-10 font-hand text-2xl text-clay">— Ananya, founder</div>
       </section>
@@ -351,14 +374,21 @@ export function HomePage() {
       >
         <div className="max-w-3xl mx-auto text-center text-cream">
           <h2 className="text-4xl sm:text-5xl md:text-7xl font-display text-balance leading-tight">
-            Letters from<br /><span className="italic">the kiln.</span>
+            Letters from
+            <br />
+            <span className="italic">the kiln.</span>
           </h2>
           <p className="mt-6 text-cream/80 max-w-md mx-auto">
             A quiet note once a month — new pieces, small essays on craft, and the occasional
             invitation to the studio.
           </p>
-          <form className="mt-10 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
-            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+          <form
+            className="mt-10 flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <label htmlFor="newsletter-email" className="sr-only">
+              Email address
+            </label>
             <input
               id="newsletter-email"
               name="email"
@@ -371,7 +401,6 @@ export function HomePage() {
               Subscribe
             </button>
           </form>
-
         </div>
       </section>
 
@@ -388,7 +417,9 @@ export function HomePage() {
             <div className="flex items-center justify-between px-6 py-5 border-b border-border">
               <div>
                 <div className="text-xs tracking-[0.3em] uppercase text-clay">Your basket</div>
-                <div className="font-display text-2xl">{count} {count === 1 ? "piece" : "pieces"}</div>
+                <div className="font-display text-2xl">
+                  {count} {count === 1 ? "piece" : "pieces"}
+                </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -408,74 +439,71 @@ export function HomePage() {
               )}
               {cart.map((x) => (
                 <div key={x.slug} className="flex gap-4 py-3 border-b border-border/60">
-                  <img src={x.img} alt={x.name} className="w-20 h-24 object-contain rounded-lg bg-cream p-1" />
+                  {x.img ? (
+                    <img
+                      src={x.img}
+                      alt={x.name}
+                      className="w-20 h-24 object-contain rounded-lg bg-cream p-1"
+                    />
+                  ) : (
+                    <div className="w-20 h-24 rounded-lg bg-earth/5" aria-hidden="true" />
+                  )}
                   <div className="flex-1">
                     <div className="font-display text-lg">{x.name}</div>
                     <div className="text-xs text-muted-foreground">{x.tag}</div>
                     <div className="mt-2 flex items-center gap-3">
-                      <button onClick={() => updateQty(x.slug, -1)} className="w-7 h-7 rounded-full border border-border">−</button>
+                      <button
+                        onClick={() => updateQty(x.slug, -1)}
+                        className="w-7 h-7 rounded-full border border-border"
+                      >
+                        −
+                      </button>
                       <span className="text-sm">{x.qty}</span>
-                      <button onClick={() => updateQty(x.slug, 1)} className="w-7 h-7 rounded-full border border-border">+</button>
-                      <button onClick={() => removeItem(x.slug)} className="ml-auto text-xs text-muted-foreground hover:text-clay">Remove</button>
+                      <button
+                        onClick={() => updateQty(x.slug, 1)}
+                        className="w-7 h-7 rounded-full border border-border"
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => removeItem(x.slug)}
+                        className="ml-auto text-xs text-muted-foreground hover:text-clay"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
-                  <div className="font-display text-lg">₹{(x.priceNum * x.qty).toLocaleString("en-IN")}</div>
+                  <div className="font-display text-lg">{formatPaise(x.pricePaise * x.qty)}</div>
                 </div>
               ))}
             </div>
 
             <div className="px-6 py-5 border-t border-border space-y-4 bg-cream">
               <div className="flex items-baseline justify-between">
-                <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
-                <span className="font-display text-3xl">₹{total.toLocaleString("en-IN")}</span>
+                <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">
+                  Total
+                </span>
+                <span className="font-display text-3xl">{formatPaise(totalPaise)}</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-3">
-                <label className="block">
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Your name</span>
-                  <input
-                    type="text"
-                    value={customer.name}
-                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                    placeholder="Aarushi Sharma"
-                    className="mt-1 w-full bg-transparent border-b border-border focus:border-earth outline-none py-2 text-sm text-earth placeholder:text-muted-foreground/60"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground">Phone (WhatsApp)</span>
-                  <input
-                    type="tel"
-                    value={customer.phone}
-                    onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                    placeholder="+91 98xxx xxxxx"
-                    className="mt-1 w-full bg-transparent border-b border-border focus:border-earth outline-none py-2 text-sm text-earth placeholder:text-muted-foreground/60"
-                  />
-                </label>
-              </div>
-
-              <a
-                href={canCheckout ? whatsappCheckout() : undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-disabled={!canCheckout}
+              <Link
+                href="/checkout"
+                onClick={() => setOpen(false)}
+                aria-disabled={cart.length === 0}
                 className={`w-full inline-flex items-center justify-center gap-2 py-4 rounded-full text-sm tracking-widest uppercase transition ${
-                  canCheckout
+                  cart.length > 0
                     ? "bg-earth text-cream hover:bg-clay"
                     : "bg-muted text-muted-foreground pointer-events-none"
                 }`}
               >
-                <WhatsAppIcon className="w-4 h-4" />
-                Checkout on WhatsApp
-              </a>
+                Checkout
+              </Link>
               <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
                 {cart.length === 0
                   ? "Add a piece to begin."
-                  : !customer.name.trim() || !customer.phone.trim()
-                  ? "Add your name and phone to send the order."
-                  : "We confirm every order personally over WhatsApp — sharing dispatch, packing and payment details before your pieces travel."}
+                  : "Shipping is already included in every price. You can pay online or confirm with us on WhatsApp."}
               </p>
             </div>
-
           </aside>
         </div>
       )}
@@ -483,10 +511,3 @@ export function HomePage() {
   );
 }
 
-function WhatsAppIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <path d="M20.52 3.48A11.86 11.86 0 0 0 12.04 0C5.5 0 .2 5.3.2 11.84c0 2.09.55 4.13 1.6 5.93L0 24l6.4-1.68a11.82 11.82 0 0 0 5.64 1.44h.01c6.54 0 11.84-5.3 11.84-11.84 0-3.16-1.23-6.13-3.37-8.44ZM12.05 21.4h-.01a9.55 9.55 0 0 1-4.87-1.34l-.35-.21-3.8 1 1.02-3.7-.23-.38a9.53 9.53 0 0 1-1.46-5.08c0-5.28 4.3-9.58 9.6-9.58 2.56 0 4.97.99 6.78 2.8a9.53 9.53 0 0 1 2.81 6.79c0 5.28-4.3 9.58-9.59 9.58Zm5.26-7.18c-.29-.14-1.7-.84-1.96-.94-.26-.1-.45-.14-.64.14-.19.29-.74.94-.9 1.13-.17.19-.33.21-.62.07-.29-.14-1.22-.45-2.32-1.43-.86-.77-1.44-1.72-1.6-2-.17-.29-.02-.44.13-.58.13-.13.29-.33.43-.5.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.36-.26.29-1 .98-1 2.38 0 1.4 1.02 2.75 1.17 2.94.14.19 2.02 3.09 4.9 4.33.68.29 1.22.47 1.63.6.68.22 1.31.19 1.8.11.55-.08 1.7-.7 1.94-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.34Z"/>
-    </svg>
-  );
-}

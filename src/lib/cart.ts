@@ -1,11 +1,27 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { Product } from "./products";
+import type { ProductView } from "./product-view";
 
-export type CartItem = Product & { qty: number };
+/**
+ * Browser cart.
+ *
+ * Holds a display snapshot (name, image, price) so the drawer can render
+ * without a round trip. That snapshot is NOT authoritative: localStorage is
+ * fully editable by the visitor, so checkout must re-resolve every price from
+ * the database server-side before charging anything.
+ */
+export type CartItem = {
+  slug: string;
+  name: string;
+  tag: string;
+  img: string | null;
+  /** Display snapshot only — never trusted for the amount actually charged. */
+  pricePaise: number;
+  qty: number;
+};
 
-const STORAGE_KEY = "mudkraft.cart.v1";
+const STORAGE_KEY = "mudkraft.cart.v2";
 const isBrowser = typeof window !== "undefined";
 
 let state: CartItem[] = load();
@@ -17,7 +33,16 @@ function load(): CartItem[] {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Drop anything malformed rather than letting it reach the totals.
+    return parsed.filter(
+      (item): item is CartItem =>
+        typeof item?.slug === "string" &&
+        typeof item?.pricePaise === "number" &&
+        Number.isFinite(item.pricePaise) &&
+        typeof item?.qty === "number" &&
+        item.qty > 0,
+    );
   } catch {
     return [];
   }
@@ -39,15 +64,24 @@ function emit() {
 
 function subscribe(l: () => void) {
   listeners.add(l);
-  return () => listeners.delete(l);
+  return () => {
+    listeners.delete(l);
+  };
 }
 
 function getSnapshot() {
   return state;
 }
 
+/**
+ * Must be a stable reference. useSyncExternalStore compares snapshots by
+ * identity, so returning a fresh `[]` each call makes every render look like a
+ * state change and loops forever.
+ */
+const EMPTY_CART: CartItem[] = [];
+
 function getServerSnapshot(): CartItem[] {
-  return [];
+  return EMPTY_CART;
 }
 
 export function useCart() {
@@ -59,12 +93,22 @@ export function useCartCount() {
   return cart.reduce((s, x) => s + x.qty, 0);
 }
 
-export function addToCart(p: Product, qty = 1) {
-  const existing = state.find((x) => x.slug === p.slug);
+export function addToCart(product: ProductView, qty = 1) {
+  const existing = state.find((x) => x.slug === product.slug);
   if (existing) {
-    state = state.map((x) => (x.slug === p.slug ? { ...x, qty: x.qty + qty } : x));
+    state = state.map((x) => (x.slug === product.slug ? { ...x, qty: x.qty + qty } : x));
   } else {
-    state = [...state, { ...p, qty }];
+    state = [
+      ...state,
+      {
+        slug: product.slug,
+        name: product.name,
+        tag: product.tag,
+        img: product.cutout ?? product.img,
+        pricePaise: product.pricePaise,
+        qty,
+      },
+    ];
   }
   emit();
 }

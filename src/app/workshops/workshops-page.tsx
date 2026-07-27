@@ -6,8 +6,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import handsClay from "@/assets/hands-clay.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
+import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
-const WHATSAPP_NUMBER = "919990649990";
 const ENQUIRY_EMAIL = "hello@mudkraft.com";
 
 const experiences = [

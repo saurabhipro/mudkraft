@@ -1,31 +1,40 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { getProductBySlug, products } from "@/lib/products";
-import { getReviewsForProduct, getReviewSummary } from "@/lib/reviews";
+import { displayImage, toProductView } from "@/lib/product-view";
+import { toReviewView } from "@/lib/review-view";
 import { SITE_URL } from "@/lib/seo";
+import { getActiveProducts, getProductBySlug } from "@/server/store/products";
+import { getApprovedReviews, getReviewSummary } from "@/server/store/reviews";
 import { ProductDetail } from "./product-detail";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const products = await getActiveProducts();
   return products.map((p) => ({ slug: p.slug }));
 }
 
+/**
+ * A product published after the build should not 404 until the next deploy.
+ * Rendering unknown slugs on demand lets the catalogue grow between builds;
+ * getProductBySlug still returns null for draft or archived items.
+ */
+export const dynamicParams = true;
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const p = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
-  if (!p) {
-    return {
-      title: "Piece not found — Mudkraft",
-      robots: { index: false },
-    };
+  if (!product) {
+    return { title: "Piece not found — Mudkraft", robots: { index: false } };
   }
 
-  const url = `${SITE_URL}/shop/${p.slug}`;
-  const title = `${p.name} — ${p.tag} · Mudkraft`;
-  const description = p.description.slice(0, 155);
+  const view = toProductView(product);
+  const url = `${SITE_URL}/shop/${view.slug}`;
+  const title = `${view.name} — ${view.tag} · Mudkraft`;
+  const description = (view.description || view.note).slice(0, 155);
+  const image = displayImage(view);
 
   return {
     title,
@@ -37,33 +46,50 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url,
-      images: [p.img],
+      images: image ? [image] : undefined,
     },
-    twitter: { card: "summary_large_image", images: [p.img] },
+    twitter: { card: "summary_large_image", images: image ? [image] : undefined },
   };
 }
 
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const url = `${SITE_URL}/shop/${product.slug}`;
-  const summary = getReviewSummary(product.slug);
+  const view = toProductView(product);
+  const [allProducts, reviews, summary] = await Promise.all([
+    getActiveProducts(),
+    getApprovedReviews(slug),
+    getReviewSummary(slug),
+  ]);
+
+  // Same category first, then anything else, so the rail is never empty on a
+  // catalogue where a category may hold a single product.
+  const others = allProducts.filter((p) => p.slug !== view.slug).map(toProductView);
+  const sameCategory = others.filter((p) => p.category === view.category);
+  const alsoLove = (sameCategory.length > 0 ? sameCategory : others).slice(0, 3);
+
+  const url = `${SITE_URL}/shop/${view.slug}`;
+  const image = displayImage(view);
+  const reviewViews = reviews.map(toReviewView);
 
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: product.name,
-    description: product.description,
-    image: product.img,
+    name: view.name,
+    description: view.description || view.note,
+    image: image ?? undefined,
     brand: { "@type": "Brand", name: "Mudkraft" },
-    category: product.category,
+    category: view.category ?? undefined,
     offers: {
       "@type": "Offer",
-      price: product.priceNum,
+      price: (view.pricePaise / 100).toFixed(2),
       priceCurrency: "INR",
-      availability: "https://schema.org/InStock",
+      availability:
+        product.trackInventory && product.stockQty <= 0
+          ? "https://schema.org/OutOfStock"
+          : "https://schema.org/InStock",
       url,
     },
     aggregateRating:
@@ -76,21 +102,20 @@ export default async function Page({ params }: PageProps) {
             worstRating: "1",
           }
         : undefined,
-    review: getReviewsForProduct(product.slug)
-      .slice(0, 5)
-      .map((r) => ({
-        "@type": "Review",
-        reviewRating: {
-          "@type": "Rating",
-          ratingValue: r.rating,
-          bestRating: "5",
-          worstRating: "1",
-        },
-        author: { "@type": "Person", name: r.name },
-        datePublished: r.date,
-        name: r.title,
-        reviewBody: r.body,
-      })),
+    // Only approved reviews reach this array; the store filters in SQL.
+    review: reviewViews.slice(0, 5).map((r) => ({
+      "@type": "Review",
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+        bestRating: "5",
+        worstRating: "1",
+      },
+      author: { "@type": "Person", name: r.name },
+      datePublished: r.date,
+      name: r.title,
+      reviewBody: r.body,
+    })),
   };
 
   return (
@@ -100,7 +125,12 @@ export default async function Page({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
-      <ProductDetail product={product} />
+      <ProductDetail
+        product={view}
+        alsoLove={alsoLove}
+        reviews={reviewViews}
+        reviewSummary={summary}
+      />
     </>
   );
 }
