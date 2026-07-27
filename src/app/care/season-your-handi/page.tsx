@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import handiSoak from "@/assets/handi-soak.jpg";
 import stepSoak from "@/assets/step-soak.jpg";
 import stepDry from "@/assets/step-dry.jpg";
@@ -47,8 +48,6 @@ const howToJsonLd = {
     { "@type": "HowToStep", name: "Daily care", text: "Wash with warm water, avoid soap, and always heat on a low flame from cold." },
   ],
 };
-
-const WHATSAPP_NUMBER = "919990649990";
 
 const steps = [
   {

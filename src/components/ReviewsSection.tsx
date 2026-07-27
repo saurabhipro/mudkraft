@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getReviewsForProduct, getReviewSummary, type Review } from "@/lib/reviews";
+import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
 
 function Lightbox({
   photos,
@@ -232,9 +232,20 @@ function formatDate(iso: string) {
   }
 }
 
-export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
-  const reviews = useMemo(() => getReviewsForProduct(slug), [slug]);
-  const summary = useMemo(() => getReviewSummary(slug), [slug]);
+/**
+ * Reviews and their summary are fetched on the server and passed in — only
+ * approved reviews ever reach this component, because the store layer filters
+ * on status in SQL rather than relying on a caller to remember.
+ */
+export function ReviewsSection({
+  name,
+  reviews,
+  summary,
+}: {
+  name: string;
+  reviews: ReviewView[];
+  summary: ReviewSummaryView;
+}) {
   const [filter, setFilter] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [visible, setVisible] = useState(4);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -254,6 +265,28 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
     const idx = galleryPhotos.findIndex((p) => p.src === photo);
     if (idx >= 0) setLightboxIndex(idx);
   };
+
+  // Placed after every hook so the hook order stays stable across renders.
+  // Without this the section would render "0.0" with five empty bars, which
+  // reads as broken rather than as "nobody has reviewed this yet".
+  if (summary.count === 0) {
+    return (
+      <section
+        id="reviews"
+        className="max-w-7xl mx-auto px-6 md:px-10 py-16 md:py-24 border-t border-border"
+        aria-labelledby="reviews-heading"
+      >
+        <div className="text-xs tracking-[0.3em] uppercase text-clay">Voices from the kitchen</div>
+        <h2 id="reviews-heading" className="mt-3 font-display text-4xl md:text-5xl text-earth">
+          No reviews <span className="italic">yet</span>
+        </h2>
+        <p className="mt-4 max-w-lg text-foreground/75 leading-relaxed">
+          This piece hasn&apos;t been reviewed yet. If you&apos;ve brought one home, we&apos;d love
+          to hear how it&apos;s settling in.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -338,7 +371,7 @@ export function ReviewsSection({ slug, name }: { slug: string; name: string }) {
             </div>
           )}
 
-          {shown.map((r: Review) => (
+          {shown.map((r: ReviewView) => (
             <article
               key={r.id}
               className="rounded-2xl border border-earth/15 bg-cream/60 p-6 md:p-7"

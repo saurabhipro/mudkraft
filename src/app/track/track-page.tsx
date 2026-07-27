@@ -6,8 +6,7 @@ import { z } from "zod";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButton } from "@/components/ShareButton";
-
-const WHATSAPP_NUMBER = "919990649990";
+import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
 // Validation
 const orderSchema = z.object({

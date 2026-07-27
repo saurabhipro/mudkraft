@@ -81,6 +81,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
+      // globals.css sets `scroll-behavior: smooth` on <html>. Without this
+      // attribute Next cannot tell an intentional smooth scroll from one it
+      // should suppress, so route changes animate the scroll restoration.
+      data-scroll-behavior="smooth"
       className={`${cormorant.variable} ${inter.variable} ${caveat.variable}`}
     >
       <body>

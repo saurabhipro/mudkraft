@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
 
 import { SITE_URL as BASE_URL } from "@/lib/seo";
+import { getActiveProducts } from "@/server/store/products";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const entries: MetadataRoute.Sitemap = [
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticEntries: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`, changeFrequency: "weekly", priority: 1.0 },
     { url: `${BASE_URL}/benefits`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE_URL}/workshops`, changeFrequency: "monthly", priority: 0.8 },
@@ -19,5 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/trust`, changeFrequency: "yearly", priority: 0.4 },
   ];
 
-  return entries;
+  // Only active products are returned, so drafts never leak into the sitemap.
+  const products = await getActiveProducts();
+  const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
+    url: `${BASE_URL}/shop/${product.slug}`,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
+  return [...staticEntries, ...productEntries];
 }

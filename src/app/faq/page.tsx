@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { OG_IMAGE } from "@/lib/seo";
+import { whatsappLink } from "@/lib/whatsapp";
 
 const TITLE = "FAQ — Mudkraft";
 const DESCRIPTION =
@@ -111,7 +112,7 @@ export default function FAQPage() {
             We answer every message ourselves — no bots, no scripts.
           </p>
           <a
-            href="https://wa.me/919990649990?text=Namaste%20Mudkraft!%20I%20have%20a%20question."
+            href={whatsappLink(["Namaste Mudkraft! I have a question."])}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-8 inline-flex items-center gap-2 bg-gold text-earth px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:scale-105 transition-transform"

@@ -4,39 +4,42 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
-import { products, type Product } from "@/lib/products";
+import { displayImage, type ProductView } from "@/lib/product-view";
+import { formatPaise } from "@/lib/money";
+import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
 import { addToCart, useCartCount } from "@/lib/cart";
 import { ShareButton } from "@/components/ShareButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
-import { getReviewSummary } from "@/lib/reviews";
 import { SITE_URL } from "@/lib/seo";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { whatsappLink } from "@/lib/whatsapp";
 
-const WHATSAPP_NUMBER = "919990649990";
 
-function WhatsAppIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <path d="M20.52 3.48A11.86 11.86 0 0 0 12.04 0C5.5 0 .2 5.3.2 11.84c0 2.09.55 4.13 1.6 5.93L0 24l6.4-1.68a11.82 11.82 0 0 0 5.64 1.44h.01c6.54 0 11.84-5.3 11.84-11.84 0-3.16-1.23-6.13-3.37-8.44ZM12.05 21.4h-.01a9.55 9.55 0 0 1-4.87-1.34l-.35-.21-3.8 1 1.02-3.7-.23-.38a9.53 9.53 0 0 1-1.46-5.08c0-5.28 4.3-9.58 9.6-9.58 2.56 0 4.97.99 6.78 2.8a9.53 9.53 0 0 1 2.81 6.79c0 5.28-4.3 9.58-9.59 9.58Zm5.26-7.18c-.29-.14-1.7-.84-1.96-.94-.26-.1-.45-.14-.64.14-.19.29-.74.94-.9 1.13-.17.19-.33.21-.62.07-.29-.14-1.22-.45-2.32-1.43-.86-.77-1.44-1.72-1.6-2-.17-.29-.02-.44.13-.58.13-.13.29-.33.43-.5.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.36-.26.29-1 .98-1 2.38 0 1.4 1.02 2.75 1.17 2.94.14.19 2.02 3.09 4.9 4.33.68.29 1.22.47 1.63.6.68.22 1.31.19 1.8.11.55-.08 1.7-.7 1.94-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.34Z"/>
-    </svg>
-  );
-}
-
-function whatsappBuyNow(p: Product, qty: number) {
-  const total = p.priceNum * qty;
-  const text = [
+function whatsappBuyNow(p: ProductView, qty: number) {
+  return whatsappLink([
     "Namaste Mudkraft 🙏",
     `I'd like to order ${qty} × ${p.name} (${p.tag}).`,
-    `Total: ₹${total.toLocaleString("en-IN")}`,
+    `Total: ${formatPaise(p.pricePaise * qty)}`,
     "",
     "Please share dispatch & payment details. Dhanyavaad 🙏",
-  ].join("\n");
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  ]);
 }
 
-export function ProductDetail({ product: p }: { product: Product }) {
+export function ProductDetail({
+  product: p,
+  alsoLove,
+  reviews,
+  reviewSummary,
+}: {
+  product: ProductView;
+  alsoLove: ProductView[];
+  reviews: ReviewView[];
+  reviewSummary: ReviewSummaryView;
+}) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const cartCount = useCartCount();
+  const heroImage = displayImage(p);
 
   const handleAdd = () => {
     addToCart(p, qty);
@@ -44,16 +47,14 @@ export function ProductDetail({ product: p }: { product: Product }) {
     setTimeout(() => setAdded(false), 2200);
   };
 
-  const related = products.filter((x) => x.slug !== p.slug && x.category === p.category).slice(0, 3);
-  const fallback = products.filter((x) => x.slug !== p.slug).slice(0, 3);
-  const alsoLove = related.length ? related : fallback;
-
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader
         rightSlot={
+          // There is no cart drawer on this page, so the basket goes where the
+          // items can actually be reviewed and paid for.
           <Link
-            href="/"
+            href={cartCount > 0 ? "/checkout" : "/#collection"}
             className="relative inline-flex items-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-4 sm:px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
           >
             Basket
@@ -75,13 +76,19 @@ export function ProductDetail({ product: p }: { product: Product }) {
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-16 md:pt-14 md:pb-24 grid md:grid-cols-2 gap-10 md:gap-16 items-start">
         <div className="relative">
           <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,86%)]">
-            <img
-              src={p.img}
-              alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
-              width={1200}
-              height={1500}
-              className="w-full h-full object-contain p-3 md:p-4 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)]"
-            />
+            {heroImage ? (
+              <img
+                src={heroImage}
+                alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
+                width={1200}
+                height={1500}
+                className="w-full h-full object-contain p-3 md:p-4 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)]"
+              />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-earth/30 font-hand text-3xl">
+                photograph coming soon
+              </div>
+            )}
             <div className="absolute top-5 left-5 text-xs tracking-widest uppercase bg-earth/90 text-cream px-3 py-1.5 rounded-full">
               {p.tag}
             </div>
@@ -99,7 +106,7 @@ export function ProductDetail({ product: p }: { product: Product }) {
           <p className="mt-3 font-hand text-clay text-2xl">{p.note}</p>
 
           {(() => {
-            const s = getReviewSummary(p.slug);
+            const s = reviewSummary;
             if (!s.count) return null;
             return (
               <a
@@ -121,7 +128,16 @@ export function ProductDetail({ product: p }: { product: Product }) {
 
           <div className="mt-6 flex items-baseline gap-4">
             <div className="font-display text-4xl text-earth">{p.price}</div>
-            <div className="text-xs tracking-widest uppercase text-muted-foreground">Incl. taxes</div>
+            {p.compareAt && (
+              <div className="font-display text-xl text-muted-foreground line-through">
+                {p.compareAt}
+              </div>
+            )}
+            <div className="text-xs tracking-widest uppercase text-muted-foreground">
+              {p.fulfilmentMode === "pickup_only"
+                ? "Studio pickup · incl. taxes"
+                : "Incl. taxes & delivery"}
+            </div>
           </div>
 
           <p className="mt-8 text-lg leading-relaxed text-foreground/85">{p.description}</p>
@@ -215,7 +231,7 @@ export function ProductDetail({ product: p }: { product: Product }) {
         </div>
       </section>
 
-      <ReviewsSection slug={p.slug} name={p.name} />
+      <ReviewsSection name={p.name} reviews={reviews} summary={reviewSummary} />
 
       {alsoLove.length > 0 && (
         <section className="bg-cream/60 py-16 md:py-24 border-t border-border">
@@ -239,12 +255,18 @@ export function ProductDetail({ product: p }: { product: Product }) {
                   className="group block"
                 >
                   <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gradient-to-br from-cream to-[hsl(35,35%,88%)]">
-                    <img
-                      src={x.img}
-                      alt={x.name}
-                      loading="lazy"
-                      className="w-full h-full object-contain p-2 transition-transform duration-[1400ms] group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.25)]"
-                    />
+                    {displayImage(x) ? (
+                      <img
+                        src={displayImage(x)!}
+                        alt={x.name}
+                        loading="lazy"
+                        className="w-full h-full object-contain p-2 transition-transform duration-[1400ms] group-hover:scale-105 drop-shadow-[0_25px_35px_rgba(80,40,20,0.25)]"
+                      />
+                    ) : (
+                      <div className="w-full h-full grid place-items-center text-earth/30 font-hand text-xl">
+                        coming soon
+                      </div>
+                    )}
                   </div>
                   <div className="mt-4 flex items-baseline justify-between">
                     <div>

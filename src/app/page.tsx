@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
-import { products } from "@/lib/products";
+import { displayImage, toProductView } from "@/lib/product-view";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { getCategories } from "@/server/store/categories";
+import { getActiveProducts } from "@/server/store/products";
 import { HomePage } from "./home-page";
 
 const DESCRIPTION =
@@ -21,32 +23,41 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
 };
 
-const productsJsonLd = {
-  "@context": "https://schema.org",
-  "@graph": products.map((p) => ({
-    "@type": "Product",
-    name: p.name,
-    description: `${p.tag} — handcrafted river-clay piece by Mudkraft.`,
-    image: p.img,
-    brand: { "@type": "Brand", name: "Mudkraft" },
-    offers: {
-      "@type": "Offer",
-      price: p.priceNum,
-      priceCurrency: "INR",
-      availability: "https://schema.org/InStock",
-      url: `${SITE_URL}/#collection`,
-    },
-  })),
-};
+export default async function Page() {
+  // Both reads go through the cached store layer, so this page is served from
+  // cache until an admin edit revalidates the `products` tag.
+  const [products, categories] = await Promise.all([getActiveProducts(), getCategories()]);
+  const views = products.map(toProductView);
 
-export default function Page() {
+  const productsJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": views.map((p) => ({
+      "@type": "Product",
+      name: p.name,
+      description: p.description || `${p.tag} — handcrafted river-clay piece by Mudkraft.`,
+      image: displayImage(p) ?? undefined,
+      brand: { "@type": "Brand", name: "Mudkraft" },
+      offers: {
+        "@type": "Offer",
+        // Schema.org expects a plain decimal, so convert out of paise.
+        price: (p.pricePaise / 100).toFixed(2),
+        priceCurrency: "INR",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/shop/${p.slug}`,
+      },
+    })),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productsJsonLd) }}
       />
-      <HomePage />
+      <HomePage
+        products={views}
+        categories={categories.map((c) => c.name)}
+      />
     </>
   );
 }
