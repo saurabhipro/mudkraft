@@ -105,7 +105,7 @@ export default function FAQPage() {
           ))}
         </ul>
 
-        <div className="mt-16 bg-earth text-cream rounded-3xl p-10 md:p-14 text-center">
+        <div className="mt-16 bg-earth text-cream rounded-3xl p-6 sm:p-10 md:p-14 text-center">
           <div className="font-hand text-2xl text-gold">still wondering?</div>
           <h2 className="mt-2 font-display text-3xl md:text-5xl">Talk to us on WhatsApp</h2>
           <p className="mt-4 text-cream/70 max-w-lg mx-auto">

@@ -144,7 +144,7 @@ export function TrackPage() {
       <SiteHeader />
 
       {/* Header */}
-      <section className="max-w-4xl mx-auto px-6 md:px-10 pt-16 pb-8">
+      <section className="max-w-4xl mx-auto px-6 md:px-10 pt-24 md:pt-28 pb-8">
         <div className="text-xs tracking-[0.35em] uppercase text-clay">Order Status</div>
         <div className="flex flex-wrap items-end justify-between gap-6 mt-3">
           <h1 className="font-display text-5xl md:text-6xl text-earth leading-[1.05]">

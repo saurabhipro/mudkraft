@@ -50,6 +50,8 @@ export function HomePage({
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader
+        cartCount={count}
+        onCartOpen={() => setOpen(true)}
         rightSlot={
           <>
             <a
@@ -64,7 +66,7 @@ export function HomePage({
             </a>
             <button
               onClick={() => setOpen(true)}
-              className="relative inline-flex items-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-4 sm:px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
+              className="relative hidden md:inline-flex items-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
             >
               Cart
               <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-gold text-earth text-[11px] font-medium">

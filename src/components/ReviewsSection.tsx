@@ -65,10 +65,10 @@ function Lightbox({
     >
       {/* Top bar */}
       <div
-        className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 text-cream"
+        className="absolute top-0 left-0 right-0 flex items-center justify-between gap-3 px-3 sm:px-6 py-4 text-cream"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-xs tracking-[0.3em] uppercase opacity-80">
+        <div className="min-w-0 truncate text-xs tracking-[0.3em] uppercase opacity-80">
           {index + 1} / {photos.length} · by {current.author}
         </div>
         <div className="flex items-center gap-2">
@@ -154,9 +154,10 @@ function Lightbox({
       {/* Thumbnails */}
       {photos.length > 1 && (
         <div
-          className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 px-4"
+          className="absolute bottom-4 left-0 right-0 flex items-center overflow-x-auto px-4"
           onClick={(e) => e.stopPropagation()}
         >
+          <div className="mx-auto flex w-max items-center gap-2">
           {photos.map((p, i) => (
             <button
               key={i}
@@ -174,6 +175,7 @@ function Lightbox({
               <img src={p.src} alt="" className="w-full h-full object-contain bg-cream/10" />
             </button>
           ))}
+          </div>
         </div>
       )}
     </div>
@@ -376,8 +378,8 @@ export function ReviewsSection({
               key={r.id}
               className="rounded-2xl border border-earth/15 bg-cream/60 p-6 md:p-7"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div>
+              <div className="flex items-start justify-between gap-2 sm:gap-4">
+                <div className="min-w-0">
                   <div className="flex items-center gap-3">
                     <div
                       className="w-10 h-10 rounded-full bg-earth text-cream flex items-center justify-center font-display text-lg"

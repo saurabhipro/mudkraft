@@ -78,7 +78,7 @@ export function ShareButton({
       {open && (
         <div
           role="menu"
-          className="absolute z-30 mt-2 right-0 min-w-[220px] rounded-2xl border border-earth/15 bg-cream shadow-2xl p-2"
+          className="fixed inset-x-4 bottom-4 z-50 sm:absolute sm:inset-x-auto sm:bottom-auto sm:z-30 sm:mt-2 sm:right-0 sm:w-[220px] rounded-2xl border border-earth/15 bg-cream shadow-2xl p-2"
           onMouseLeave={() => setOpen(false)}
         >
           <a
