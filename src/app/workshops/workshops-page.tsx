@@ -180,7 +180,7 @@ export function WorkshopsPage() {
           {experiences.map((e) => (
             <div
               key={e.title}
-              className="group relative rounded-[1.5rem] border border-border bg-cream/50 p-8 hover:border-clay transition-colors"
+              className="group relative rounded-[1.5rem] border border-border bg-cream/50 p-6 sm:p-8 hover:border-clay transition-colors"
             >
               <div className="text-xs tracking-widest uppercase text-clay">{e.tag}</div>
               <h3 className="mt-2 text-3xl font-display text-earth">{e.title}</h3>
@@ -193,7 +193,7 @@ export function WorkshopsPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-8 flex items-baseline justify-between border-t border-border/60 pt-5">
+              <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3 border-t border-border/60 pt-5">
                 <div className="font-display text-2xl text-earth">{e.price}</div>
                 <a
                   href="#book"

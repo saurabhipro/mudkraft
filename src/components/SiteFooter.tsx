@@ -106,9 +106,9 @@ export function SiteFooter() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-2xl hover:scale-110 transition-transform"
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#25D366] text-white shadow-2xl hover:scale-110 transition-transform"
       >
-        <WhatsAppIcon className="w-7 h-7" />
+        <WhatsAppIcon className="w-6 h-6 sm:w-7 sm:h-7" />
       </a>
     </footer>
   );

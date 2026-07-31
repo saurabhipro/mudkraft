@@ -60,7 +60,7 @@ export function SearchField({
         event.preventDefault();
         setParam({ [name]: value.trim() || null });
       }}
-      className="relative min-w-[14rem] flex-1 sm:max-w-xs"
+      className="relative min-w-0 flex-1 sm:min-w-[14rem] sm:max-w-xs"
     >
       {label && <span className="sr-only">{label}</span>}
       <Search
@@ -108,13 +108,13 @@ export function FilterSelect({
   const value = searchParams.get(name) ?? "";
 
   return (
-    <label className="inline-flex items-center gap-2">
+    <label className="inline-flex min-w-0 max-w-full items-center gap-2">
       <span className="text-[11px] tracking-wider uppercase text-earth/50">{label}</span>
       <select
         value={value}
         disabled={isPending}
         onChange={(event) => setParam({ [name]: event.target.value || null })}
-        className="rounded-full border border-earth/15 bg-background px-3 py-2 text-sm text-earth focus:border-clay focus:outline-none focus:ring-2 focus:ring-clay/20"
+        className="min-w-0 max-w-[12rem] rounded-full border border-earth/15 bg-background px-3 py-2 text-sm text-earth focus:border-clay focus:outline-none focus:ring-2 focus:ring-clay/20"
       >
         <option value="">{allLabel}</option>
         {options.map((option) => (

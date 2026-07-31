@@ -42,7 +42,11 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+  @media (min-width: 768px) {
+    html { scroll-padding-top: 6.5rem; }
+  }
+  html, body { overflow-x: clip; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);

@@ -33,7 +33,7 @@ export default function ShippingReturnsPage() {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader />
 
-      <section className="max-w-4xl mx-auto px-6 md:px-10 pt-16 pb-8">
+      <section className="max-w-4xl mx-auto px-6 md:px-10 pt-24 md:pt-28 pb-8">
         <div className="text-xs tracking-[0.35em] uppercase text-clay">Studio Policy</div>
         <div className="flex flex-wrap items-end justify-between gap-6 mt-3">
           <h1 className="font-display text-5xl md:text-6xl text-earth leading-[1.05]">
@@ -59,21 +59,21 @@ export default function ShippingReturnsPage() {
 
       <section className="max-w-4xl mx-auto px-6 md:px-10 py-8">
         <h2 className="font-display text-3xl text-earth mb-6">Timelines &amp; Charges</h2>
-        <div className="overflow-hidden rounded-2xl border border-earth/15">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-2xl border border-earth/15">
+          <table className="w-full min-w-[34rem] text-sm">
             <thead className="bg-earth text-cream">
               <tr>
-                <th className="text-left px-4 py-3 font-medium tracking-widest uppercase text-xs">Zone</th>
-                <th className="text-left px-4 py-3 font-medium tracking-widest uppercase text-xs">Delivery</th>
-                <th className="text-left px-4 py-3 font-medium tracking-widest uppercase text-xs">Charge</th>
+                <th className="text-left px-3 sm:px-4 py-3 font-medium tracking-widest uppercase text-xs">Zone</th>
+                <th className="text-left px-3 sm:px-4 py-3 font-medium tracking-widest uppercase text-xs">Delivery</th>
+                <th className="text-left px-3 sm:px-4 py-3 font-medium tracking-widest uppercase text-xs">Charge</th>
               </tr>
             </thead>
             <tbody>
               {SHIP_ZONES.map((z, i) => (
                 <tr key={z.zone} className={i % 2 === 0 ? "bg-cream/60" : "bg-cream/30"}>
-                  <td className="px-4 py-3 text-earth font-medium">{z.zone}</td>
-                  <td className="px-4 py-3 text-foreground/80">{z.days}</td>
-                  <td className="px-4 py-3 text-foreground/80">{z.charge}</td>
+                  <td className="px-3 sm:px-4 py-3 text-earth font-medium">{z.zone}</td>
+                  <td className="px-3 sm:px-4 py-3 text-foreground/80">{z.days}</td>
+                  <td className="px-3 sm:px-4 py-3 text-foreground/80">{z.charge}</td>
                 </tr>
               ))}
             </tbody>

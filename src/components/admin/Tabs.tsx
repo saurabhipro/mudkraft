@@ -71,7 +71,7 @@ export function Tabs({
   };
 
   return (
-    <nav aria-label={ariaLabel} className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-earth/12">
+    <nav aria-label={ariaLabel} className="flex flex-nowrap items-center gap-x-6 overflow-x-auto border-b border-earth/12">
       {items.map((item) => {
         const active = current === item.value;
         const Icon = item.icon ? TAB_ICONS[item.icon] : undefined;
@@ -81,7 +81,7 @@ export function Tabs({
             key={item.value || "all"}
             href={hrefFor(item.value)}
             aria-current={active ? "page" : undefined}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-1 pb-3 pt-2 text-sm transition-colors ${
+            className={`-mb-px flex shrink-0 items-center gap-2 border-b-2 px-1 pb-3 pt-2 text-sm transition-colors ${
               active
                 ? "border-clay text-clay-deep"
                 : "border-transparent text-earth/55 hover:text-earth"

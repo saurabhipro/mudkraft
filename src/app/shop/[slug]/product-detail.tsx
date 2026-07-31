@@ -100,7 +100,7 @@ export function ProductDetail({
 
         <div>
           <div className="text-[11px] tracking-[0.35em] uppercase text-clay">{p.category}</div>
-          <h1 className="mt-3 font-display text-5xl md:text-6xl text-earth leading-[1.05]">
+          <h1 className="mt-3 font-display text-4xl sm:text-5xl md:text-6xl text-earth leading-[1.05]">
             {p.name}
           </h1>
           <p className="mt-3 font-hand text-clay text-2xl">{p.note}</p>
@@ -126,7 +126,7 @@ export function ProductDetail({
             );
           })()}
 
-          <div className="mt-6 flex items-baseline gap-4">
+          <div className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-2">
             <div className="font-display text-4xl text-earth">{p.price}</div>
             {p.compareAt && (
               <div className="font-display text-xl text-muted-foreground line-through">

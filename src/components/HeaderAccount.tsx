@@ -38,7 +38,7 @@ export function HeaderAccount() {
 
   // Reserve the space while the session resolves, so the header doesn't jump.
   if (isPending) {
-    return <span className="hidden sm:block w-20 h-9" aria-hidden="true" />;
+    return <span className="block w-16 sm:w-20 h-9" aria-hidden="true" />;
   }
 
   if (!session) {
@@ -62,7 +62,7 @@ export function HeaderAccount() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="inline-flex items-center gap-2 text-xs tracking-widest uppercase border border-earth/30 text-earth px-3 sm:px-4 py-2.5 rounded-full hover:bg-earth hover:text-cream transition-colors max-w-[10rem]"
+        className="inline-flex items-center gap-2 text-xs tracking-widest uppercase border border-earth/30 text-earth px-3 sm:px-4 py-2.5 rounded-full hover:bg-earth hover:text-cream transition-colors max-w-[7rem] sm:max-w-[10rem]"
       >
         {session.user.image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -78,7 +78,7 @@ export function HeaderAccount() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 mt-2 w-52 rounded-2xl border border-earth/15 bg-background shadow-lg p-2 z-50"
+          className="absolute right-0 mt-2 w-52 max-w-[calc(100vw-2rem)] rounded-2xl border border-earth/15 bg-background shadow-lg p-2 z-50"
         >
           <div className="px-3 py-2 text-xs text-muted-foreground truncate border-b border-earth/10">
             {session.user.email}

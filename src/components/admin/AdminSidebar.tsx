@@ -20,8 +20,8 @@ export function AdminSidebar() {
       aria-label="Admin sections"
       className="
         md:fixed md:inset-y-0 md:left-0 md:z-40 md:w-24 md:flex-col md:border-r md:border-earth/12
-        md:bg-cream/40 md:pt-[4.25rem]
-        flex w-full overflow-x-auto border-b border-earth/12 bg-cream/40
+        md:bg-cream/40 md:pt-[4.25rem] md:mt-0
+        mt-[4.25rem] flex w-full overflow-x-auto border-b border-earth/12 bg-cream/40
       "
     >
       <ul className="flex md:flex-col md:gap-1 md:py-4 md:px-2">

@@ -213,7 +213,7 @@ export function ImportExport() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-earth/12 px-6 py-4">
+            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-earth/12 px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <button
                 type="button"
                 onClick={close}

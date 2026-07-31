@@ -34,7 +34,16 @@ function useHash() {
   return useSyncExternalStore(subscribeToHash, getHashSnapshot, getServerHashSnapshot);
 }
 
-export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
+export function SiteHeader({
+  rightSlot,
+  cartCount,
+  onCartOpen,
+}: {
+  rightSlot?: ReactNode;
+  /** When provided, the mobile hamburger shows a count badge and the sheet gains a Cart entry. */
+  cartCount?: number;
+  onCartOpen?: () => void;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const path = usePathname();
   const hash = useHash();
@@ -87,7 +96,7 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
 
           {/* Wordmark */}
           <span className="flex flex-col leading-none min-w-0">
-            <span className="font-display text-earth text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight leading-none whitespace-nowrap">
+            <span className="font-display text-earth text-xl sm:text-3xl md:text-4xl font-medium tracking-tight leading-none whitespace-nowrap">
               Mud<span className="italic">kraft</span>
             </span>
             <span className="hidden sm:flex items-center gap-2 mt-1.5">
@@ -116,7 +125,7 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {rightSlot}
           <HeaderAccount />
           <button
@@ -124,9 +133,14 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
-            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full border border-earth/30 text-earth hover:bg-earth hover:text-cream transition-colors"
+            className="md:hidden relative inline-flex items-center justify-center w-10 h-10 rounded-full border border-earth/30 text-earth hover:bg-earth hover:text-cream transition-colors"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {typeof cartCount === "number" && cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-gold text-earth text-[10px] font-medium border border-background">
+                {cartCount}
+              </span>
+            )}
           </button>
         </div>
       </nav>
@@ -134,7 +148,7 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
       {/* Mobile sheet */}
       <div
         className={`md:hidden overflow-hidden transition-[max-height,opacity] duration-500 ease-out ${
-          mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          mobileOpen ? "max-h-[80vh] overflow-y-auto opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="px-6 pb-8 pt-2 flex flex-col divide-y divide-border/40 border-t border-border/40 bg-background/95 backdrop-blur-md">
@@ -153,6 +167,21 @@ export function SiteHeader({ rightSlot }: { rightSlot?: ReactNode }) {
               </span>
             </Link>
           ))}
+          {onCartOpen && (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                onCartOpen();
+              }}
+              className="mt-4 relative inline-flex items-center justify-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-5 py-3 rounded-full"
+            >
+              Cart
+              <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-gold text-earth text-[11px] font-medium">
+                {cartCount ?? 0}
+              </span>
+            </button>
+          )}
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}`}
             target="_blank"

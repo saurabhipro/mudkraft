@@ -25,8 +25,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <AdminTopbar email={session.user.email} name={session.user.name} />
       <AdminSidebar />
 
-      {/* Offsets: top bar height always, left rail only once it is fixed. */}
-      <main className="pt-[4.25rem] md:pl-24">
+      {/* Offsets: on mobile the in-flow nav strip carries the top offset; on md+ the fixed rail does. */}
+      <main className="md:pt-[4.25rem] md:pl-24">
         <div className="mx-auto max-w-[1600px] px-4 py-6 md:px-8 md:py-8">{children}</div>
       </main>
     </div>
