@@ -16,6 +16,11 @@ const NAV: NavItem[] = [
   { label: "Benefits", href: "/benefits", match: (p) => p.startsWith("/benefits") },
   { label: "Workshops", href: "/workshops", match: (p) => p.startsWith("/workshops") },
   { label: "Story", href: "/#story", match: (p, h) => p === "/" && h === "story" },
+  {
+    label: "Videos",
+    href: "/#videos",
+    match: (p, h) => (p === "/" && h === "videos") || p.startsWith("/videos"),
+  },
 ];
 
 // next/navigation exposes the path but not the fragment, and the active-nav dots

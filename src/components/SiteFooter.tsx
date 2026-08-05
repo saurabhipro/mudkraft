@@ -55,6 +55,7 @@ export function SiteFooter() {
             <li><Link href="/benefits" className="hover:text-gold transition-colors">Benefits of Clay</Link></li>
             <li><Link href="/workshops" className="hover:text-gold transition-colors">Workshops & Soil Report</Link></li>
             <li><Link href="/#story" className="hover:text-gold transition-colors">Story</Link></li>
+            <li><Link href="/videos" className="hover:text-gold transition-colors">Videos</Link></li>
             <li><Link href="/care/season-your-handi" className="hover:text-gold transition-colors">Care Guide</Link></li>
           </ul>
         </div>

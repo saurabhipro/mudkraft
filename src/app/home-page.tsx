@@ -17,13 +17,17 @@ import {
 } from "@/lib/cart";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { whatsappLink } from "@/lib/whatsapp";
+import { VideoCard } from "@/components/VideoCard";
+import { type YouTubeVideo } from "@/lib/youtube";
 
 export function HomePage({
   products,
   categories,
+  videos,
 }: {
   products: ProductView[];
   categories: string[];
+  videos: YouTubeVideo[];
 }) {
   const cart = useCart();
   const [open, setOpen] = useState(false);
@@ -367,6 +371,32 @@ export function HomePage({
         </p>
         <div className="mt-8 md:mt-10 font-hand text-2xl text-clay">— Ananya, founder</div>
       </section>
+
+      {/* VIDEOS — hidden entirely when the feed is unreachable, never broken */}
+      {videos.length > 0 && (
+        <section id="videos" className="py-20 md:py-32 px-6 md:px-10 max-w-7xl mx-auto">
+          <div className="flex items-center gap-4 mb-6 md:mb-8">
+            <span className="h-px w-8 bg-clay" />
+            <p className="text-xs tracking-[0.4em] uppercase text-clay">from the studio</p>
+          </div>
+          <h2 className="font-display text-4xl sm:text-5xl md:text-7xl text-earth text-balance leading-tight">
+            Watch the <span className="italic">wheel turn.</span>
+          </h2>
+          <div className="mt-10 md:mt-14 grid sm:grid-cols-2 gap-8">
+            {videos.slice(0, 2).map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
+          <div className="mt-10 md:mt-14 text-center">
+            <Link
+              href="/videos"
+              className="inline-flex items-center justify-center border border-earth/25 bg-background text-earth px-8 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
+            >
+              View all videos
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* JOURNAL / CTA */}
       <section

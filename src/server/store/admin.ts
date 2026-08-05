@@ -168,7 +168,14 @@ export async function getAdminOrders() {
 export async function getAdminOrderById(id: string) {
   return db.query.order.findFirst({
     where: eq(order.id, id),
-    with: { items: true, events: true, shipments: true, user: true },
+    with: {
+      items: true,
+      events: true,
+      shipments: true,
+      user: true,
+      transactions: { orderBy: (txn, { desc: descOrder }) => [descOrder(txn.createdAt)] },
+      deliveryVerification: true,
+    },
   });
 }
 

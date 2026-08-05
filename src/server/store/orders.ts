@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 
 import { db } from "../db";
-import { order } from "../db/schema/orders";
+import { deliveryVerification, order } from "../db/schema/orders";
 
 /**
  * Order reads for the customer-facing checkout pages.
@@ -97,6 +97,47 @@ export async function getSavedAddressForUser(userId: string): Promise<SavedAddre
     city: row.shippingCity,
     state: row.shippingState,
     postalCode: row.shippingPostalCode,
+  };
+}
+
+export interface DeliveryVerificationView {
+  state: "pending" | "verified";
+  orderNumber: string;
+  customerFirstName: string;
+  /** Only ever the masked form; the full number never leaves the server. */
+  maskedPhone: string | null;
+  verifiedAt: Date | null;
+}
+
+function maskPhone(phone: string): string {
+  // Stored shape is +91XXXXXXXXXX; show just enough for the customer to
+  // recognise their own number.
+  const digits = phone.replace(/^\+91/, "");
+  if (digits.length !== 10) return "•••";
+  return `+91 ${digits[0]}•••••••${digits.slice(8)}`;
+}
+
+export async function getDeliveryVerificationByToken(
+  token: string,
+): Promise<DeliveryVerificationView | null> {
+  if (!token || token.length > 200) return null;
+
+  const row = await db.query.deliveryVerification.findFirst({
+    where: eq(deliveryVerification.token, token),
+    columns: { verifiedAt: true },
+    with: {
+      order: { columns: { orderNumber: true, shippingName: true, contactPhone: true } },
+    },
+  });
+
+  if (!row) return null;
+
+  return {
+    state: row.verifiedAt ? "verified" : "pending",
+    orderNumber: row.order.orderNumber,
+    customerFirstName: row.order.shippingName.split(" ")[0] ?? "there",
+    maskedPhone: row.order.contactPhone ? maskPhone(row.order.contactPhone) : null,
+    verifiedAt: row.verifiedAt,
   };
 }
 

@@ -15,6 +15,9 @@ export function HeaderAccount() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  // Google avatar URLs can 403/404 after they expire; tracking the failed src
+  // (rather than a boolean) resets the fallback if the session's image changes.
+  const [failedImageSrc, setFailedImageSrc] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click and on Escape.
@@ -64,9 +67,15 @@ export function HeaderAccount() {
         aria-haspopup="menu"
         className="inline-flex items-center gap-2 text-xs tracking-widest uppercase border border-earth/30 text-earth px-3 sm:px-4 py-2.5 rounded-full hover:bg-earth hover:text-cream transition-colors max-w-[7rem] sm:max-w-[10rem]"
       >
-        {session.user.image ? (
+        {session.user.image && session.user.image !== failedImageSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={session.user.image} alt="" className="w-5 h-5 rounded-full" />
+          <img
+            src={session.user.image}
+            alt=""
+            referrerPolicy="no-referrer"
+            onError={() => setFailedImageSrc(session.user.image ?? null)}
+            className="w-5 h-5 rounded-full"
+          />
         ) : (
           <span className="w-5 h-5 rounded-full bg-clay/30 grid place-items-center text-[10px] text-earth">
             {displayName.charAt(0).toUpperCase()}

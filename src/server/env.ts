@@ -7,6 +7,10 @@ import { z } from "zod";
  * Validation is eager: a misconfigured deployment should fail at boot with a
  * readable message rather than at the first database query with a stack trace.
  */
+function emptyAsUndefined<T extends z.ZodTypeAny>(schema: T) {
+  return z.preprocess((value) => (value === "" ? undefined : value), schema.optional());
+}
+
 const serverEnvSchema = z.object({
   DATABASE_URL: z
     .string()
@@ -22,6 +26,33 @@ const serverEnvSchema = z.object({
 
   CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required"),
   CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required"),
+
+  // SMTP is optional: without it the app boots normally and email sends are
+  // skipped with a warning. Empty strings count as "not set" so a placeholder
+  // line in .env does not fail validation.
+  SMTP_HOST: emptyAsUndefined(z.string()),
+  SMTP_PORT: z.preprocess(
+    (value) => (value === "" || value === undefined ? undefined : Number(value)),
+    z.number().int().positive().optional(),
+  ),
+  SMTP_USER: emptyAsUndefined(z.string()),
+  SMTP_PASS: emptyAsUndefined(z.string()),
+  SMTP_FROM: emptyAsUndefined(z.string().email("SMTP_FROM must be an email address")),
+
+  // Razorpay is optional in the same spirit as SMTP: without keys the app boots
+  // and the gateway payment option reports itself unavailable instead of
+  // crashing. Test keys (rzp_test_...) and live keys (rzp_live_...) use the
+  // exact same code path.
+  RAZORPAY_KEY_ID: emptyAsUndefined(z.string()),
+  RAZORPAY_KEY_SECRET: emptyAsUndefined(z.string()),
+  // Set only once the webhook is registered in the Razorpay dashboard.
+  RAZORPAY_WEBHOOK_SECRET: emptyAsUndefined(z.string()),
+
+  // SMS (MSG91) is optional: without it OTPs are printed to the server console
+  // — the whole delivery-verification flow stays demoable with zero setup.
+  MSG91_AUTH_KEY: emptyAsUndefined(z.string()),
+  MSG91_SENDER_ID: emptyAsUndefined(z.string()),
+  MSG91_DLT_TEMPLATE_ID: emptyAsUndefined(z.string()),
 });
 
 const parsed = serverEnvSchema.safeParse(process.env);

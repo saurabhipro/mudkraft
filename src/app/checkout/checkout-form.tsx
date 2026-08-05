@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { clearCart, useCart } from "@/lib/cart";
 import { formatPaise } from "@/lib/money";
+import { COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
 import { placeOrder, type CheckoutMethod } from "@/server/actions/checkout";
 
 const inputCls =
@@ -93,6 +94,9 @@ export function CheckoutForm({
 
   const totalPaise = cart.reduce((sum, item) => sum + item.pricePaise * item.qty, 0);
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
+
+  // Purely presentational — `placeOrder` re-checks the PIN before accepting COD.
+  const codAvailable = isCodEligible(form.postalCode);
 
   const submit = async (method: CheckoutMethod) => {
     setError(null);
@@ -347,6 +351,17 @@ export function CheckoutForm({
             {pending === "gateway" ? "Placing order…" : "Pay now"}
           </button>
 
+          {codAvailable && (
+            <button
+              type="button"
+              onClick={() => submit("cod")}
+              disabled={pending !== null}
+              className="w-full inline-flex items-center justify-center border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
+            >
+              {pending === "cod" ? "Placing order…" : "Cash on delivery"}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => submit("whatsapp")}
@@ -356,6 +371,12 @@ export function CheckoutForm({
             {pending === "whatsapp" ? "Placing order…" : "Confirm on WhatsApp"}
           </button>
         </div>
+
+        <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+          {codAvailable
+            ? `Cash on delivery is available for your PIN code (${COD_REGION_LABEL}).`
+            : `Cash on delivery is available in ${COD_REGION_LABEL} — enter a PIN code there to see it.`}
+        </p>
 
         <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
           Prices are re-checked against the catalogue when you place the order, so what you pay is
