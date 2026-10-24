@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { suppressOneTapAfterSignOut } from "@/components/GoogleOneTap";
 import { authClient, useSession } from "@/lib/auth-client";
 
 /**
@@ -109,6 +110,7 @@ export function HeaderAccount() {
             role="menuitem"
             onClick={async () => {
               setOpen(false);
+              suppressOneTapAfterSignOut();
               await authClient.signOut();
               router.refresh();
             }}

@@ -27,7 +27,10 @@ export async function getChannelVideos(): Promise<YouTubeVideo[]> {
   try {
     const res = await fetch(FEED_URL, { next: { revalidate: REVALIDATE_SECONDS } });
     if (!res.ok) {
-      console.error(`[youtube] feed responded ${res.status}`);
+      // An expected, handled outcome — YouTube's feed endpoint goes down from
+      // time to time — so warn rather than error, which Next's dev overlay
+      // would surface as a crash.
+      console.warn(`[youtube] feed responded ${res.status}; hiding the videos section`);
       return [];
     }
 

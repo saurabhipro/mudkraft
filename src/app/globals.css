@@ -16,10 +16,17 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-gold: var(--gold);
+  --color-sand: var(--sand);
+  --color-ember: var(--ember);
+  --color-kiln: var(--kiln);
+  --color-sage: var(--sage);
   --font-display: var(--font-cormorant), ui-serif, Georgia, serif;
   --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-hand: var(--font-caveat), cursive;
+  --ease-clay: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-kiln: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 :root {
@@ -34,6 +41,11 @@
   --muted-foreground: oklch(0.42 0.03 50);
   --border: oklch(0.82 0.03 65);
   --gold: oklch(0.72 0.11 75);
+  /* Revamp additions: card ground, kiln glow, the dark hero, and a water/wellness accent. */
+  --sand: oklch(0.9 0.03 75);
+  --ember: oklch(0.7 0.13 45);
+  --kiln: oklch(0.15 0.015 40);
+  --sage: oklch(0.6 0.05 125);
   --gradient-warm: linear-gradient(135deg, oklch(0.955 0.018 75), oklch(0.88 0.05 65));
   --gradient-clay: linear-gradient(180deg, oklch(0.58 0.14 42), oklch(0.42 0.11 38));
   --shadow-soft: 0 30px 60px -30px oklch(0.28 0.04 40 / 0.35);
@@ -88,7 +100,197 @@
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+@keyframes marquee-rev {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+@keyframes line-rise {
+  from { transform: translateY(110%) rotate(3deg); }
+  to { transform: translateY(0) rotate(0); }
+}
+@keyframes spin-wheel { to { transform: rotate(360deg); } }
+@keyframes ken-burns {
+  from { transform: scale(1.14); }
+  to { transform: scale(1); }
+}
+@keyframes arch-in {
+  from { clip-path: inset(100% 0 0 0 round 999px 999px 2.5rem 2.5rem); }
+  to { clip-path: inset(0 0 0 0 round 999px 999px 2.5rem 2.5rem); }
+}
+@keyframes ember-rise {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(30px, -520px) scale(1.2); opacity: 0; }
+}
+@keyframes scroll-cue {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+@keyframes ring-pulse {
+  from { transform: scale(1); opacity: 0.6; }
+  to { transform: scale(1.9); opacity: 0; }
+}
+@keyframes ink-fill {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes sheet-open {
+  from { clip-path: circle(0% at calc(100% - 2.75rem) 2.75rem); }
+  to { clip-path: circle(150% at calc(100% - 2.75rem) 2.75rem); }
+}
+@keyframes check-draw {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
 
 @utility animate-float { animation: float-slow 8s ease-in-out infinite; }
-@utility animate-fade-up { animation: fade-up 1s ease-out both; }
+@utility animate-fade-up { animation: fade-up 1s var(--ease-clay) both; }
 @utility animate-marquee { animation: marquee 40s linear infinite; }
+@utility animate-marquee-rev { animation: marquee-rev 46s linear infinite; }
+@utility animate-spin-slow { animation: spin-wheel 48s linear infinite; }
+@utility animate-spin-slower { animation: spin-wheel 64s linear infinite reverse; }
+@utility animate-spin-mid { animation: spin-wheel 22s linear infinite; }
+@utility animate-ken-burns { animation: ken-burns 14s var(--ease-clay) both; }
+@utility animate-arch-in { animation: arch-in 1.6s var(--ease-kiln) 0.2s both; }
+@utility animate-scroll-cue { animation: scroll-cue 2.4s var(--ease-kiln) infinite; }
+@utility animate-ring-pulse { animation: ring-pulse 2.2s var(--ease-clay) infinite; }
+@utility animate-sheet-open { animation: sheet-open 0.8s var(--ease-kiln) both; }
+@utility animate-check-draw { stroke-dasharray: 24; animation: check-draw 0.5s var(--ease-clay) 0.1s both; }
+
+@layer components {
+  /* Headline lines rise out of a mask. Wrap each line: <span class="mk-line"><span>…</span></span> */
+  .mk-line { display: block; overflow: hidden; padding-bottom: 0.08em; }
+  .mk-line > span { display: inline-block; animation: line-rise 1.2s var(--ease-clay) both; }
+
+  /* Sparks drifting up from the kiln glow in dark sections. */
+  .mk-ember {
+    position: absolute;
+    bottom: -10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--ember);
+    box-shadow: 0 0 12px 3px oklch(0.7 0.13 45 / 0.6);
+    animation: ember-rise 9s linear infinite;
+  }
+
+  .mk-shimmer {
+    background-image: linear-gradient(110deg, var(--gold) 30%, oklch(0.9 0.07 85) 50%, var(--gold) 70%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+
+  /* Buttons fill upward with clay on hover. */
+  .mk-btn-fill {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transition: transform 0.5s var(--ease-clay), color 0.5s;
+  }
+  .mk-btn-fill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--clay);
+    transform: translateY(101%);
+    transition: transform 0.6s var(--ease-clay);
+  }
+  .mk-btn-fill:hover { color: var(--cream); transform: translateY(-2px); }
+  .mk-btn-fill:hover::before { transform: translateY(0); }
+  .mk-btn-fill .mk-arrow { transition: transform 0.5s var(--ease-clay); }
+  .mk-btn-fill:hover .mk-arrow { transform: translateX(5px) rotate(-45deg); }
+
+  /* Underline that draws in from the left and leaves to the right. */
+  .mk-link { position: relative; }
+  .mk-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease-clay);
+  }
+  .mk-link:hover::after,
+  .mk-link[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+
+  /* Manifesto lines fill with ink as they scroll through the viewport. */
+  .mk-ink-fill {
+    background-image: linear-gradient(90deg, var(--earth) 50%, oklch(0.28 0.04 40 / 0.18) 50%);
+    background-size: 200% 100%;
+    background-position: 0 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Stats count up from zero. Set the target with style={{ "--num": 180 }}. */
+  .mk-count { counter-reset: n var(--num); }
+  .mk-count::after { content: counter(n); }
+
+  .mk-grow { transform-origin: left; }
+}
+
+@property --num {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+@keyframes count-up { from { --num: 0; } }
+
+/* Scroll-linked motion. Browsers without scroll timelines simply show the
+   finished state, so nothing is ever hidden behind an animation that can't run. */
+@supports (animation-timeline: view()) {
+  .mk-reveal {
+    animation: fade-up linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 30%;
+  }
+  .mk-ink-fill {
+    background-position: 100% 0;
+    animation: ink-fill linear both;
+    animation-timeline: view();
+    animation-range: entry 20% cover 55%;
+  }
+  .mk-grow {
+    animation: grow-x linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 50%;
+  }
+  .mk-count {
+    animation: count-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+  .mk-parallax {
+    animation: ken-burns linear both;
+    animation-timeline: view();
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-timeline: auto !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mk-ember { display: none; }
+}

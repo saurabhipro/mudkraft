@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ExternalLink, Search } from "lucide-react";
 
+import { suppressOneTapAfterSignOut } from "@/components/GoogleOneTap";
 import { authClient } from "@/lib/auth-client";
 
 /**
@@ -120,6 +121,7 @@ export function AdminTopbar({ email, name }: { email: string; name: string }) {
                   role="menuitem"
                   onClick={async () => {
                     setMenuOpen(false);
+                    suppressOneTapAfterSignOut();
                     await authClient.signOut();
                     router.push("/");
                     router.refresh();
