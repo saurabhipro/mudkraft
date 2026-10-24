@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
+import { BrochureButton } from "@/components/BrochureButton";
 import { ShareButton } from "@/components/ShareButton";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { FACEBOOK_URL, SALES_EMAIL } from "@/lib/catalogue";
 import { whatsappLink } from "@/lib/whatsapp";
 
-const ENQUIRY_EMAIL = "hello@mudkraft.com";
+const ENQUIRY_EMAIL = SALES_EMAIL;
 
 const whatsappEnquiry = () => whatsappLink(["Namaste Mudkraft! I have an enquiry."]);
 
@@ -49,8 +51,22 @@ export function SiteFooter() {
             </li>
             <li>
               <Link href="/workshops" className="hover:text-gold transition-colors mk-link">
-                Workshops & Soil Report
+                Workshops
               </Link>
+            </li>
+            <li>
+              <Link href="/soil-report" className="hover:text-gold transition-colors mk-link">
+                Soil Report
+              </Link>
+            </li>
+            <li>
+              <a
+                href="/brochure/Mudkraft-Catalogue-2026.pdf"
+                download
+                className="hover:text-gold transition-colors mk-link"
+              >
+                Catalogue 2026 (PDF)
+              </a>
             </li>
             <li>
               <Link href="/#story" className="hover:text-gold transition-colors mk-link">
@@ -116,6 +132,16 @@ export function SiteFooter() {
             </li>
             <li>
               <a
+                href={FACEBOOK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-gold transition-colors mk-link"
+              >
+                Facebook
+              </a>
+            </li>
+            <li>
+              <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -151,6 +177,9 @@ export function SiteFooter() {
           </span>
         </div>
       </div>
+
+      {/* Floating catalogue button, stacked above WhatsApp */}
+      <BrochureButton />
 
       {/* Floating WhatsApp */}
       <a

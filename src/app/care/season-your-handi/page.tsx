@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SALES_PHONE_DISPLAY } from "@/lib/catalogue";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import handiSoak from "@/assets/handi-soak.jpg";
@@ -199,7 +200,9 @@ export default function SeasonHandiPage() {
                 <div>
                   <div className="flex flex-wrap items-baseline justify-between gap-3">
                     <h3 className="text-2xl md:text-3xl font-display text-earth">{s.title}</h3>
-                    <div className="text-xs tracking-widest uppercase text-clay">{s.time}</div>
+                    <div className="px-3 py-1 rounded-full bg-sand text-xs tracking-widest uppercase text-clay-deep">
+                      {s.time}
+                    </div>
                   </div>
                   <p className="mt-4 text-earth/90 leading-relaxed">{s.body}</p>
                   <div className="mt-5 border-l-2 border-clay/40 pl-4 font-hand text-lg text-clay-deep">
@@ -219,6 +222,16 @@ export default function SeasonHandiPage() {
           <h2 className="text-4xl md:text-5xl font-display text-balance mb-12">
             A few small things, forever.
           </h2>
+          <div className="mb-6 rounded-[1.5rem] bg-gold/[0.12] border border-gold/40 p-8">
+            <div className="text-xs tracking-[0.3em] uppercase text-gold mb-4">Never</div>
+            <ul className="grid md:grid-cols-3 gap-4 md:gap-6 font-display text-2xl leading-snug">
+              {["Put a cold pot on a hot flame", "Use dish soap or detergent", "Store food in it overnight"].map(
+                (d) => (
+                  <li key={d}>{d}</li>
+                ),
+              )}
+            </ul>
+          </div>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="rounded-[1.5rem] border border-cream/15 bg-cream/[0.04] p-8">
               <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Do</div>
@@ -265,7 +278,7 @@ export default function SeasonHandiPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-earth text-cream px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-clay transition-colors"
           >
-            Ask on WhatsApp →
+            Ask on WhatsApp · {SALES_PHONE_DISPLAY}
           </a>
           <Link
             href="/#collection"

@@ -28,6 +28,26 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
 };
 
+const COMPARE_COLUMNS = ["Taste", "Minerals", "Temperature", "Footprint"];
+
+const COMPARE_ROWS = [
+  {
+    name: "Clay matka",
+    ours: true,
+    cells: ["Alkaline, gentle", "Natural iron, Mg, Ca", "Naturally cool", "Zero plastic, zero power"],
+  },
+  {
+    name: "Plastic bottle",
+    ours: false,
+    cells: ["Acidic", "None", "Warms in the sun", "Can leach microplastics"],
+  },
+  {
+    name: "Steel, from fridge",
+    ours: false,
+    cells: ["Ice-cold", "None", "Harsh on the throat", "Needs electricity"],
+  },
+];
+
 type Benefit = {
   eyebrow: string;
   title: string;
@@ -162,44 +182,49 @@ export default function BenefitsPage() {
           </div>
         </section>
 
-        {/* Comparison strip */}
-        <section className="bg-earth text-cream py-20 px-6 md:px-10">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6 text-center">— at a glance</p>
-            <h2 className="text-3xl md:text-5xl font-display text-center leading-tight text-balance">
-              Earthen clay vs. the rest
+        {/* Comparison table, as on page 3 of the catalogue */}
+        <section className="bg-earth text-cream py-20 md:py-24 px-6 md:px-10">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-[11px] tracking-[0.32em] uppercase text-gold">At a glance</p>
+            <h2 className="mt-3 font-display font-normal text-[clamp(2.25rem,4.6vw,3.75rem)]">
+              Earthen clay <em className="text-gold">vs. the rest</em>
             </h2>
-            <div className="mt-14 grid sm:grid-cols-3 gap-6">
-              {[
-                {
-                  k: "Clay Matka",
-                  v: "Alkaline · mineral-rich · naturally cool · zero plastic",
-                  accent: true,
-                },
-                {
-                  k: "Plastic Bottle",
-                  v: "Leaches BPA & microplastics · acidic · warms in the sun",
-                },
-                {
-                  k: "Steel Fridge Bottle",
-                  v: "Ice-cold · no minerals · shocks the throat · uses power",
-                },
-              ].map((c) => (
-                <div
-                  key={c.k}
-                  className={`rounded-2xl p-7 border ${
-                    c.accent
-                      ? "bg-cream/10 border-gold/40"
-                      : "bg-transparent border-cream/15"
-                  }`}
-                >
-                  <div className={`text-xs tracking-[0.3em] uppercase mb-3 ${c.accent ? "text-gold" : "text-cream/60"}`}>
-                    {c.accent ? "The old way" : "The modern way"}
-                  </div>
-                  <div className="font-display text-2xl mb-3">{c.k}</div>
-                  <p className="text-cream/80 leading-relaxed">{c.v}</p>
-                </div>
-              ))}
+            <div className="mt-10 overflow-x-auto">
+              <table className="w-full min-w-[720px] border-collapse text-[15px]">
+                <thead>
+                  <tr className="border-b border-gold/60">
+                    <th scope="col" className="w-[22%]">
+                      <span className="sr-only">Vessel</span>
+                    </th>
+                    {COMPARE_COLUMNS.map((c) => (
+                      <th
+                        key={c}
+                        scope="col"
+                        className="px-4 py-3.5 text-left text-[11px] font-medium tracking-[0.24em] uppercase text-cream/70"
+                      >
+                        {c}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARE_ROWS.map((r) => (
+                    <tr key={r.name} className={`border-b border-cream/15 ${r.ours ? "bg-gold/[0.08]" : ""}`}>
+                      <th
+                        scope="row"
+                        className={`py-5 pl-3 pr-4 text-left font-display font-normal text-[1.65rem] ${r.ours ? "text-gold" : "text-cream/75"}`}
+                      >
+                        {r.name}
+                      </th>
+                      {r.cells.map((cell, i) => (
+                        <td key={i} className={`px-4 py-5 ${r.ours ? "text-cream" : "text-cream/70"}`}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </section>

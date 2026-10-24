@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { displayImage, type ProductView } from "@/lib/product-view";
 import { formatPaise } from "@/lib/money";
+import { CATALOGUE_CODES } from "@/lib/catalogue";
 import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
 import { addToCart, useCartCount } from "@/lib/cart";
 import { ShareButton } from "@/components/ShareButton";
@@ -203,7 +204,7 @@ export function ProductDetail({
             {p.note}
           </p>
           <div className="mt-1 text-[11px] tracking-[0.35em] uppercase text-clay-deep">
-            {p.category}
+            {[p.category, CATALOGUE_CODES[p.slug]].filter(Boolean).join(" · ")}
           </div>
           <h1 className="mt-2 font-display font-normal text-[clamp(3.5rem,8vw,6rem)] text-earth leading-[0.9]">
             <span className="mk-line">
@@ -277,6 +278,23 @@ export function ProductDetail({
               ))}
             </dl>
           )}
+
+          <ul className="mt-6 flex flex-wrap gap-2 animate-fade-up [animation-delay:0.4s]">
+            {["Handmade, no moulds", "Lab-tested food safe", "No chemical glaze"].map((chip) => (
+              <li
+                key={chip}
+                className="px-3.5 py-2 rounded-full border border-border text-[13px] text-earth"
+              >
+                {chip === "Lab-tested food safe" ? (
+                  <Link href="/soil-report" className="hover:text-clay-deep transition-colors">
+                    {chip}
+                  </Link>
+                ) : (
+                  chip
+                )}
+              </li>
+            ))}
+          </ul>
 
           <div className="mt-8 flex flex-wrap items-center gap-3 animate-fade-up [animation-delay:0.45s]">
             <div className="inline-flex items-center rounded-full border border-earth/25">
