@@ -144,6 +144,10 @@
   from { clip-path: circle(0% at calc(100% - 2.75rem) 2.75rem); }
   to { clip-path: circle(150% at calc(100% - 2.75rem) 2.75rem); }
 }
+@keyframes progress-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
 @keyframes check-draw {
   from { stroke-dashoffset: 24; }
   to { stroke-dashoffset: 0; }
@@ -161,6 +165,7 @@
 @utility animate-scroll-cue { animation: scroll-cue 2.4s var(--ease-kiln) infinite; }
 @utility animate-ring-pulse { animation: ring-pulse 2.2s var(--ease-clay) infinite; }
 @utility animate-sheet-open { animation: sheet-open 0.8s var(--ease-kiln) both; }
+@utility animate-progress-fill { transform-origin: left; animation: progress-fill 3s linear both; }
 @utility animate-check-draw { stroke-dasharray: 24; animation: check-draw 0.5s var(--ease-clay) 0.1s both; }
 
 @layer components {

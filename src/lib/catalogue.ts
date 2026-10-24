@@ -1,31 +1,11 @@
 /**
  * The printed product catalogue (public/brochure/), and the details from it
  * that the website repeats.
- *
- * Page images are pre-rendered from the PDF so the in-page preview opens fast;
- * the 4.3 MB PDF itself is only fetched when someone taps Download. When the
- * PDF is replaced, re-render the page-N / thumb-N webps and update BROCHURE.
  */
 
 export const BROCHURE = {
-  title: "Mudkraft catalogue 2026",
   href: "/brochure/Mudkraft-Catalogue-2026.pdf",
   fileName: "Mudkraft-Catalogue-2026.pdf",
-  sizeLabel: "4.3 MB",
-  pages: [
-    "Cover",
-    "Our story",
-    "Benefits of clay",
-    "Soil report",
-    "Cookware",
-    "Serveware",
-    "Care guide",
-    "Workshops & orders",
-  ].map((label, i) => ({
-    label,
-    src: `/brochure/page-${i + 1}.webp`,
-    thumb: `/brochure/thumb-${i + 1}.webp`,
-  })),
 } as const;
 
 /** Catalogue item codes, keyed by product slug, as printed in the brochure. */

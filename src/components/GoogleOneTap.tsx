@@ -80,12 +80,21 @@ declare global {
 let gsiAbortLogDowngraded = false;
 
 /**
- * Google's script reports every cancelled prompt — the visitor closing it,
- * tapping outside it, or navigating away while it is open — through
- * console.error as "[GSI_LOGGER]: FedCM get() rejects with AbortError". That is
- * an ordinary outcome, not a fault, but Next's dev overlay presents any
- * console.error as a crash. Re-route just that one message to console.warn;
- * every other error, Google's included, passes through untouched.
+ * FedCM outcomes that only mean "no prompt this time":
+ * - AbortError: the visitor closed it, tapped outside it, or navigated away.
+ * - NetworkError: no Google account in this browser, Chrome's cool-down after
+ *   recent dismissals, or (in development) an origin not listed in the Google
+ *   client's authorised JavaScript origins.
+ * - NotAllowedError: the visitor turned off third-party sign-in in Chrome.
+ */
+const EXPECTED_FEDCM_ERRORS = ["AbortError", "NetworkError", "NotAllowedError"];
+
+/**
+ * Google's script reports each of those through console.error as
+ * "[GSI_LOGGER]: FedCM get() rejects with <Error>". They are ordinary outcomes,
+ * not faults, but Next's dev overlay presents any console.error as a crash.
+ * Re-route just those messages to console.warn; every other error, Google's
+ * included, passes through untouched.
  */
 function downgradeGsiAbortLog() {
   if (gsiAbortLogDowngraded) return;
@@ -94,7 +103,10 @@ function downgradeGsiAbortLog() {
   const originalError = console.error;
   console.error = (...args: unknown[]) => {
     const text = args.filter((arg) => typeof arg === "string").join(" ");
-    if (text.includes("[GSI_LOGGER]") && text.includes("AbortError")) {
+    if (
+      text.includes("[GSI_LOGGER]") &&
+      EXPECTED_FEDCM_ERRORS.some((name) => text.includes(name))
+    ) {
       console.warn(...args);
       return;
     }

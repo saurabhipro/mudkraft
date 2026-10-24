@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/shipping-returns`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/track`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/trust`, changeFrequency: "yearly", priority: 0.4 },
+    { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.4 },
   ];
 
   // Only active products are returned, so drafts never leak into the sitemap.
