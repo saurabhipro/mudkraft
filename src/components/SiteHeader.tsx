@@ -15,6 +15,7 @@ type NavItem = { label: string; href: string; match: (path: string, hash: string
 const NAV: NavItem[] = [
   { label: "Collection", href: "/#collection", match: (p, h) => p === "/" && h === "collection" },
   { label: "Benefits", href: "/benefits", match: (p) => p.startsWith("/benefits") },
+  { label: "Soil report", href: "/soil-report", match: (p) => p.startsWith("/soil-report") },
   { label: "Workshops", href: "/workshops", match: (p) => p.startsWith("/workshops") },
   { label: "Story", href: "/#story", match: (p, h) => p === "/" && h === "story" },
   {

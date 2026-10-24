@@ -4,11 +4,13 @@ import { useState } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { OrdersEnquiries } from "@/components/OrdersEnquiries";
+import { SALES_EMAIL } from "@/lib/catalogue";
 import handsClay from "@/assets/hands-clay.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
-const ENQUIRY_EMAIL = "hello@mudkraft.com";
+const ENQUIRY_EMAIL = SALES_EMAIL;
 
 const experiences = [
   {
@@ -57,22 +59,12 @@ const experiences = [
   },
 ];
 
-const soilRows = [
-  { k: "Origin", v: "River bank silt · Ganges tributary, Khurja (Uttar Pradesh)" },
-  { k: "Depth of extraction", v: "1.8 – 2.4 metres, below topsoil horizon" },
-  { k: "Colour (wet / fired)", v: "Warm ochre-brown / deep terracotta at 980 °C" },
-  { k: "Plasticity index", v: "22.4 (highly plastic — excellent for wheel work)" },
-  { k: "Particle size", v: "Clay 58% · Silt 34% · Fine sand 8%" },
-  { k: "Shrinkage (wet → fired)", v: "9.7% total (5.1% drying + 4.6% firing)" },
-  { k: "Water absorption (fired)", v: "12.8% — ideal for cooling matkas & surahis" },
-  { k: "pH", v: "7.2 (near-neutral)" },
-  { k: "Organic content", v: "1.8% (screened & aged 90 days before use)" },
-  { k: "Iron oxide (Fe₂O₃)", v: "6.4% — source of natural terracotta hue" },
-  { k: "Silica (SiO₂)", v: "58.1%" },
-  { k: "Alumina (Al₂O₃)", v: "18.3%" },
-  { k: "Heavy metals (Pb, Cd, As)", v: "Below detectable limits · food-safe" },
-  { k: "Firing range", v: "920 – 1040 °C · wood kiln, 48 hrs slow cycle" },
-  { k: "Lab & date", v: "Central Glass & Ceramic Research Inst. · Mar 2026" },
+// Headline figures only; the full report lives at /soil-report.
+const SOIL_HIGHLIGHTS = [
+  { v: "Not detected", k: "Lead, cadmium, arsenic" },
+  { v: "7.2", k: "pH · near-neutral" },
+  { v: "12.8%", k: "Water absorption" },
+  { v: "48 h", k: "Wood-fired cycle" },
 ];
 
 export function WorkshopsPage() {
@@ -153,7 +145,7 @@ export function WorkshopsPage() {
               >
                 Book a workshop →
               </a>
-              <a href="#soil" className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay">
+              <a href="/soil-report" className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay">
                 Read the soil report
               </a>
             </div>
@@ -234,11 +226,10 @@ export function WorkshopsPage() {
 
 
 
-      {/* SOIL REPORT */}
-      <section id="soil" className="relative py-32 grain overflow-hidden bg-earth">
+      {/* SOIL REPORT — teaser; the full tables are on /soil-report */}
+      <section id="soil" className="relative py-24 md:py-28 grain overflow-hidden bg-earth">
         <div className="max-w-6xl mx-auto px-6 md:px-10 text-cream">
-
-          <div className="grid md:grid-cols-12 gap-10 mb-14 items-end">
+          <div className="grid md:grid-cols-12 gap-10 mb-12 items-end">
             <div className="md:col-span-7">
               <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6">— soil report</p>
               <h2 className="text-4xl md:text-6xl font-display text-balance">
@@ -246,34 +237,29 @@ export function WorkshopsPage() {
               </h2>
             </div>
             <p className="md:col-span-5 text-cream/70 leading-relaxed">
-              Each batch of our river clay is lab-tested for food safety, mineral balance and
-              firing behaviour. Below is the most recent report — filed with the Central Glass
-              & Ceramic Research Institute.
+              The clay you throw in a workshop is the same river clay we cook in: tested by the
+              Central Glass &amp; Ceramic Research Institute, March 2026.
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-cream/15 bg-cream/[0.04] backdrop-blur overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              {soilRows.map((r, i) => (
-                <div
-                  key={r.k}
-                  className={`px-6 py-5 border-cream/10 ${i % 2 === 0 ? "md:border-r" : ""} border-b`}
-                >
-                  <div className="text-[11px] tracking-[0.3em] uppercase text-gold/80">{r.k}</div>
-                  <div className="mt-2 text-cream/90 font-display text-lg leading-snug">{r.v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <dl className="grid grid-cols-2 md:grid-cols-4 rounded-[1.5rem] border border-cream/15 overflow-hidden">
+            {SOIL_HIGHLIGHTS.map((r, i) => (
+              <div
+                key={r.k}
+                className={`flex flex-col-reverse px-6 py-6 border-cream/10 ${i > 0 ? "md:border-l" : ""} ${i % 2 === 1 ? "border-l md:border-l" : ""} ${i < 2 ? "border-b md:border-b-0" : ""}`}
+              >
+                <dt className="mt-2 text-[11px] tracking-[0.24em] uppercase text-gold/80">{r.k}</dt>
+                <dd className="font-display text-3xl leading-tight">{r.v}</dd>
+              </div>
+            ))}
+          </dl>
 
-          <p className="mt-8 text-xs text-cream/50 max-w-2xl">
-            Report reference: CGCRI/KHRJ/2026-03-118. A full PDF can be shared on request —
-            write to us at{" "}
-            <a href={`mailto:${ENQUIRY_EMAIL}`} className="underline decoration-gold/60 hover:text-gold">
-              {ENQUIRY_EMAIL}
-            </a>
-            .
-          </p>
+          <a
+            href="/soil-report"
+            className="mt-8 inline-flex items-center gap-3 min-h-[50px] px-6 rounded-full border border-cream/30 text-sm tracking-[0.14em] uppercase hover:border-gold hover:text-gold transition-colors"
+          >
+            Read the full soil report →
+          </a>
         </div>
       </section>
 
@@ -342,6 +328,8 @@ export function WorkshopsPage() {
           </div>
         </form>
       </section>
+
+      <OrdersEnquiries />
 
       <SiteFooter />
     </div>

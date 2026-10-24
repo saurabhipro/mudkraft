@@ -96,8 +96,8 @@ const SECTIONS: Section[] = [
     body: (
       <p>
         Message us on WhatsApp at +91 99906 49990 or email{" "}
-        <a href="mailto:hello@mudkraft.com" className="underline decoration-clay/50 hover:text-clay">
-          hello@mudkraft.com
+        <a href="mailto:sales@mudkraft.com" className="underline decoration-clay/50 hover:text-clay">
+          sales@mudkraft.com
         </a>{" "}
         to see, correct, or delete the information we hold about you. We reply within a few days.
       </p>
@@ -121,8 +121,8 @@ const SECTIONS: Section[] = [
     body: (
       <p>
         For anything security-, privacy-, or order-related, message{" "}
-        <a href="mailto:hello@mudkraft.com" className="underline decoration-clay/50 hover:text-clay">
-          hello@mudkraft.com
+        <a href="mailto:sales@mudkraft.com" className="underline decoration-clay/50 hover:text-clay">
+          sales@mudkraft.com
         </a>{" "}
         or WhatsApp <span className="whitespace-nowrap">+91 99906 49990</span>. A person from the
         studio will respond.

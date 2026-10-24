@@ -6,11 +6,13 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import handsClay from "@/assets/hands-clay.jpg";
+import potsDrying from "@/assets/pots-drying.jpg";
 import heroBanner from "@/assets/hero-pot.jpg";
 import benefitCooling from "@/assets/benefit-cooling.jpg";
 import benefitMinerals from "@/assets/benefit-minerals.jpg";
 import benefitNutrients from "@/assets/benefit-nutrients.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
+import { CATALOGUE_CODES } from "@/lib/catalogue";
 import { formatPaise } from "@/lib/money";
 import { displayImage, type ProductView } from "@/lib/product-view";
 import {
@@ -68,6 +70,33 @@ const ELEMENTS = [
     body: "Dried under sky, then checked and packed by hand for its journey to you.",
     accent: "text-[oklch(0.55_0.1_75)]",
     dot: "bg-gold",
+  },
+];
+
+// From the printed catalogue (page 2).
+const STORY_NUMBERS = [
+  { value: "7", label: "Generations" },
+  { value: "180+", label: "Years at the wheel" },
+  { value: "12", label: "Master potters" },
+  { value: "48 h", label: "Slow firing" },
+];
+
+const RIVER_TO_TABLE = [
+  {
+    title: "Source",
+    body: "Unglazed river clay from a Ganges tributary, dug 1.8–2.4 m below the topsoil and prepared by hand.",
+  },
+  {
+    title: "Throw",
+    body: "Shaped on the wheel by one of twelve master potters. No moulds, no machines.",
+  },
+  {
+    title: "Finish",
+    body: "Lids and rims fitted and refined by hand, so every handi closes snugly.",
+  },
+  {
+    title: "Fire",
+    body: "48 hours in a wood kiln at 920–1040 °C. Slow heat makes a stronger pot.",
   },
 ];
 
@@ -399,9 +428,15 @@ export function HomePage({
       <section id="collection" className="px-6 md:px-10 pt-12 md:pt-16 pb-24 md:pb-32">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-end justify-between gap-8 mb-10 md:mb-12">
-            <h2 className="mk-reveal font-display font-normal text-[clamp(2.75rem,6vw,5.75rem)] leading-[0.95] tracking-[-0.02em] max-w-3xl text-earth text-balance">
-              Objects that <em className="font-light text-clay">breathe</em>, made to be lived with.
-            </h2>
+            <div>
+              <h2 className="mk-reveal font-display font-normal text-[clamp(2.75rem,6vw,5.75rem)] leading-[0.95] tracking-[-0.02em] max-w-3xl text-earth text-balance">
+                Objects that <em className="font-light text-clay">breathe</em>, made to be lived
+                with.
+              </h2>
+              <p className="mt-4 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
+                Prices incl. taxes &amp; delivery
+              </p>
+            </div>
             <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
               {filterOptions.map((c) => {
                 const n =
@@ -471,8 +506,18 @@ export function HomePage({
                       </h3>
                     </Link>
                     <p className="font-hand text-xl text-clay-deep truncate">{p.note}</p>
+                    {CATALOGUE_CODES[p.slug] && (
+                      <p className="mt-1 text-[11px] tracking-[0.16em] font-medium text-muted-foreground">
+                        {CATALOGUE_CODES[p.slug]}
+                      </p>
+                    )}
                   </div>
                   <div className="shrink-0 text-right">
+                    {p.compareAt && (
+                      <div className="text-xs text-muted-foreground line-through">
+                        {p.compareAt}
+                      </div>
+                    )}
                     <div className="font-display text-xl text-earth">{p.price}</div>
                     <button
                       type="button"
@@ -763,8 +808,112 @@ export function HomePage({
         </div>
       </section>
 
-      {/* STORY */}
-      <section id="story" className="px-6 md:px-10 pb-24 md:pb-36 text-center">
+      {/* STORY — the potter family, in numbers, and how a pot is made */}
+      <section id="story" className="px-6 md:px-10 pb-16 md:pb-24">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-14 lg:gap-20 items-center">
+          <div>
+            <Eyebrow>Our story</Eyebrow>
+            <h2 className="mk-reveal mt-6 font-display font-normal text-[clamp(2.75rem,5.6vw,5.25rem)] leading-[0.98] text-earth">
+              Seven generations,
+              <br />
+              <em className="font-light text-clay">one wheel.</em>
+            </h2>
+            <p className="mk-reveal mt-8 max-w-xl font-display text-[clamp(1.4rem,2.2vw,1.75rem)] leading-[1.35] text-earth">
+              We work with a single family of potters in Khurja, who have thrown clay on one wheel
+              for over 180 years.
+            </p>
+            <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-muted-foreground">
+              Every Mudkraft piece begins as unglazed river clay and is shaped entirely by hand: no
+              moulds, no machines. Each handi, kadhai and bhagona carries the marks of the potter
+              who made it.
+            </p>
+            <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-muted-foreground">
+              Then it is fired slowly, over 48 hours, so it is ready for years of everyday cooking.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link
+                href="/soil-report"
+                className="mk-btn-fill inline-flex items-center gap-3 min-h-[52px] px-7 rounded-full bg-earth text-cream text-xs tracking-[0.16em] uppercase"
+              >
+                Read the soil report
+                <Arrow className="mk-arrow" />
+              </Link>
+              <a
+                href="/brochure/Mudkraft-Catalogue-2026.pdf"
+                download
+                className="inline-flex items-center gap-2.5 min-h-[52px] px-6 rounded-full border border-earth/25 text-earth text-xs tracking-[0.16em] uppercase hover:border-clay transition-colors"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden="true"
+                  className="w-4 h-4"
+                >
+                  <path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14" />
+                </svg>
+                Download catalogue
+              </a>
+            </div>
+          </div>
+          <figure className="mk-reveal justify-self-center w-full max-w-[460px]">
+            <div className="aspect-[3/4] rounded-t-full rounded-b-lg border border-border p-2.5">
+              <img
+                src={potsDrying.src}
+                alt="Rows of freshly thrown clay pots drying on the studio floor"
+                loading="lazy"
+                className="w-full h-full object-cover rounded-t-full rounded-b"
+              />
+            </div>
+            <figcaption className="mt-3 text-[13px] text-muted-foreground">
+              Freshly thrown pots drying before firing.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section aria-label="Mudkraft in numbers" className="px-6 md:px-10 pb-20 md:pb-28">
+        <dl className="mk-reveal max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-6 rounded-[1.75rem] bg-kiln text-cream px-6 py-12 md:py-14 text-center">
+          {STORY_NUMBERS.map((n) => (
+            <div key={n.label} className="flex flex-col-reverse">
+              <dt className="mt-2.5 text-[11px] sm:text-xs tracking-[0.24em] uppercase text-cream/80">
+                {n.label}
+              </dt>
+              <dd className="font-display text-[clamp(3rem,6vw,4.5rem)] leading-none text-gold">
+                {n.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="px-6 md:px-10 pb-24 md:pb-32">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-center gap-7">
+            <h2 className="mk-reveal font-display font-normal text-[clamp(2.25rem,4vw,3.5rem)] text-earth">
+              From river to table
+            </h2>
+            <span aria-hidden="true" className="h-px flex-[1_1_200px] bg-border" />
+          </div>
+          <ol className="mt-10 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {RIVER_TO_TABLE.map((step, i) => (
+              <li
+                key={step.title}
+                className="mk-reveal rounded-[1.25rem] border border-border bg-cream p-7"
+              >
+                <div className="font-display italic text-[2.5rem] leading-none text-clay">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <h3 className="mt-4 mb-2 font-sans text-lg font-medium text-earth">{step.title}</h3>
+                <p className="text-[15px] leading-relaxed text-muted-foreground">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="px-6 md:px-10 pb-24 md:pb-36 text-center">
         <div className="max-w-4xl mx-auto">
           <svg
             viewBox="0 0 64 64"
@@ -781,6 +930,9 @@ export function HomePage({
             ritual, of a slower way to hold what matters.&rdquo;
           </p>
           <div className="mt-8 font-hand text-[1.75rem] text-clay-deep">— Ananya, founder</div>
+          <p className="mt-6 text-[11px] tracking-[0.24em] uppercase text-muted-foreground">
+            Handmade in Khurja, India · A slow craft studio from the banks of the Ganges
+          </p>
         </div>
       </section>
 

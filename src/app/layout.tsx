@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Caveat } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { FACEBOOK_URL } from "@/lib/catalogue";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -68,6 +69,7 @@ const organizationJsonLd = {
       logo: `${SITE_URL}/favicon.ico`,
       description:
         "Slow craft studio shaping pots, kulhads, planters and diyas from river clay.",
+      sameAs: [FACEBOOK_URL],
     },
     {
       "@type": "WebSite",
