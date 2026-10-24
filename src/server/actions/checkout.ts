@@ -4,16 +4,27 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
+import { COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
+
 import { getSession } from "../auth-guard";
 import { db } from "../db";
 import { product } from "../db/schema/catalog";
-import { order, orderEvent, orderItem } from "../db/schema/orders";
+import { order, orderEvent, orderItem, paymentTransaction } from "../db/schema/orders";
+import { sendOrderConfirmationEmail } from "../email/send";
+import {
+  createGatewayOrder,
+  describePaymentMethod,
+  fetchGatewayPayment,
+  razorpayConfigured,
+  razorpayKeyId,
+  verifyPaymentSignature,
+} from "../razorpay";
 
 export type CheckoutResult =
   | { ok: true; token: string; method: CheckoutMethod }
   | { ok: false; error: string; fieldErrors?: Record<string, string> };
 
-export type CheckoutMethod = "gateway" | "whatsapp";
+export type CheckoutMethod = "gateway" | "whatsapp" | "cod";
 
 const MAX_LINES = 50;
 const MAX_QTY_PER_LINE = 50;
@@ -72,7 +83,7 @@ const checkoutSchema = z.object({
     .trim()
     .regex(/^[1-9]\d{5}$/, "Enter a 6-digit PIN code"),
   note: z.string().trim().max(500).default(""),
-  method: z.enum(["gateway", "whatsapp"]),
+  method: z.enum(["gateway", "whatsapp", "cod"]),
   items: z.array(lineSchema).min(1, "Your basket is empty").max(MAX_LINES),
 });
 
@@ -99,6 +110,18 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
   }
 
   const d = parsed.data;
+
+  // The form only shows COD inside the serviceable region, but that is UX,
+  // not enforcement — re-checked here like everything else the client sends.
+  if (d.method === "cod" && !isCodEligible(d.postalCode)) {
+    return {
+      ok: false,
+      error: `Cash on delivery is available only in ${COD_REGION_LABEL}.`,
+      fieldErrors: {
+        postalCode: `COD is not available for this PIN code — only ${COD_REGION_LABEL}.`,
+      },
+    };
+  }
 
   // Collapse duplicate slugs rather than trusting the client to have done it.
   const requested = new Map<string, number>();
@@ -186,7 +209,8 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
 
   // 24 random bytes, URL-safe. Long enough that guessing one is not a strategy.
   const lookupToken = randomBytes(24).toString("base64url");
-  const paymentProvider = d.method === "whatsapp" ? "whatsapp" : "mock";
+  const paymentProvider =
+    d.method === "whatsapp" ? "whatsapp" : d.method === "cod" ? "cod" : "razorpay";
 
   // Neon's HTTP driver has no interactive transactions; `batch` runs these three
   // statements as one. Ids were generated above so nothing needs reading back.
@@ -216,80 +240,307 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
       note:
         d.method === "whatsapp"
           ? "Order placed — awaiting confirmation over WhatsApp."
-          : "Order placed — awaiting payment.",
+          : d.method === "cod"
+            ? "Order placed — cash on delivery, payment collected at the door."
+            : "Order placed — awaiting payment.",
     }),
   ]);
+
+  // The order number comes from a DB sequence, so it has to be read back for
+  // the email. Best-effort from here down: the order is already committed, and
+  // sendOrderConfirmationEmail never throws.
+  const created = await db.query.order.findFirst({
+    where: eq(order.id, orderId),
+    columns: { orderNumber: true },
+  });
+
+  await sendOrderConfirmationEmail({
+    to: d.email,
+    customerName: d.name,
+    orderNumber: created?.orderNumber ?? "(pending)",
+    lookupToken,
+    method: d.method,
+    items: lines.map((line) => ({
+      productName: line.productName,
+      qty: line.qty,
+      unitPricePaise: line.unitPricePaise,
+      lineTotalPaise: line.lineTotalPaise,
+      imagePublicId: line.imagePublicId ?? null,
+    })),
+    subtotalPaise,
+    shippingPaise,
+    totalPaise,
+    address: {
+      line1: d.line1,
+      line2: d.line2 || null,
+      city: d.city,
+      state: d.state,
+      postalCode: d.postalCode,
+    },
+  });
 
   return { ok: true, token: lookupToken, method: d.method };
 }
 
-export type SettleResult = { ok: true; paid: boolean } | { ok: false; error: string };
+// ---------------------------------------------------------------------------
+// Razorpay
+// ---------------------------------------------------------------------------
+
+export type InitiatePaymentResult =
+  | {
+      ok: true;
+      keyId: string;
+      gatewayOrderId: string;
+      amountPaise: number;
+      currency: string;
+      orderNumber: string;
+      customerName: string;
+      customerEmail: string | null;
+      customerPhone: string | null;
+    }
+  | { ok: false; error: string };
 
 /**
- * The mock payment gateway's callback.
+ * Mints (or reuses) the Razorpay order the checkout modal is opened against,
+ * and records the attempt as a `payment_transaction` row.
  *
- * SECURITY: this marks an order paid without any money having moved, and anyone
- * holding the lookup token can call it. That is inherent to a mock and is
- * acceptable only until a real provider is chosen. The guards below keep the
- * blast radius small — it refuses any order not created as `mock`, and refuses
- * to run twice — but this function MUST be deleted, not adapted, when a real
- * gateway arrives. A real provider's callback is verified by signature and is
- * never trusted on the strength of a URL the customer holds.
+ * Holding the lookup token is sufficient here on purpose — this only *starts*
+ * a payment for the token-holder's own order. Nothing is ever marked paid on
+ * this path; settlement requires Razorpay's signature.
  */
-export async function settleMockPayment(
-  token: string,
-  outcome: "success" | "failure",
-): Promise<SettleResult> {
+export async function initiateRazorpayPayment(token: string): Promise<InitiatePaymentResult> {
   if (!token || token.length > 200) return { ok: false, error: "Unknown order." };
+
+  if (!razorpayConfigured()) {
+    return {
+      ok: false,
+      error: "Online payment is not available right now. Please pay via WhatsApp instead.",
+    };
+  }
 
   const row = await db.query.order.findFirst({
     where: eq(order.lookupToken, token),
-    columns: { id: true, paymentProvider: true, paymentStatus: true, status: true },
+    columns: {
+      id: true,
+      orderNumber: true,
+      totalPaise: true,
+      currency: true,
+      paymentProvider: true,
+      paymentStatus: true,
+      shippingName: true,
+      contactEmail: true,
+      contactPhone: true,
+    },
   });
 
   if (!row) return { ok: false, error: "Unknown order." };
-  if (row.paymentProvider !== "mock") {
-    return { ok: false, error: "This order is not paid through the mock gateway." };
+  if (row.paymentProvider !== "razorpay") {
+    return { ok: false, error: "This order is not paid online." };
   }
-  if (row.paymentStatus !== "unpaid") {
-    return { ok: false, error: "This order has already been settled." };
+  if (row.paymentStatus === "paid") {
+    return { ok: false, error: "This order has already been paid." };
+  }
+
+  // A refresh of the pay page reuses the open attempt rather than minting a
+  // fresh gateway order each time. Settled or failed attempts never match.
+  const open = await db.query.paymentTransaction.findFirst({
+    where: and(
+      eq(paymentTransaction.orderId, row.id),
+      eq(paymentTransaction.status, "created"),
+      eq(paymentTransaction.amountPaise, row.totalPaise),
+    ),
+    columns: { providerOrderId: true },
+  });
+
+  let gatewayOrderId = open?.providerOrderId ?? null;
+
+  if (!gatewayOrderId) {
+    let created: { id: string };
+    try {
+      created = await createGatewayOrder({
+        amountPaise: row.totalPaise,
+        receipt: row.orderNumber,
+        notes: { order_number: row.orderNumber },
+      });
+    } catch (error) {
+      console.error("[razorpay] order create failed:", error);
+      return { ok: false, error: "Could not reach the payment gateway. Please try again." };
+    }
+    gatewayOrderId = created.id;
+
+    await db.insert(paymentTransaction).values({
+      id: randomUUID(),
+      orderId: row.id,
+      provider: "razorpay",
+      providerOrderId: gatewayOrderId,
+      amountPaise: row.totalPaise,
+      currency: row.currency,
+    });
+  }
+
+  return {
+    ok: true,
+    keyId: razorpayKeyId(),
+    gatewayOrderId,
+    amountPaise: row.totalPaise,
+    currency: row.currency,
+    orderNumber: row.orderNumber,
+    customerName: row.shippingName,
+    customerEmail: row.contactEmail,
+    customerPhone: row.contactPhone,
+  };
+}
+
+export type SettleResult = { ok: true; paid: boolean } | { ok: false; error: string };
+
+const confirmSchema = z.object({
+  gatewayOrderId: z.string().min(1).max(100),
+  gatewayPaymentId: z.string().min(1).max(100),
+  signature: z.string().min(1).max(200),
+});
+
+/**
+ * Settles an order after the checkout modal reports success.
+ *
+ * Nothing the browser sends is trusted on its own: the signature is verified
+ * against our API secret, then the payment is re-fetched from Razorpay's API
+ * and its order id, amount and status are checked against our own transaction
+ * row before anything is marked paid.
+ */
+export async function confirmRazorpayPayment(token: string, input: unknown): Promise<SettleResult> {
+  if (!token || token.length > 200) return { ok: false, error: "Unknown order." };
+
+  const parsed = confirmSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid payment confirmation." };
+  const p = parsed.data;
+
+  const row = await db.query.order.findFirst({
+    where: eq(order.lookupToken, token),
+    columns: { id: true, paymentProvider: true, paymentStatus: true },
+  });
+
+  if (!row) return { ok: false, error: "Unknown order." };
+  if (row.paymentProvider !== "razorpay") {
+    return { ok: false, error: "This order is not paid online." };
+  }
+
+  const txn = await db.query.paymentTransaction.findFirst({
+    where: and(
+      eq(paymentTransaction.orderId, row.id),
+      eq(paymentTransaction.providerOrderId, p.gatewayOrderId),
+    ),
+    columns: { id: true, status: true, amountPaise: true },
+  });
+
+  if (!txn) return { ok: false, error: "Unknown payment attempt." };
+
+  // Already settled — by the webhook racing ahead, or a double-submit. Fine.
+  if (txn.status === "captured" || row.paymentStatus === "paid") {
+    return { ok: true, paid: true };
+  }
+
+  if (
+    !verifyPaymentSignature({
+      gatewayOrderId: p.gatewayOrderId,
+      gatewayPaymentId: p.gatewayPaymentId,
+      signature: p.signature,
+    })
+  ) {
+    return { ok: false, error: "Payment verification failed." };
+  }
+
+  let payment;
+  try {
+    payment = await fetchGatewayPayment(p.gatewayPaymentId);
+  } catch (error) {
+    console.error("[razorpay] payment fetch failed:", error);
+    return {
+      ok: false,
+      error:
+        "Could not verify the payment right now. If you were charged, it will be confirmed shortly.",
+    };
+  }
+
+  if (
+    payment.order_id !== p.gatewayOrderId ||
+    payment.amount !== txn.amountPaise ||
+    (payment.status !== "captured" && payment.status !== "authorized")
+  ) {
+    return { ok: false, error: "Payment verification failed." };
   }
 
   const now = new Date();
 
-  if (outcome === "failure") {
-    await db.batch([
-      db
-        .update(order)
-        .set({ paymentStatus: "failed", updatedAt: now })
-        // Re-checked in the WHERE clause so two concurrent clicks cannot both
-        // write; the second matches nothing.
-        .where(and(eq(order.id, row.id), eq(order.paymentStatus, "unpaid"))),
-      db.insert(orderEvent).values({
-        orderId: row.id,
-        status: "pending",
-        note: "Mock payment failed. The order is still awaiting payment.",
-      }),
-    ]);
-    return { ok: true, paid: false };
-  }
-
+  // Both WHERE clauses re-check state so the webhook and this handler cannot
+  // both write — whichever lands second matches nothing.
   await db.batch([
     db
-      .update(order)
+      .update(paymentTransaction)
       .set({
-        paymentStatus: "paid",
-        status: "confirmed",
-        paymentRef: `MOCK-${randomBytes(6).toString("hex").toUpperCase()}`,
+        status: "captured",
+        providerPaymentId: payment.id,
+        method: payment.method ?? null,
+        methodDetail: describePaymentMethod(payment),
+        confirmedVia: "handler",
+        rawPayload: payment,
         updatedAt: now,
       })
+      // `failed` is included because the modal lets the customer retry a
+      // declined attempt against the same gateway order.
+      .where(
+        and(
+          eq(paymentTransaction.id, txn.id),
+          inArray(paymentTransaction.status, ["created", "failed"]),
+        ),
+      ),
+    db
+      .update(order)
+      .set({ paymentStatus: "paid", status: "confirmed", paymentRef: payment.id, updatedAt: now })
       .where(and(eq(order.id, row.id), eq(order.paymentStatus, "unpaid"))),
     db.insert(orderEvent).values({
       orderId: row.id,
       status: "confirmed",
-      note: "Payment received through the mock gateway.",
+      note: `Payment received via Razorpay (${payment.method ?? "online"}).`,
     }),
   ]);
 
   return { ok: true, paid: true };
+}
+
+/**
+ * Records a failed or abandoned attempt reported by the checkout modal. Purely
+ * bookkeeping — the order itself stays unpaid and payable, and nothing here
+ * can move money or settle anything, so the lookup token is authority enough.
+ */
+export async function reportRazorpayFailure(
+  token: string,
+  gatewayOrderId: string,
+  reason: { code?: string; description?: string },
+): Promise<void> {
+  if (!token || token.length > 200) return;
+  if (!gatewayOrderId || gatewayOrderId.length > 100) return;
+
+  const row = await db.query.order.findFirst({
+    where: eq(order.lookupToken, token),
+    columns: { id: true },
+  });
+  if (!row) return;
+
+  await db
+    .update(paymentTransaction)
+    .set({
+      status: "failed",
+      errorCode: reason.code?.slice(0, 100) ?? null,
+      errorDescription: reason.description?.slice(0, 500) ?? null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(paymentTransaction.orderId, row.id),
+        eq(paymentTransaction.providerOrderId, gatewayOrderId),
+        // Only an open attempt can fail; a captured one is never downgraded
+        // on the browser's word.
+        eq(paymentTransaction.status, "created"),
+      ),
+    );
 }

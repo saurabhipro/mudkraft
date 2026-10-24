@@ -7,6 +7,7 @@ import { requireAdmin } from "../auth-guard";
 import { destroyAsset } from "../cloudinary";
 import { db } from "../db";
 import { product, productImage } from "../db/schema/catalog";
+import { announceNewProduct } from "../email/broadcast";
 import { pricingConfig } from "../db/schema/pricing";
 import { computePrice } from "../pricing/compute";
 import { loadActiveAssumptions } from "../pricing/load";
@@ -120,12 +121,41 @@ export async function setProductStatus(input: unknown): Promise<ActionResult> {
   const parsed = statusSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid status change." };
 
+  const existing = await db.query.product.findFirst({
+    where: eq(product.slug, parsed.data.slug),
+    with: { images: true },
+  });
+  if (!existing) return { ok: false, error: "Product not found." };
+
   await db
     .update(product)
     .set({ status: parsed.data.status, updatedAt: new Date() })
     .where(eq(product.slug, parsed.data.slug));
 
   revalidateProduct(parsed.data.slug);
+
+  /**
+   * Announce only the first time a product goes live: imports always create
+   * drafts, so draft → active is the launch. Re-activating from the archive
+   * is not a launch and must not email the whole customer list again.
+   */
+  if (existing.status === "draft" && parsed.data.status === "active") {
+    const primaryImage =
+      existing.images.find((image) => image.isPrimary) ??
+      existing.images.slice().sort((a, b) => a.sortOrder - b.sortOrder)[0] ??
+      null;
+
+    await announceNewProduct({
+      slug: existing.slug,
+      name: existing.name,
+      sizeLabel: existing.sizeLabel,
+      tag: existing.tag,
+      description: existing.description,
+      pricePaise: existing.pricePaise,
+      imagePublicId: primaryImage?.publicId ?? null,
+    });
+  }
+
   return { ok: true };
 }
 

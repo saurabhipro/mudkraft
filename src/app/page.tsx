@@ -4,6 +4,7 @@ import { displayImage, toProductView } from "@/lib/product-view";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getCategories } from "@/server/store/categories";
 import { getActiveProducts } from "@/server/store/products";
+import { getChannelVideos } from "@/server/youtube";
 import { HomePage } from "./home-page";
 
 const DESCRIPTION =
@@ -26,7 +27,11 @@ export const metadata: Metadata = {
 export default async function Page() {
   // Both reads go through the cached store layer, so this page is served from
   // cache until an admin edit revalidates the `products` tag.
-  const [products, categories] = await Promise.all([getActiveProducts(), getCategories()]);
+  const [products, categories, videos] = await Promise.all([
+    getActiveProducts(),
+    getCategories(),
+    getChannelVideos(),
+  ]);
   const views = products.map(toProductView);
 
   const productsJsonLd = {
@@ -57,6 +62,7 @@ export default async function Page() {
       <HomePage
         products={views}
         categories={categories.map((c) => c.name)}
+        videos={videos}
       />
     </>
   );

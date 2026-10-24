@@ -4,7 +4,7 @@ import Script from "next/script";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useRef } from "react";
 
-import { GOOGLE_CLIENT_ID, useSession } from "@/lib/auth-client";
+import { authClient, GOOGLE_CLIENT_ID, useSession } from "@/lib/auth-client";
 
 /**
  * Google One Tap — the "Continue as <name>" prompt shown to visitors who are
@@ -40,14 +40,66 @@ interface GoogleIdentityApi {
         context?: "signin" | "signup" | "use";
       }): void;
       prompt(): void;
+      disableAutoSelect(): void;
     };
   };
+}
+
+const SIGNED_OUT_KEY = "mk:signed-out";
+
+/**
+ * Call before an explicit sign-out. Without it, the moment the session clears
+ * this component sees a signed-out visitor and starts a fresh prompt, which the
+ * post-sign-out refresh then aborts (Google logs that as a console error) — and
+ * re-offering sign-in to someone who just chose to leave is unwelcome anyway.
+ * Lasts for this tab's visit only.
+ */
+export function suppressOneTapAfterSignOut() {
+  try {
+    sessionStorage.setItem(SIGNED_OUT_KEY, "1");
+  } catch {
+    // Storage blocked (private mode etc.) — the prompt may reappear; harmless.
+  }
+  window.google?.accounts.id.disableAutoSelect();
+}
+
+function signedOutThisVisit() {
+  try {
+    return sessionStorage.getItem(SIGNED_OUT_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 declare global {
   interface Window {
     google?: GoogleIdentityApi;
   }
+}
+
+let gsiAbortLogDowngraded = false;
+
+/**
+ * Google's script reports every cancelled prompt — the visitor closing it,
+ * tapping outside it, or navigating away while it is open — through
+ * console.error as "[GSI_LOGGER]: FedCM get() rejects with AbortError". That is
+ * an ordinary outcome, not a fault, but Next's dev overlay presents any
+ * console.error as a crash. Re-route just that one message to console.warn;
+ * every other error, Google's included, passes through untouched.
+ */
+function downgradeGsiAbortLog() {
+  if (gsiAbortLogDowngraded) return;
+  gsiAbortLogDowngraded = true;
+
+  const originalError = console.error;
+  console.error = (...args: unknown[]) => {
+    const text = args.filter((arg) => typeof arg === "string").join(" ");
+    if (text.includes("[GSI_LOGGER]") && text.includes("AbortError")) {
+      console.warn(...args);
+      return;
+    }
+    originalError.apply(console, args);
+  };
 }
 
 export function GoogleOneTap() {
@@ -60,12 +112,14 @@ export function GoogleOneTap() {
     Boolean(GOOGLE_CLIENT_ID) &&
     !isPending &&
     !session &&
-    !SUPPRESSED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+    !SUPPRESSED_PREFIXES.some((prefix) => pathname.startsWith(prefix)) &&
+    !signedOutThisVisit();
 
   const handleScriptReady = useCallback(() => {
     // Google throttles repeat prompts; initialise once per page load.
     if (initialised.current || !window.google) return;
     initialised.current = true;
+    downgradeGsiAbortLog();
 
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
@@ -88,7 +142,12 @@ export function GoogleOneTap() {
           credentials: "include",
         })
           .then((res) => {
-            if (res.ok) router.refresh();
+            if (!res.ok) return;
+            // This request bypasses authClient, so Better Auth never learns a
+            // session now exists and every useSession() (the header's account
+            // button included) would keep showing "Sign in". Signal it directly.
+            authClient.$store.notify("$sessionSignal");
+            router.refresh();
           })
           .catch(() => {
             // Network failure. The visitor never asked for this prompt, so

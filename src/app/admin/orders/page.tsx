@@ -154,6 +154,10 @@ export default async function AdminOrdersPage({
                       label={`Actions for ${order.orderNumber}`}
                       items={[
                         {
+                          label: "View details & payments",
+                          href: `/admin/orders/${order.id}`,
+                        },
+                        {
                           label: "Email customer",
                           href: order.contactEmail ? `mailto:${order.contactEmail}` : undefined,
                           disabled: !order.contactEmail,

@@ -26,6 +26,7 @@ export default async function OrderPlacedPage({
 
   const paid = order.paymentStatus === "paid";
   const viaWhatsApp = order.paymentProvider === "whatsapp";
+  const viaCod = order.paymentProvider === "cod";
 
   const whatsappHref = whatsappLink([
     "Namaste Mudkraft 🙏",
@@ -49,9 +50,11 @@ export default async function OrderPlacedPage({
         <p className="mt-4 max-w-xl text-foreground/80">
           {paid
             ? "Your order is confirmed. We will start packing, and you will hear from us on WhatsApp when it is dispatched."
-            : viaWhatsApp
-              ? "Your order is saved. Send us a message and we will confirm the pieces, share payment details and dispatch."
-              : "Your order is saved but not yet paid. You can pay whenever you are ready — nothing is dispatched until then."}
+            : viaCod
+              ? `Your order is confirmed — pay ${formatPaise(order.totalPaise)} in cash when it arrives. We will reach you on WhatsApp before dispatch.`
+              : viaWhatsApp
+                ? "Your order is saved. Send us a message and we will confirm the pieces, share payment details and dispatch."
+                : "Your order is saved but not yet paid. You can pay whenever you are ready — nothing is dispatched until then."}
         </p>
 
         <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-earth/20 bg-cream/60 px-5 py-2.5">
@@ -138,7 +141,7 @@ export default async function OrderPlacedPage({
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          {!paid && !viaWhatsApp && (
+          {!paid && !viaWhatsApp && !viaCod && (
             <Link
               href={`/checkout/pay/${order.lookupToken}`}
               className="flex-1 inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors"
@@ -160,12 +163,13 @@ export default async function OrderPlacedPage({
           </a>
         </div>
 
-        {/* No confirmation email is sent yet, so this page must not claim one was.
-            Until that exists, the link in the address bar is genuinely the only
-            way back to this order. */}
+        {/* The confirmation email is best-effort (sendEmail never throws), so
+            the bookmark advice stays — this page must remain reachable even
+            when the email never arrived. */}
         <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
-          Please keep this page bookmarked — the link in your address bar is the only way back to
-          this order.
+          We&apos;ve sent a confirmation with a link back to this order to {order.contactEmail}. If
+          it doesn&apos;t arrive, keep this page bookmarked — the link in your address bar also
+          brings you back here.
         </p>
       </section>
 

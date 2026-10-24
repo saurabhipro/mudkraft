@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
+import { BrandLogo } from "./BrandLogo";
 import { HeaderAccount } from "./HeaderAccount";
 
 type NavItem = { label: string; href: string; match: (path: string, hash: string) => boolean };
@@ -16,6 +17,11 @@ const NAV: NavItem[] = [
   { label: "Benefits", href: "/benefits", match: (p) => p.startsWith("/benefits") },
   { label: "Workshops", href: "/workshops", match: (p) => p.startsWith("/workshops") },
   { label: "Story", href: "/#story", match: (p, h) => p === "/" && h === "story" },
+  {
+    label: "Videos",
+    href: "/#videos",
+    match: (p, h) => (p === "/" && h === "videos") || p.startsWith("/videos"),
+  },
 ];
 
 // next/navigation exposes the path but not the fragment, and the active-nav dots
@@ -59,85 +65,62 @@ export function SiteHeader({
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    if (mobileOpen) document.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [mobileOpen]);
 
   const isActive = (item: NavItem) => item.match(path, hash);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
-      <nav className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-5 sm:px-6 md:px-10 py-4 md:py-5">
-        <Link href="/" className="flex items-center gap-3 min-w-0 shrink group" aria-label="Mudkraft home">
-          {/* Craft Seal Mark */}
-          <span className="relative flex items-center justify-center shrink-0">
-            <span
-              className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shadow-sm overflow-hidden -rotate-6 transition-transform duration-500 group-hover:rotate-0"
-              style={{ background: "var(--gradient-clay)" }}
-            >
-              <span
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage: "radial-gradient(circle at center, #000 1px, transparent 1px)",
-                  backgroundSize: "3px 3px",
-                }}
-              />
-              <span className="relative font-display text-cream text-xl sm:text-2xl font-semibold leading-none -mt-0.5">
-                M
-              </span>
-            </span>
-            {/* Gold kiln mark dot */}
-            <span
-              className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background"
-              style={{ backgroundColor: "var(--gold)" }}
-            />
-          </span>
-
-          {/* Wordmark */}
-          <span className="flex flex-col leading-none min-w-0">
-            <span className="font-display text-earth text-xl sm:text-3xl md:text-4xl font-medium tracking-tight leading-none whitespace-nowrap">
-              Mud<span className="italic">kraft</span>
-            </span>
-            <span className="hidden sm:flex items-center gap-2 mt-1.5">
-              <span className="h-px w-5 bg-clay/40" />
-              <span className="text-[9px] uppercase tracking-[0.28em] text-earth/60 font-sans">
-                Slow Craft Studio
-              </span>
-            </span>
+    <header className="fixed top-3 md:top-5 left-0 right-0 z-50 px-3 sm:px-5 animate-fade-up">
+      <nav
+        aria-label="Main"
+        className="max-w-7xl mx-auto flex items-center justify-between gap-3 pl-4 pr-2 sm:pl-6 py-2 rounded-full bg-cream/80 backdrop-blur-xl border border-earth/10 shadow-[0_20px_50px_-30px_rgba(30,22,18,0.55)]"
+      >
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 min-w-0 shrink group"
+          aria-label="Mudkraft home"
+        >
+          {/* Slightly larger than the bar, so the badge sits on it like a sticker. */}
+          <BrandLogo className="w-12 h-12 sm:w-14 sm:h-14 -my-2 -ml-2 sm:-ml-3 drop-shadow-[0_6px_10px_rgba(59,42,34,0.3)] transition-transform duration-700 ease-[var(--ease-clay)] group-hover:-rotate-12 group-hover:scale-105" />
+          <span className="font-display text-earth text-2xl sm:text-[1.7rem] font-medium tracking-tight leading-none whitespace-nowrap">
+            Mud<span className="italic">kraft</span>
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-10 text-sm text-muted-foreground">
+        <div className="hidden md:flex items-center gap-8 text-[12px] tracking-[0.14em] uppercase text-earth">
           {NAV.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className={`relative transition-colors ${
-                isActive(item) ? "text-clay" : "hover:text-clay"
-              }`}
+              aria-current={isActive(item) ? "page" : undefined}
+              className={`mk-link transition-colors ${isActive(item) ? "text-clay-deep" : "hover:text-clay-deep"}`}
             >
               {item.label}
-              {isActive(item) && (
-                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-clay" />
-              )}
             </Link>
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {rightSlot}
           <HeaderAccount />
           <button
             type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
             aria-expanded={mobileOpen}
-            className="md:hidden relative inline-flex items-center justify-center w-10 h-10 rounded-full border border-earth/30 text-earth hover:bg-earth hover:text-cream transition-colors"
+            className="md:hidden relative inline-flex items-center justify-center w-11 h-11 rounded-full bg-earth text-cream"
           >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <Menu className="w-5 h-5" />
             {typeof cartCount === "number" && cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-gold text-earth text-[10px] font-medium border border-background">
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-clay text-cream text-[10px] font-medium border border-cream">
                 {cartCount}
               </span>
             )}
@@ -145,53 +128,79 @@ export function SiteHeader({
         </div>
       </nav>
 
-      {/* Mobile sheet */}
-      <div
-        className={`md:hidden overflow-hidden transition-[max-height,opacity] duration-500 ease-out ${
-          mobileOpen ? "max-h-[80vh] overflow-y-auto opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="px-6 pb-8 pt-2 flex flex-col divide-y divide-border/40 border-t border-border/40 bg-background/95 backdrop-blur-md">
-          {NAV.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center justify-between py-4 text-lg font-display tracking-tight ${
-                isActive(item) ? "text-clay" : "text-earth"
-              }`}
-            >
-              <span>{item.label}</span>
-              <span className="text-xs tracking-widest uppercase text-muted-foreground">
-                {isActive(item) ? "Now" : "→"}
+      {/* Mobile sheet: clay floods out from the menu button, then the links rise in. */}
+      {mobileOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          className="md:hidden fixed inset-0 z-[60] bg-clay text-cream grain flex flex-col px-7 pt-6 pb-[max(2rem,env(safe-area-inset-bottom))] overflow-y-auto animate-sheet-open"
+        >
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-3 font-display text-2xl font-medium">
+              <BrandLogo className="w-12 h-12" />
+              <span>
+                Mud<span className="italic">kraft</span>
               </span>
-            </Link>
-          ))}
-          {onCartOpen && (
+            </span>
             <button
               type="button"
-              onClick={() => {
-                setMobileOpen(false);
-                onCartOpen();
-              }}
-              className="mt-4 relative inline-flex items-center justify-center gap-2 text-xs tracking-widest uppercase bg-earth text-cream px-5 py-3 rounded-full"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+              className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-cream text-ink"
             >
-              Cart
-              <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-gold text-earth text-[11px] font-medium">
-                {cartCount ?? 0}
-              </span>
+              <X className="w-5 h-5" />
             </button>
-          )}
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 text-center text-xs tracking-widest uppercase bg-earth text-cream px-5 py-3 rounded-full"
-          >
-            Enquire on WhatsApp
-          </a>
+          </div>
+
+          <div className="mt-16 flex flex-col gap-1">
+            {NAV.map((item, i) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                aria-current={isActive(item) ? "page" : undefined}
+                className="font-display text-[3.25rem] leading-[1.08] tracking-tight"
+              >
+                <span className="mk-line">
+                  <span style={{ animationDelay: `${0.25 + i * 0.08}s` }}>
+                    {isActive(item) ? <em>{item.label}</em> : item.label}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-auto pt-10 flex flex-col gap-3 animate-fade-up [animation-delay:0.6s]">
+            {onCartOpen && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  onCartOpen();
+                }}
+                className="inline-flex items-center justify-center gap-2 min-h-[54px] text-xs tracking-widest uppercase bg-cream text-ink rounded-full"
+              >
+                Basket
+                <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-clay text-cream text-[11px] font-medium">
+                  {cartCount ?? 0}
+                </span>
+              </button>
+            )}
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center min-h-[54px] text-xs tracking-widest uppercase bg-ink text-cream rounded-full"
+            >
+              Enquire on WhatsApp
+            </a>
+            <p className="mt-2 text-center font-hand text-2xl text-cream/85">
+              shaped by hand, held by earth
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 }

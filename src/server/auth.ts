@@ -5,6 +5,7 @@ import { admin, oneTap } from "better-auth/plugins";
 
 import { db } from "./db";
 import { account, session, user, verification } from "./db/schema/auth";
+import { sendWelcomeEmail } from "./email/send";
 import { serverEnv } from "./env";
 
 export const ROLE_ADMIN = "admin";
@@ -40,6 +41,21 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       phone: { type: "string", required: false, input: true },
+    },
+  },
+
+  databaseHooks: {
+    user: {
+      create: {
+        /**
+         * Fires exactly once per account, for every signup path — email &
+         * password, Google redirect and One Tap alike. `sendWelcomeEmail`
+         * never throws, so a mail outage cannot break signup.
+         */
+        after: async (newUser) => {
+          await sendWelcomeEmail(newUser.email, newUser.name);
+        },
+      },
     },
   },
 
