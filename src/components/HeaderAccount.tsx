@@ -123,3 +123,57 @@ export function HeaderAccount() {
     </div>
   );
 }
+
+/**
+ * The same account control for the mobile menu sheet, where there is room for
+ * full-width rows instead of a dropdown.
+ */
+export function SheetAccount({ onNavigate }: { onNavigate: () => void }) {
+  const { data: session, isPending } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  if (isPending) return <div className="min-h-[54px]" aria-hidden="true" />;
+
+  if (!session) {
+    return (
+      <Link
+        href={`/sign-in?next=${encodeURIComponent(pathname)}`}
+        onClick={onNavigate}
+        className="inline-flex items-center justify-center min-h-[54px] text-xs tracking-widest uppercase border border-cream/40 text-cream rounded-full"
+      >
+        Sign in
+      </Link>
+    );
+  }
+
+  const displayName = session.user.name || session.user.email;
+  const isAdmin = session.user.role === "admin";
+
+  return (
+    <div className="flex items-center gap-3 rounded-full border border-cream/30 pl-5 pr-2 min-h-[54px]">
+      <span className="flex-1 min-w-0 truncate text-sm">{displayName}</span>
+      {isAdmin && (
+        <Link
+          href="/admin"
+          onClick={onNavigate}
+          className="shrink-0 px-3 py-2 text-xs tracking-widest uppercase rounded-full hover:bg-cream/10"
+        >
+          Admin
+        </Link>
+      )}
+      <button
+        type="button"
+        onClick={async () => {
+          onNavigate();
+          suppressOneTapAfterSignOut();
+          await authClient.signOut();
+          router.refresh();
+        }}
+        className="shrink-0 px-4 py-2.5 text-xs tracking-widest uppercase rounded-full bg-cream text-ink"
+      >
+        Sign out
+      </button>
+    </div>
+  );
+}

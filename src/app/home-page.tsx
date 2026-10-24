@@ -5,9 +5,10 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { BannerRail } from "@/components/BannerRail";
+import { HeroPieces } from "@/components/HeroPieces";
 import handsClay from "@/assets/hands-clay.jpg";
 import potsDrying from "@/assets/pots-drying.jpg";
-import heroBanner from "@/assets/hero-pot.jpg";
 import benefitCooling from "@/assets/benefit-cooling.jpg";
 import benefitMinerals from "@/assets/benefit-minerals.jpg";
 import benefitNutrients from "@/assets/benefit-nutrients.jpg";
@@ -28,18 +29,6 @@ import { type YouTubeVideo } from "@/lib/youtube";
 
 const TAPE_FRONT = ["River clay", "Wood fired", "Hand thrown", "Slow made"];
 const TAPE_BACK = ["earth born", "seven generations", "no moulds", "no machines"];
-
-// Horizontal positions and start offsets for the kiln sparks in the hero. Fixed
-// rather than random so server and client render the same markup.
-const EMBERS = [
-  { left: "8%", delay: "0s", size: 6 },
-  { left: "22%", delay: "2.4s", size: 4 },
-  { left: "37%", delay: "5s", size: 6 },
-  { left: "54%", delay: "1.2s", size: 3 },
-  { left: "66%", delay: "3.6s", size: 6 },
-  { left: "79%", delay: "6.4s", size: 4 },
-  { left: "91%", delay: "4.2s", size: 6 },
-];
 
 const ELEMENTS = [
   {
@@ -189,7 +178,7 @@ export function HomePage({
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Enquire on WhatsApp"
-              className="hidden lg:inline-flex items-center gap-2 text-xs tracking-widest uppercase border border-earth/25 px-4 min-h-[44px] rounded-full text-earth hover:bg-earth hover:text-cream transition-colors duration-500"
+              className="hidden xl:inline-flex items-center gap-2 text-xs tracking-widest uppercase border border-earth/25 px-4 min-h-[44px] rounded-full text-earth hover:bg-earth hover:text-cream transition-colors duration-500"
             >
               <WhatsAppIcon className="w-4 h-4" />
               Enquire
@@ -197,7 +186,7 @@ export function HomePage({
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="relative hidden md:inline-flex items-center gap-2.5 text-xs tracking-widest uppercase bg-earth text-cream pl-5 pr-2 min-h-[44px] rounded-full hover:bg-ink transition-colors"
+              className="relative inline-flex items-center gap-2.5 text-xs tracking-widest uppercase bg-earth text-cream pl-5 pr-2 min-h-[44px] rounded-full hover:bg-ink transition-colors"
             >
               Basket
               <span
@@ -212,170 +201,13 @@ export function HomePage({
         }
       />
 
-      {/* HERO — the kiln at night */}
-      <section className="relative isolate overflow-hidden bg-kiln text-cream pt-32 md:pt-44 pb-28 md:pb-32 px-6 md:px-10">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-        >
-          {EMBERS.map((e) => (
-            <span
-              key={e.left}
-              className="mk-ember"
-              style={{ left: e.left, animationDelay: e.delay, width: e.size, height: e.size }}
-            />
-          ))}
-          <div className="absolute left-1/2 -bottom-[380px] w-[1100px] h-[700px] -translate-x-[30%] rounded-full bg-[radial-gradient(closest-side,oklch(0.58_0.14_42/0.45),transparent)]" />
-        </div>
+      {/* BANNERS — the dark band behind the floating header, then the moving rail */}
+      <div className="bg-[#2d1912] pt-[92px] md:pt-[116px] pb-8 md:pb-10">
+        <BannerRail products={products} />
+      </div>
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 lg:gap-16 items-center">
-          <div>
-            <p className="font-hand text-gold text-2xl sm:text-[1.75rem] mb-5 animate-fade-up [animation-delay:0.15s]">
-              — shaped by hand, held by earth
-            </p>
-            <h1 className="font-display font-normal text-[clamp(3.25rem,8vw,7.75rem)] leading-[0.92] tracking-[-0.02em]">
-              <span className="mk-line">
-                <span style={{ animationDelay: "0.15s" }}>The soul of</span>
-              </span>
-              <span className="mk-line">
-                <span style={{ animationDelay: "0.3s" }}>
-                  <em className="mk-shimmer font-light">soil</em>, spun
-                </span>
-              </span>
-              <span className="mk-line">
-                <span style={{ animationDelay: "0.45s" }}>
-                  into <em className="font-light">stillness.</em>
-                </span>
-              </span>
-            </h1>
-            <p className="mt-8 max-w-md text-base sm:text-lg leading-relaxed text-cream/75 animate-fade-up [animation-delay:0.6s]">
-              Mudkraft is a slow craft studio. Every pot begins as river clay in the hands of a
-              potter, and ends as a quiet object in your home.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-5 animate-fade-up [animation-delay:0.8s]">
-              <a
-                href="#collection"
-                className="mk-btn-fill inline-flex items-center justify-center gap-3.5 min-h-[58px] px-8 rounded-full bg-cream text-ink text-[13px] tracking-[0.16em] uppercase font-medium"
-              >
-                Explore the collection
-                <Arrow className="mk-arrow" />
-              </a>
-              <a
-                href="#videos"
-                className="group inline-flex items-center gap-3.5 text-cream text-[15px]"
-              >
-                <span className="relative inline-grid place-items-center w-14 h-14 rounded-full border border-gold/60">
-                  <span className="absolute inset-0 rounded-full border border-gold animate-ring-pulse" />
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                    className="w-4 h-4 text-gold"
-                  >
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-                <span className="mk-link">Watch the wheel turn</span>
-              </a>
-            </div>
-          </div>
-
-          {/* The pot, unveiled inside a kiln arch */}
-          <div className="relative grid place-items-center min-h-[480px] sm:min-h-[620px]">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 620 620"
-              fill="none"
-              className="absolute w-[min(620px,100%)] animate-spin-slower"
-            >
-              <circle
-                cx="310"
-                cy="310"
-                r="300"
-                stroke="oklch(0.72 0.11 75 / 0.28)"
-                strokeDasharray="2 10"
-              />
-              <circle cx="310" cy="310" r="250" stroke="oklch(0.955 0.018 75 / 0.08)" />
-            </svg>
-            <div className="relative w-[min(440px,82%)] aspect-[44/58] rounded-t-full rounded-b-[2.5rem] overflow-hidden shadow-[0_60px_120px_-40px_rgba(0,0,0,0.8)] animate-arch-in">
-              <img
-                src={heroBanner.src}
-                alt="Hand-carved terracotta pot resting on a wooden stool"
-                fetchPriority="high"
-                decoding="async"
-                className="w-full h-full object-cover object-[50%_40%] animate-ken-burns"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-kiln/55 to-transparent to-45%" />
-            </div>
-
-            {/* Rotating seal */}
-            <div className="absolute left-0 sm:left-2 bottom-4 sm:bottom-10 w-28 h-28 sm:w-[150px] sm:h-[150px] grid place-items-center rounded-full bg-clay shadow-[0_20px_50px_-10px_oklch(0.58_0.14_42/0.6)]">
-              <svg
-                viewBox="0 0 150 150"
-                aria-hidden="true"
-                className="absolute inset-0 w-full h-full animate-spin-slow"
-              >
-                <defs>
-                  <path id="hero-seal" d="M75,75 m-56,0 a56,56 0 1,1 112,0 a56,56 0 1,1 -112,0" />
-                </defs>
-                <text
-                  fill="var(--cream)"
-                  className="font-sans uppercase"
-                  style={{ fontSize: 11, fontWeight: 500 }}
-                  // Stretch the lettering to exactly one lap of the circle so the ends meet.
-                  textLength={350}
-                  lengthAdjust="spacing"
-                >
-                  <textPath href="#hero-seal">Hand thrown · wood fired · slow made · </textPath>
-                </text>
-              </svg>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="var(--cream)"
-                strokeWidth="1.4"
-                aria-hidden="true"
-                className="w-7 h-7 sm:w-9 sm:h-9"
-              >
-                <path d="M7 20h10M8 20c-2-3-2-7 0-10h8c2 3 2 7 0 10M9 10V7h6v3" />
-              </svg>
-            </div>
-
-            <div className="absolute right-0 top-6 sm:top-20 px-5 py-4 rounded-[1.4rem] bg-cream/10 backdrop-blur-md border border-cream/20 animate-float">
-              <div className="font-display text-4xl sm:text-5xl leading-none text-gold">48h</div>
-              <div className="mt-1.5 text-[11px] tracking-[0.2em] uppercase text-cream/75">
-                of slow firing
-              </div>
-            </div>
-
-            <div className="hidden sm:flex absolute right-6 bottom-28 items-center gap-2.5 pl-3 pr-4 py-3 rounded-full bg-cream text-ink shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)] animate-float [animation-delay:1.5s]">
-              <span className="grid place-items-center w-9 h-9 rounded-full bg-sage">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--cream)"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                  className="w-4 h-4"
-                >
-                  <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" />
-                </svg>
-              </span>
-              <span className="text-[13px] font-medium">Naturally cools water</span>
-            </div>
-          </div>
-        </div>
-
-        <div
-          aria-hidden="true"
-          className="hidden md:flex absolute left-1/2 bottom-7 -translate-x-1/2 flex-col items-center gap-3 text-[10px] tracking-[0.4em] uppercase text-cream/60"
-        >
-          scroll
-          <span className="relative block w-px h-14 overflow-hidden bg-cream/15">
-            <span className="absolute inset-0 bg-gold animate-scroll-cue" />
-          </span>
-        </div>
-      </section>
+      {/* HERO — pick a piece on the wheel */}
+      <HeroPieces products={products} />
 
       {/* CROSSED TAPES */}
       <section aria-label="How we make" className="relative h-[170px] md:h-[210px] overflow-hidden">
@@ -427,16 +259,8 @@ export function HomePage({
       {/* COLLECTION */}
       <section id="collection" className="px-6 md:px-10 pt-12 md:pt-16 pb-24 md:pb-32">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap items-end justify-between gap-8 mb-10 md:mb-12">
-            <div>
-              <h2 className="mk-reveal font-display font-normal text-[clamp(2.75rem,6vw,5.75rem)] leading-[0.95] tracking-[-0.02em] max-w-3xl text-earth text-balance">
-                Objects that <em className="font-light text-clay">breathe</em>, made to be lived
-                with.
-              </h2>
-              <p className="mt-4 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
-                Prices incl. taxes &amp; delivery
-              </p>
-            </div>
+          <h2 className="sr-only">The collection</h2>
+          <div className="flex flex-wrap-reverse items-center justify-between gap-x-8 gap-y-4 mb-10 md:mb-12">
             <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
               {filterOptions.map((c) => {
                 const n =
@@ -459,6 +283,9 @@ export function HomePage({
                 );
               })}
             </div>
+            <p className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
+              Prices incl. taxes &amp; delivery
+            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

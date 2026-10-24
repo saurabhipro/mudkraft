@@ -118,6 +118,8 @@ export function ProductDetail({
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader
+        cartCount={cartCount}
+        cartHref={cartCount > 0 ? "/checkout" : "/#collection"}
         rightSlot={
           // There is no cart drawer on this page, so the basket goes where the
           // items can actually be reviewed and paid for.

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
-import { BrochureButton } from "@/components/BrochureButton";
 import { ShareButton } from "@/components/ShareButton";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { FACEBOOK_URL, SALES_EMAIL } from "@/lib/catalogue";
@@ -8,13 +7,22 @@ import { whatsappLink } from "@/lib/whatsapp";
 
 const ENQUIRY_EMAIL = SALES_EMAIL;
 
+const QUICK_LINKS = [
+  { label: "Products", href: "/#collection" },
+  { label: "Terms & Conditions", href: "/terms" },
+  { label: "Privacy Policy", href: "/trust" },
+  { label: "Shipping & Returns", href: "/shipping-returns" },
+  { label: "Track Order", href: "/track" },
+  { label: "FAQ", href: "/faq" },
+];
+
 const whatsappEnquiry = () => whatsappLink(["Namaste Mudkraft! I have an enquiry."]);
 
 export function SiteFooter() {
   return (
     <footer className="relative bg-earth text-cream px-6 md:px-10 pt-20 pb-10 mt-10">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
-        <div className="md:col-span-2">
+      <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-12">
+        <div className="sm:col-span-2">
           <Link href="/" className="group flex items-center gap-4" aria-label="Mudkraft home">
             <BrandLogo className="w-20 h-20 transition-transform duration-700 ease-[var(--ease-clay)] group-hover:-rotate-6 group-hover:scale-105" />
             <span className="flex flex-col leading-none">
@@ -39,11 +47,6 @@ export function SiteFooter() {
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Explore</div>
           <ul className="space-y-3 text-cream/80">
-            <li>
-              <Link href="/#collection" className="hover:text-gold transition-colors mk-link">
-                Collection
-              </Link>
-            </li>
             <li>
               <Link href="/benefits" className="hover:text-gold transition-colors mk-link">
                 Benefits of Clay
@@ -90,28 +93,21 @@ export function SiteFooter() {
         </div>
 
         <div>
+          <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Quick links</div>
+          <ul className="space-y-3 text-cream/80">
+            {QUICK_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-gold transition-colors mk-link">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Support</div>
           <ul className="space-y-3 text-cream/80">
-            <li>
-              <Link href="/track" className="hover:text-gold transition-colors mk-link">
-                Track Order
-              </Link>
-            </li>
-            <li>
-              <Link href="/faq" className="hover:text-gold transition-colors mk-link">
-                FAQ
-              </Link>
-            </li>
-            <li>
-              <Link href="/shipping-returns" className="hover:text-gold transition-colors mk-link">
-                Shipping & Returns
-              </Link>
-            </li>
-            <li>
-              <Link href="/trust" className="hover:text-gold transition-colors mk-link">
-                Trust & Privacy
-              </Link>
-            </li>
             <li>
               <a
                 href={whatsappEnquiry()}
@@ -177,9 +173,6 @@ export function SiteFooter() {
           </span>
         </div>
       </div>
-
-      {/* Floating catalogue button, stacked above WhatsApp */}
-      <BrochureButton />
 
       {/* Floating WhatsApp */}
       <a

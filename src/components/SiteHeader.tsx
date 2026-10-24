@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, ShoppingBag, X } from "lucide-react";
 
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
 import { BrandLogo } from "./BrandLogo";
-import { HeaderAccount } from "./HeaderAccount";
+import { HeaderAccount, SheetAccount } from "./HeaderAccount";
 
 type NavItem = { label: string; href: string; match: (path: string, hash: string) => boolean };
 
@@ -37,6 +38,14 @@ function subscribeToHash(onStoreChange: () => void) {
 const getHashSnapshot = () => window.location.hash.replace(/^#/, "");
 const getServerHashSnapshot = () => "";
 
+// Secondary links, shown under the main ones in the mobile menu.
+const SHEET_LINKS = [
+  { label: "Care guide", href: "/care/season-your-handi" },
+  { label: "FAQ", href: "/faq" },
+  { label: "Track order", href: "/track" },
+  { label: "Shipping & returns", href: "/shipping-returns" },
+];
+
 function useHash() {
   return useSyncExternalStore(subscribeToHash, getHashSnapshot, getServerHashSnapshot);
 }
@@ -45,11 +54,15 @@ export function SiteHeader({
   rightSlot,
   cartCount,
   onCartOpen,
+  cartHref,
 }: {
+  /** Desktop-only extras beside the account control. Phones get the compact bar instead. */
   rightSlot?: ReactNode;
-  /** When provided, the mobile hamburger shows a count badge and the sheet gains a Cart entry. */
+  /** When provided with onCartOpen or cartHref, the phone bar shows a basket button with this count. */
   cartCount?: number;
   onCartOpen?: () => void;
+  /** Where the phone basket button goes on pages without a cart drawer. */
+  cartHref?: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const path = usePathname();
@@ -96,7 +109,7 @@ export function SiteHeader({
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 text-[12px] tracking-[0.14em] uppercase text-earth">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8 text-[12px] tracking-[0.14em] uppercase text-earth">
           {NAV.map((item) => (
             <Link
               key={item.label}
@@ -109,99 +122,154 @@ export function SiteHeader({
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="hidden lg:flex items-center gap-2 shrink-0">
           {rightSlot}
           <HeaderAccount />
+        </div>
+
+        {/* Phones and tablets: basket and menu only; the account lives in the menu sheet. */}
+        <div className="flex lg:hidden items-center gap-2 shrink-0">
+          {typeof cartCount === "number" && (onCartOpen || cartHref) && (
+            <PhoneBasket count={cartCount} onOpen={onCartOpen} href={cartHref} />
+          )}
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
             aria-expanded={mobileOpen}
-            className="md:hidden relative inline-flex items-center justify-center w-11 h-11 rounded-full bg-earth text-cream"
+            className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-earth text-cream"
           >
             <Menu className="w-5 h-5" />
-            {typeof cartCount === "number" && cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-clay text-cream text-[10px] font-medium border border-cream">
-                {cartCount}
-              </span>
-            )}
           </button>
         </div>
       </nav>
 
       {/* Mobile sheet: clay floods out from the menu button, then the links rise in. */}
-      {mobileOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu"
-          className="md:hidden fixed inset-0 z-[60] bg-clay text-cream grain flex flex-col px-7 pt-6 pb-[max(2rem,env(safe-area-inset-bottom))] overflow-y-auto animate-sheet-open"
-        >
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-3 font-display text-2xl font-medium">
-              <BrandLogo className="w-12 h-12" />
-              <span>
-                Mud<span className="italic">kraft</span>
-              </span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              aria-label="Close menu"
-              className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-cream text-ink"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="mt-16 flex flex-col gap-1">
-            {NAV.map((item, i) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                aria-current={isActive(item) ? "page" : undefined}
-                className="font-display text-[3.25rem] leading-[1.08] tracking-tight"
-              >
-                <span className="mk-line">
-                  <span style={{ animationDelay: `${0.25 + i * 0.08}s` }}>
-                    {isActive(item) ? <em>{item.label}</em> : item.label}
-                  </span>
+      {/* Portalled to <body>: the header's entrance animation leaves a transform on it,
+          which would otherwise trap this fixed sheet inside the header bar. */}
+      {mobileOpen &&
+        createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            className="lg:hidden fixed inset-0 z-[60] bg-clay text-cream grain flex flex-col px-7 pt-6 pb-[max(2rem,env(safe-area-inset-bottom))] overflow-y-auto animate-sheet-open"
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-3 font-display text-2xl font-medium">
+                <BrandLogo className="w-12 h-12" />
+                <span>
+                  Mud<span className="italic">kraft</span>
                 </span>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-auto pt-10 flex flex-col gap-3 animate-fade-up [animation-delay:0.6s]">
-            {onCartOpen && (
+              </span>
               <button
                 type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  onCartOpen();
-                }}
-                className="inline-flex items-center justify-center gap-2 min-h-[54px] text-xs tracking-widest uppercase bg-cream text-ink rounded-full"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-cream text-ink"
               >
-                Basket
-                <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-clay text-cream text-[11px] font-medium">
-                  {cartCount ?? 0}
-                </span>
+                <X className="w-5 h-5" />
               </button>
-            )}
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center min-h-[54px] text-xs tracking-widest uppercase bg-ink text-cream rounded-full"
-            >
-              Enquire on WhatsApp
-            </a>
-            <p className="mt-2 text-center font-hand text-2xl text-cream/85">
-              shaped by hand, held by earth
-            </p>
-          </div>
-        </div>
-      )}
+            </div>
+
+            <div className="mt-10 flex flex-col gap-1">
+              {NAV.map((item, i) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={isActive(item) ? "page" : undefined}
+                  className="font-display text-[2.6rem] sm:text-[3.25rem] leading-[1.1] tracking-tight"
+                >
+                  <span className="mk-line">
+                    <span style={{ animationDelay: `${0.25 + i * 0.08}s` }}>
+                      {isActive(item) ? <em>{item.label}</em> : item.label}
+                    </span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-cream/85 animate-fade-up [animation-delay:0.5s]">
+              {SHEET_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-auto pt-10 flex flex-col gap-3 animate-fade-up [animation-delay:0.6s]">
+              <SheetAccount onNavigate={() => setMobileOpen(false)} />
+              {onCartOpen && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    onCartOpen();
+                  }}
+                  className="inline-flex items-center justify-center gap-2 min-h-[54px] text-xs tracking-widest uppercase bg-cream text-ink rounded-full"
+                >
+                  Basket
+                  <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-clay text-cream text-[11px] font-medium">
+                    {cartCount ?? 0}
+                  </span>
+                </button>
+              )}
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center min-h-[54px] text-xs tracking-widest uppercase bg-ink text-cream rounded-full"
+              >
+                Enquire on WhatsApp
+              </a>
+              <p className="mt-2 text-center font-hand text-2xl text-cream/85">
+                shaped by hand, held by earth
+              </p>
+            </div>
+          </div>,
+          document.body,
+        )}
     </header>
+  );
+}
+
+function PhoneBasket({
+  count,
+  onOpen,
+  href,
+}: {
+  count: number;
+  onOpen?: () => void;
+  href?: string;
+}) {
+  const label = `Basket, ${count} item${count === 1 ? "" : "s"}`;
+  const className =
+    "relative inline-flex items-center justify-center w-11 h-11 rounded-full border border-earth/20 text-earth";
+  const badge =
+    count > 0 ? (
+      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-clay text-cream text-[10px] font-medium border border-cream">
+        {count}
+      </span>
+    ) : null;
+  if (onOpen) {
+    return (
+      <button type="button" onClick={onOpen} aria-label={label} className={className}>
+        <ShoppingBag className="w-[18px] h-[18px]" />
+        {badge}
+      </button>
+    );
+  }
+  return (
+    <Link href={href ?? "/checkout"} aria-label={label} className={className}>
+      <ShoppingBag className="w-[18px] h-[18px]" />
+      {badge}
+    </Link>
   );
 }

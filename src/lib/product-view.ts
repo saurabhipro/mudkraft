@@ -20,6 +20,8 @@ export interface ProductView {
   pricePaise: number;
   /** Struck-through MRP, display-ready. Null when there is none. */
   compareAt: string | null;
+  /** Integer paise of the MRP, for working out the discount. */
+  compareAtPaise: number | null;
   /** Primary (styled) photograph. Null when the product has no image yet. */
   img: string | null;
   /** Background-removed version, where one exists. */
@@ -72,9 +74,8 @@ export function toProductView(product: SourceProduct): ProductView {
     price: formatPaise(product.pricePaise),
     pricePaise: product.pricePaise,
     compareAt: product.compareAtPaise ? formatPaise(product.compareAtPaise) : null,
-    img: primary
-      ? cloudinaryUrl({ publicId: primary.publicId, version: primary.version })
-      : null,
+    compareAtPaise: product.compareAtPaise ?? null,
+    img: primary ? cloudinaryUrl({ publicId: primary.publicId, version: primary.version }) : null,
     cutout: cutout ? cloudinaryUrl({ publicId: cutout.publicId, version: cutout.version }) : null,
     category: product.categoryName,
     description: product.description,
