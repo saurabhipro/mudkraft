@@ -4,14 +4,10 @@ import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, Droplet } from "lucide-react";
 
-import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
-import { groupFamilies, type ProductView } from "@/lib/product-view";
+import { displayImage, groupFamilies, type ProductView } from "@/lib/product-view";
 
 /** How long each piece is shown before the next one comes round. */
 const PIECE_MS = 5000;
-
-// Styled photographs from the printed catalogue, one per catalogue piece.
-const heroPhoto = (slug: string) => `/hero/${slug}.webp`;
 
 const POINTS: Record<string, [string, string]> = {
   Cookware: ["Even, gentle heat on a low flame", "Season once before the first cook"],
@@ -26,14 +22,11 @@ type Tab = "All" | "Cookware" | "Serveware";
 const COUNT_WORDS = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
 
 export function HeroPieces({ products }: { products: ProductView[] }) {
-  // One entry per product, not per size: a family is shown through its
-  // catalogue size, which is the one with a styled photograph. Catalogue order
-  // (MUD001 → MUD007); live products without a catalogue photo are left out.
-  const order = Object.keys(CATALOGUE_CODES);
+  // One entry per product, not per size: each family is shown through its first size that has a
+  // photograph, so only our own products with a picture are listed.
   const pieces = groupFamilies(products)
-    .map((f) => f.sizes.find((s) => order.includes(catalogueSlug(s) ?? "")))
-    .filter((p): p is ProductView => Boolean(p))
-    .sort((a, b) => order.indexOf(catalogueSlug(a)!) - order.indexOf(catalogueSlug(b)!));
+    .map((f) => f.sizes.find((s) => displayImage(s)))
+    .filter((p): p is ProductView => Boolean(p));
 
   const [tab, setTab] = useState<Tab>("All");
   const [index, setIndex] = useState(0);
@@ -145,12 +138,12 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
             radius={282}
             fontSize={13}
           />
-          <div className="w-[80%] aspect-square rounded-full overflow-hidden shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85),0_0_0_1px_rgba(224,176,138,0.25)]">
+          <div className="w-[80%] aspect-square rounded-full overflow-hidden bg-sand shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85),0_0_0_1px_rgba(224,176,138,0.25)]">
             <img
               key={cur.slug}
-              src={heroPhoto(catalogueSlug(cur)!)}
+              src={displayImage(cur)!}
               alt={cur.name}
-              className="w-full h-full object-cover animate-in fade-in-0 zoom-in-95 duration-700"
+              className="w-full h-full object-contain p-[9%] drop-shadow-[0_24px_28px_rgba(80,40,20,0.3)] animate-in fade-in-0 zoom-in-95 duration-700"
             />
           </div>
           <span className="absolute right-[6%] top-[6%] px-3.5 py-2 rounded-full bg-[#1c110c]/70 border border-white/[0.12] backdrop-blur text-xs tracking-[0.14em] tabular-nums">
@@ -235,9 +228,9 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
                   }`}
                 >
                   <img
-                    src={heroPhoto(catalogueSlug(p)!)}
+                    src={displayImage(p)!}
                     alt=""
-                    className="w-9 h-9 rounded-full object-cover"
+                    className="w-9 h-9 rounded-full bg-sand object-contain p-0.5"
                   />
                   {p.name}
                   {on && (
