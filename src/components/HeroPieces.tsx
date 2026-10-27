@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, Droplet } from "lucide-react";
 
-import { CATALOGUE_CODES } from "@/lib/catalogue";
+import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import { groupFamilies, type ProductView } from "@/lib/product-view";
 
 /** How long each piece is shown before the next one comes round. */
@@ -31,9 +31,9 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
   // (MUD001 → MUD007); live products without a catalogue photo are left out.
   const order = Object.keys(CATALOGUE_CODES);
   const pieces = groupFamilies(products)
-    .map((f) => f.sizes.find((s) => order.includes(s.slug)))
+    .map((f) => f.sizes.find((s) => order.includes(catalogueSlug(s) ?? "")))
     .filter((p): p is ProductView => Boolean(p))
-    .sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
+    .sort((a, b) => order.indexOf(catalogueSlug(a)!) - order.indexOf(catalogueSlug(b)!));
 
   const [tab, setTab] = useState<Tab>("All");
   const [index, setIndex] = useState(0);
@@ -148,7 +148,7 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
           <div className="w-[80%] aspect-square rounded-full overflow-hidden shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85),0_0_0_1px_rgba(224,176,138,0.25)]">
             <img
               key={cur.slug}
-              src={heroPhoto(cur.slug)}
+              src={heroPhoto(catalogueSlug(cur)!)}
               alt={cur.name}
               className="w-full h-full object-cover animate-in fade-in-0 zoom-in-95 duration-700"
             />
@@ -235,7 +235,7 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
                   }`}
                 >
                   <img
-                    src={heroPhoto(p.slug)}
+                    src={heroPhoto(catalogueSlug(p)!)}
                     alt=""
                     className="w-9 h-9 rounded-full object-cover"
                   />

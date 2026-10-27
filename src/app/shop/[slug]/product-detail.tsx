@@ -6,7 +6,7 @@ import { useState, type ReactNode } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { displayImage, type ProductView } from "@/lib/product-view";
 import { formatPaise } from "@/lib/money";
-import { CATALOGUE_CODES } from "@/lib/catalogue";
+import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
 import { addToCart, useCartCount } from "@/lib/cart";
 import { ShareButton } from "@/components/ShareButton";
@@ -237,7 +237,7 @@ export function ProductDetail({
             {p.note}
           </p>
           <div className="mt-1 text-[11px] tracking-[0.35em] uppercase text-clay-deep">
-            {[p.category, CATALOGUE_CODES[p.slug]].filter(Boolean).join(" · ")}
+            {[p.category, CATALOGUE_CODES[catalogueSlug(p) ?? ""]].filter(Boolean).join(" · ")}
           </div>
           <h1 className="mt-2 font-display font-normal text-[clamp(3.5rem,8vw,6rem)] text-earth leading-[0.9]">
             <span className="mk-line">
