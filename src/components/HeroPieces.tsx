@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, Droplet } from "lucide-react";
 
-import { TextRing } from "@/components/BannerRail";
 import { CATALOGUE_CODES } from "@/lib/catalogue";
-import type { ProductView } from "@/lib/product-view";
+import { groupFamilies, type ProductView } from "@/lib/product-view";
 
 /** How long each piece is shown before the next one comes round. */
 const PIECE_MS = 5000;
@@ -24,11 +23,17 @@ const POINTS: Record<string, [string, string]> = {
 
 type Tab = "All" | "Cookware" | "Serveware";
 
+const COUNT_WORDS = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+
 export function HeroPieces({ products }: { products: ProductView[] }) {
-  // Only the catalogue pieces, in catalogue order (MUD001 → MUD007).
-  const pieces = Object.keys(CATALOGUE_CODES)
-    .map((slug) => products.find((p) => p.slug === slug))
-    .filter((p): p is ProductView => Boolean(p));
+  // One entry per product, not per size: a family is shown through its
+  // catalogue size, which is the one with a styled photograph. Catalogue order
+  // (MUD001 → MUD007); live products without a catalogue photo are left out.
+  const order = Object.keys(CATALOGUE_CODES);
+  const pieces = groupFamilies(products)
+    .map((f) => f.sizes.find((s) => order.includes(s.slug)))
+    .filter((p): p is ProductView => Boolean(p))
+    .sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
 
   const [tab, setTab] = useState<Tab>("All");
   const [index, setIndex] = useState(0);
@@ -40,11 +45,6 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
   const i = Math.min(index, visible.length - 1);
   const cur = visible[i];
   const points = POINTS[cur.category ?? ""] ?? POINTS.Cookware;
-  // Two pieces share a name (the 1.5 L and 750 g Dahi Handi), so those carry their size.
-  const label = (p: ProductView) =>
-    pieces.filter((x) => x.name === p.name).length > 1
-      ? `${p.name} · ${p.tag.split("·").pop()?.trim()}`
-      : p.name;
   const go = (n: number) => setIndex((n + visible.length) % visible.length);
   const pad = (n: number) => String(n).padStart(2, "0");
   const tabs: Array<{ id: Tab; n: number }> = [
@@ -52,6 +52,9 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
     { id: "Cookware", n: pieces.filter((p) => p.category === "Cookware").length },
     { id: "Serveware", n: pieces.filter((p) => p.category === "Serveware").length },
   ];
+  // With a single category the tabs would only repeat "All", so they go.
+  const showTabs = tabs.filter((t) => t.id !== "All" && t.n > 0).length > 1;
+  const count = COUNT_WORDS[pieces.length] ?? String(pieces.length);
 
   const tabList = (
     <div role="tablist" aria-label="Category" className="inline-flex p-1 rounded-full bg-black/30">
@@ -82,7 +85,7 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
       onMouseLeave={() => setHovering(false)}
       onFocus={() => setHovering(true)}
       onBlur={() => setHovering(false)}
-      className="relative isolate overflow-hidden bg-[#1c110c] text-cream px-5 sm:px-6 md:px-10 pt-14 pb-10 lg:pt-20 lg:pb-10"
+      className="relative isolate overflow-hidden bg-[#1c110c] text-cream px-5 sm:px-6 md:px-10 pt-28 pb-10 md:pt-32 lg:pt-36 lg:pb-10"
     >
       <div
         aria-hidden="true"
@@ -96,7 +99,7 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
             <span className="w-1.5 h-1.5 rounded-full bg-[#e0b08a]" /> Handmade in Khurja
           </span>
           <h2 className="mt-5 font-display font-normal text-[clamp(2.75rem,6vw,4.75rem)] leading-[0.96]">
-            Seven pieces.
+            {count} pieces.
             <br className="hidden lg:block" />{" "}
             <em className="font-light text-[#e0b08a]">One wheel.</em>
           </h2>
@@ -132,7 +135,7 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
         </div>
 
         {/* Phones: category tabs sit above the wheel */}
-        <div className="lg:hidden flex justify-center -mb-4">{tabList}</div>
+        {showTabs && <div className="lg:hidden flex justify-center -mb-4">{tabList}</div>}
 
         {/* The wheel */}
         <div className="relative mx-auto w-full max-w-[min(100%,34rem)] aspect-square grid place-items-center">
@@ -208,7 +211,7 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
 
       {/* Dock: tabs, piece picker, arrows. The active piece's progress line is the timer. */}
       <div className="max-w-7xl mx-auto mt-10 lg:mt-12 flex items-center gap-5 lg:h-[84px] lg:px-3 lg:rounded-[22px] lg:bg-white/[0.04] lg:border lg:border-white/[0.09] lg:backdrop-blur-md">
-        <div className="hidden lg:block shrink-0">{tabList}</div>
+        {showTabs && <div className="hidden lg:block shrink-0">{tabList}</div>}
         <div
           role="group"
           aria-label="Choose a piece"
@@ -236,7 +239,7 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
                     alt=""
                     className="w-9 h-9 rounded-full object-cover"
                   />
-                  {label(p)}
+                  {p.name}
                   {on && (
                     <span
                       key={`${tab}-${j}`}
@@ -273,5 +276,35 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
         </div>
       </div>
     </section>
+  );
+}
+
+/** Words set around a circle, for the slowly turning rings. */
+function TextRing({
+  text,
+  radius,
+  fontSize,
+  className = "",
+  style,
+}: {
+  text: string;
+  radius: number;
+  fontSize: number;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const id = `ring-${radius}-${fontSize}`;
+  return (
+    <svg aria-hidden="true" viewBox="0 0 600 600" className={className} style={style}>
+      <defs>
+        <path
+          id={id}
+          d={`M300,300 m-${radius},0 a${radius},${radius} 0 1,1 ${radius * 2},0 a${radius},${radius} 0 1,1 -${radius * 2},0`}
+        />
+      </defs>
+      <text fill="rgba(224,176,138,0.55)" fontSize={fontSize} letterSpacing={fontSize / 2.2}>
+        <textPath href={`#${id}`}>{text}</textPath>
+      </text>
+    </svg>
   );
 }

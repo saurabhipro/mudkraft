@@ -9,6 +9,7 @@ import { SALES_EMAIL } from "@/lib/catalogue";
 import handsClay from "@/assets/hands-clay.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { sendWorkshopEnquiry } from "@/server/actions/enquiries";
 
 const ENQUIRY_EMAIL = SALES_EMAIL;
 
@@ -280,6 +281,8 @@ export function WorkshopsPage() {
           onSubmit={(e) => {
             e.preventDefault();
             window.open(whatsappHref(), "_blank");
+            // A copy goes to the studio's enquiry list in Bikriup.
+            void sendWorkshopEnquiry(form);
           }}
           className="grid md:grid-cols-2 gap-5 bg-cream/70 backdrop-blur border border-border rounded-[1.5rem] p-6 md:p-10"
         >

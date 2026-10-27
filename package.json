@@ -14,8 +14,10 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/server/db/seed.ts",
     "db:check": "tsx scripts/db-check.ts",
+    "db:reset-data": "tsx scripts/reset-data.ts",
     "excel:check": "tsx scripts/excel-roundtrip.ts",
-    "price:report": "tsx scripts/price-report.ts"
+    "price:report": "tsx scripts/price-report.ts",
+    "bikriup:export": "tsx scripts/export-to-bikriup.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

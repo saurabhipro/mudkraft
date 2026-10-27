@@ -1,29 +1,44 @@
 /**
  * Uploads the product photography to Cloudinary and links it to products.
  *
- *     npx tsx scripts/import-product-images.ts [--dry-run]
+ *     npx tsx scripts/import-product-images.ts --dir "<photos folder>" [--replace] [--dry-run]
  *
- * For every source file two assets are created: the original styled photograph,
- * and a background-removed cutout (Cloudinary AI Background Removal add-on).
- * The original is the primary image — the styled shots are the brand's look;
- * the cutouts exist for grids and hero placements that need transparency.
+ * Every source file is uploaded as an original. Only each product's main shot
+ * (the first file in its entry) also gets a background-removed cutout
+ * (Cloudinary AI Background Removal add-on): the storefront only ever shows
+ * the cutout of the primary photo, so cutting out the extra angles would burn
+ * removal credits for nothing.
  *
- * Each file uploads ONCE even when several products share it, so a shared photo
- * never burns two removal credits. Re-running is safe: an image already linked
+ * Each file uploads ONCE even when several products share it (the two Handi
+ * sizes share their photographs). Re-running is safe: an image already linked
  * to a product by public_id is skipped.
+ *
+ * --replace first unlinks the products' existing images (database rows only).
+ * The Cloudinary assets are left in place, since an old photo may still be
+ * linked to another product, archived or not.
+ *
+ * Run from Windows: this repo's node_modules is the Windows build. A folder in
+ * WSL is reachable as \\wsl$\<distro>\home\<user>\...
  */
 
 import "../src/server/db/load-env";
 
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { v2 as cloudinary } from "cloudinary";
 
 import { db } from "../src/server/db";
 import { product, productImage } from "../src/server/db/schema/catalog";
 
-const SOURCE_DIR = "E:/level40wellness/kumbhaja";
 const FOLDER = "mudkraft/products";
 const DRY_RUN = process.argv.includes("--dry-run");
+const REPLACE = process.argv.includes("--replace");
+
+function argValue(name: string): string | undefined {
+  const index = process.argv.indexOf(name);
+  return index === -1 ? undefined : process.argv[index + 1];
+}
+
+const SOURCE_DIR = argValue("--dir");
 
 const POLL_INTERVAL_MS = 4000;
 const MAX_POLLS = 20;
@@ -36,34 +51,47 @@ cloudinary.config({
 });
 
 /**
- * Product slug -> source files, in display order.
- *
- * Mapping decisions, all confirmed rather than inferred from filenames:
- *  - glass.jpeg photographs SIX tumblers, so it belongs to glass-set-6, not the
- *    single glass. cup.jpeg photographs FOUR mugs, matching cup-set-4.
- *  - water-tank.jpeg and water-tank-2.jpeg are the same vessel, lid off and lid
- *    on, so both go to the 10 L only. The 18 L is left unillustrated rather
- *    than shown as a pot it is not.
- *  - bhagona-4l has no photograph of its own. water-tank.jpeg is reused by
- *    explicit instruction; the alt text records that it is a stand-in so the
- *    substitution is never silently forgotten.
+ * Source photo -> Cloudinary name. Names come from the product rather than the
+ * file, because the folders reuse file names (01.jpg, 022.jpg in each).
  */
-const IMAGE_MAP: Array<{ slug: string; files: string[]; altOverride?: string }> = [
-  { slug: "handi-2-5l", files: ["handi.jpeg"] },
-  { slug: "kadhai-3l", files: ["kadhai.jpeg"] },
-  { slug: "roaster", files: ["roaster.jpeg"] },
-  { slug: "jug-1-5l", files: ["jug.jpeg"] },
-  { slug: "dahi-handi-1-5l", files: ["dahi-handi.jpeg"] },
-  { slug: "dahi-handi-750g", files: ["dahi-handi.jpeg"] },
-  { slug: "water-tank-10l", files: ["water-tank.jpeg", "water-tank-2.jpeg"] },
-  { slug: "water-bottle-1l", files: ["water-bottle.jpeg"] },
-  { slug: "cup-set-4", files: ["cup.jpeg"] },
-  { slug: "glass-set-6", files: ["glass.jpeg"] },
+interface SourceFile {
+  path: string;
+  name: string;
+}
+
+const HANDI = "1.50 and 2.5 ltr cooking Handi";
+const KADHAI = "3 liter kadahi";
+const BHAGONA = "Bhagona 4 liter";
+
+const handiPhotos: SourceFile[] = [
+  { path: `${HANDI}/01.jpg`, name: "handi-1" },
+  { path: `${HANDI}/033.jpg`, name: "handi-2" },
+  { path: `${HANDI}/022.jpg`, name: "handi-3" },
+];
+
+/**
+ * Product slug -> photos in display order; the first is the main shot (primary
+ * image, and the only one cut out). Both Handi sizes are the same pot shape and
+ * were photographed together, so they share one set.
+ */
+const IMAGE_MAP: Array<{ slug: string; files: SourceFile[] }> = [
+  { slug: "handi-2-5l", files: handiPhotos },
+  { slug: "handi-1-5l", files: handiPhotos },
+  {
+    slug: "kadhai-3l",
+    files: [
+      { path: `${KADHAI}/kadahi_3ltr.jpg`, name: "kadhai-1" },
+      { path: `${KADHAI}/022.jpg`, name: "kadhai-2" },
+      { path: `${KADHAI}/033.jpg`, name: "kadhai-3" },
+    ],
+  },
   {
     slug: "bhagona-4l",
-    files: ["water-tank.jpeg"],
-    altOverride:
-      "Stand-in photograph — shows a similar wide-mouthed clay cooking pot, not the Bhagona itself. Replace once the Bhagona is photographed.",
+    files: [
+      { path: `${BHAGONA}/01.jpg`, name: "bhagona-1" },
+      { path: `${BHAGONA}/022.jpg`, name: "bhagona-2" },
+      { path: `${BHAGONA}/0333.jpg`, name: "bhagona-3" },
+    ],
   },
 ];
 
@@ -77,13 +105,9 @@ interface UploadedAsset {
   height: number | null;
 }
 
-function baseName(file: string): string {
-  return file.replace(/\.[^.]+$/, "");
-}
-
-async function uploadOriginal(file: string): Promise<UploadedAsset> {
-  const result = await cloudinary.uploader.upload(`${SOURCE_DIR}/${file}`, {
-    public_id: `${FOLDER}/${baseName(file)}`,
+async function uploadOriginal(file: SourceFile): Promise<UploadedAsset> {
+  const result = await cloudinary.uploader.upload(`${SOURCE_DIR}/${file.path}`, {
+    public_id: `${FOLDER}/${file.name}`,
     overwrite: true,
   });
   return {
@@ -95,10 +119,10 @@ async function uploadOriginal(file: string): Promise<UploadedAsset> {
   };
 }
 
-async function uploadCutout(file: string): Promise<UploadedAsset> {
-  const publicId = `${FOLDER}/${baseName(file)}-cutout`;
+async function uploadCutout(file: SourceFile): Promise<UploadedAsset> {
+  const publicId = `${FOLDER}/${file.name}-cutout`;
 
-  await cloudinary.uploader.upload(`${SOURCE_DIR}/${file}`, {
+  await cloudinary.uploader.upload(`${SOURCE_DIR}/${file.path}`, {
     public_id: publicId,
     overwrite: true,
     background_removal: "cloudinary_ai",
@@ -127,20 +151,26 @@ async function uploadCutout(file: string): Promise<UploadedAsset> {
       };
     }
     if (status && status !== "pending") {
-      throw new Error(`Background removal for ${file} reported status "${status}".`);
+      throw new Error(`Background removal for ${file.path} reported status "${status}".`);
     }
     await sleep(POLL_INTERVAL_MS);
   }
 
-  throw new Error(`Background removal for ${file} did not finish within the timeout.`);
+  throw new Error(`Background removal for ${file.path} did not finish within the timeout.`);
 }
 
 async function main() {
+  if (!SOURCE_DIR) throw new Error('Pass the photos folder: --dir "<path>"');
   console.log(DRY_RUN ? "DRY RUN — nothing will be uploaded or written.\n" : "");
 
   const slugs = [...new Set(IMAGE_MAP.map((entry) => entry.slug))];
   const products = await db
-    .select({ id: product.id, slug: product.slug, name: product.name, sizeLabel: product.sizeLabel })
+    .select({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      sizeLabel: product.sizeLabel,
+    })
     .from(product);
   const bySlug = new Map(products.map((p) => [p.slug, p]));
 
@@ -149,32 +179,54 @@ async function main() {
     throw new Error(`These slugs are not in the database: ${missing.join(", ")}`);
   }
 
-  // Upload each distinct file once, even where two products share it.
-  const uniqueFiles = [...new Set(IMAGE_MAP.flatMap((entry) => entry.files))];
-  console.log(`${uniqueFiles.length} source files -> ${uniqueFiles.length * 2} Cloudinary assets\n`);
+  // Upload each distinct file once, even where two products share it. Only a
+  // file that leads some product's list gets a cutout.
+  const files = new Map<string, SourceFile>();
+  const mainShots = new Set(IMAGE_MAP.map((entry) => entry.files[0].name));
+  for (const entry of IMAGE_MAP) for (const file of entry.files) files.set(file.name, file);
+  console.log(
+    `${files.size} source files -> ${files.size + mainShots.size} Cloudinary assets ` +
+      `(${mainShots.size} background removals)\n`,
+  );
 
-  const assets = new Map<string, { original: UploadedAsset; cutout: UploadedAsset }>();
+  const assets = new Map<string, { original: UploadedAsset; cutout: UploadedAsset | null }>();
 
-  for (const file of uniqueFiles) {
+  for (const file of files.values()) {
+    const wantsCutout = mainShots.has(file.name);
     if (DRY_RUN) {
-      console.log(`  would upload ${file} (original + cutout)`);
+      console.log(`  would upload ${file.path} as ${file.name}${wantsCutout ? " (+ cutout)" : ""}`);
       continue;
     }
-    process.stdout.write(`  ${file} … `);
+    process.stdout.write(`  ${file.path} … `);
     const original = await uploadOriginal(file);
-    process.stdout.write("original ok, removing background … ");
-    const cutout = await uploadCutout(file);
-    console.log("cutout ok");
-    assets.set(file, { original, cutout });
+    let cutout: UploadedAsset | null = null;
+    if (wantsCutout) {
+      process.stdout.write("original ok, removing background … ");
+      cutout = await uploadCutout(file);
+    }
+    console.log("ok");
+    assets.set(file.name, { original, cutout });
   }
 
   if (DRY_RUN) {
     console.log("\nPlanned links:");
     for (const entry of IMAGE_MAP) {
       const p = bySlug.get(entry.slug)!;
-      console.log(`  ${p.name} ${p.sizeLabel} (${entry.slug}) <- ${entry.files.join(", ")}`);
+      console.log(
+        `  ${p.name} ${p.sizeLabel} (${entry.slug}) <- ${entry.files.map((f) => f.name).join(", ")}`,
+      );
     }
+    if (REPLACE) console.log("\n--replace: their existing image rows would be unlinked first.");
     return;
+  }
+
+  if (REPLACE) {
+    const ids = slugs.map((slug) => bySlug.get(slug)!.id);
+    const removed = await db
+      .delete(productImage)
+      .where(inArray(productImage.productId, ids))
+      .returning({ id: productImage.id });
+    console.log(`\nUnlinked ${removed.length} existing image rows (Cloudinary assets kept).`);
   }
 
   console.log("\nLinking to products:");
@@ -190,13 +242,13 @@ async function main() {
     const alreadyLinked = new Set(existing.map((row) => row.publicId));
 
     let sortOrder = existing.length;
+    const alt = `${target.name} ${target.sizeLabel} — handcrafted terracotta`.trim();
 
     for (const [fileIndex, file] of entry.files.entries()) {
-      const pair = assets.get(file)!;
-      const alt =
-        entry.altOverride ?? `${target.name} ${target.sizeLabel} — handcrafted terracotta`.trim();
+      const pair = assets.get(file.name)!;
+      const variants = pair.cutout ? [pair.original, pair.cutout] : [pair.original];
 
-      for (const [variantIndex, asset] of [pair.original, pair.cutout].entries()) {
+      for (const [variantIndex, asset] of variants.entries()) {
         if (alreadyLinked.has(asset.publicId)) {
           skipped += 1;
           continue;
@@ -211,9 +263,9 @@ async function main() {
           width: asset.width,
           height: asset.height,
           alt,
-          // The styled original leads; only the very first image of the first
-          // file may be primary, because a partial unique index permits exactly
-          // one primary row per product.
+          // The main shot's original leads; only the very first image of the
+          // first file may be primary, because a partial unique index permits
+          // exactly one primary row per product.
           isPrimary: existing.length === 0 && fileIndex === 0 && variantIndex === 0,
           sortOrder: sortOrder++,
         });
@@ -225,7 +277,7 @@ async function main() {
   }
 
   console.log(`\nInserted ${inserted} image rows, skipped ${skipped} already linked.`);
-  console.log("Products with no photograph: water-tank-18l, glass, cup-set-6.");
+  console.log('Press "Re-price all products" in /admin to refresh the live pages.');
 }
 
 main().catch((error) => {

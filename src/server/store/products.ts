@@ -2,6 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import { BikriupError, bikriup, bikriupEnabled, toStoreProductShape, type BkProduct } from "../bikriup";
 import { db } from "../db";
 import { category, product, productImage } from "../db/schema/catalog";
 import { CACHE_TAGS, CACHE_TTL_SECONDS } from "./tags";
@@ -91,6 +92,12 @@ function toStoreProduct(row: {
 }
 
 async function queryActiveProducts(): Promise<StoreProduct[]> {
+  // Bikriup runs the catalogue once it is switched on; every listed size comes back as its own row.
+  if (bikriupEnabled()) {
+    const data = await bikriup<{ products: BkProduct[] }>("/products?group=0&limit=300");
+    return data.products.map(toStoreProductShape);
+  }
+
   const rows = await db.query.product.findMany({
     where: eq(product.status, "active"),
     orderBy: [asc(product.sortOrder), asc(product.name)],
@@ -107,6 +114,17 @@ async function queryActiveProducts(): Promise<StoreProduct[]> {
 }
 
 async function queryProductBySlug(slug: string): Promise<StoreProduct | null> {
+  if (bikriupEnabled()) {
+    try {
+      const data = await bikriup<{ product: BkProduct }>(`/products/${encodeURIComponent(slug)}`);
+      return toStoreProductShape(data.product);
+    } catch (error) {
+      // Unlisted and missing items look the same to the shop's pages: not found.
+      if (error instanceof BikriupError && error.status === 404) return null;
+      throw error;
+    }
+  }
+
   const row = await db.query.product.findFirst({
     where: eq(product.slug, slug),
     with: { category: true, images: true },

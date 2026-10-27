@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import { BikriupError, bikriup, bikriupEnabled } from "../bikriup";
 import { db } from "../db";
 import { product } from "../db/schema/catalog";
 import { review } from "../db/schema/reviews";
@@ -32,6 +33,30 @@ export interface ReviewSummary {
  * forgotten `.filter()` leaks unmoderated content onto a product page.
  */
 async function queryApprovedReviews(productSlug: string): Promise<StoreReview[]> {
+  // Reviews are moderated in Bikriup › People › Reviews; only approved ones come back.
+  if (bikriupEnabled()) {
+    try {
+      const data = await bikriup<{
+        reviews: Array<{ id: number; name: string; city: string; rating: number; title: string; body: string; photo: string; verified: boolean; created_at: string }>;
+      }>(`/products/${encodeURIComponent(productSlug)}/reviews`);
+      return data.reviews.map((r) => ({
+        id: String(r.id),
+        authorName: r.name,
+        authorCity: r.city,
+        rating: r.rating,
+        title: r.title,
+        body: r.body,
+        // A full URL here; toReviewView passes URLs through unchanged.
+        photoPublicId: r.photo || null,
+        verifiedPurchase: r.verified,
+        createdAt: new Date(r.created_at).toISOString(),
+      }));
+    } catch (error) {
+      if (error instanceof BikriupError && error.status === 404) return [];
+      throw error;
+    }
+  }
+
   const rows = await db
     .select({
       id: review.id,

@@ -49,11 +49,14 @@ function whatsappBuyNow(p: ProductView, qty: number) {
 
 export function ProductDetail({
   product: p,
+  sizes,
   alsoLove,
   reviews,
   reviewSummary,
 }: {
   product: ProductView;
+  /** Every size of this product, smallest first; a single entry when it comes in one size. */
+  sizes: ProductView[];
   alsoLove: ProductView[];
   reviews: ReviewView[];
   reviewSummary: ReviewSummaryView;
@@ -62,7 +65,9 @@ export function ProductDetail({
   const [added, setAdded] = useState(false);
   const [openPanel, setOpenPanel] = useState<string | null>("specs");
   const cartCount = useCartCount();
-  const heroImage = displayImage(p);
+  const pictures = p.gallery.length > 1 ? p.gallery : [];
+  const [shot, setShot] = useState(0);
+  const heroImage = pictures[shot] ?? displayImage(p);
 
   const handleAdd = () => {
     addToCart(p, qty);
@@ -167,7 +172,7 @@ export function ProductDetail({
                 alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
                 width={1200}
                 height={1200}
-                className="relative w-full h-full object-contain p-6 md:p-10 scale-[1.3] drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)] animate-ken-burns"
+                className="relative w-full h-full object-contain mix-blend-multiply p-6 md:p-12 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)]"
               />
             ) : (
               <div className="w-full h-full grid place-items-center text-earth/40 font-hand text-3xl">
@@ -199,6 +204,32 @@ export function ProductDetail({
               <span className="font-display italic text-2xl text-clay-deep">M</span>
             </div>
           </div>
+          {pictures.length > 1 && (
+            <div
+              className="mt-4 flex gap-3 overflow-x-auto pb-1"
+              role="tablist"
+              aria-label="Product photographs"
+            >
+              {pictures.map((src, i) => (
+                <button
+                  key={src}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === shot}
+                  aria-label={`Photograph ${i + 1} of ${pictures.length}`}
+                  onClick={() => setShot(i)}
+                  className={`shrink-0 w-20 h-20 rounded-2xl overflow-hidden bg-sand border-2 transition ${i === shot ? "border-earth" : "border-transparent opacity-70 hover:opacity-100"}`}
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-contain mix-blend-multiply p-1.5"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -279,6 +310,44 @@ export function ProductDetail({
                 </div>
               ))}
             </dl>
+          )}
+
+          {sizes.length > 1 && (
+            <div className="mt-7 animate-fade-up [animation-delay:0.35s]">
+              <div className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
+                Size
+              </div>
+              {/* Each size is its own product page, so the URL, price and basket line
+                  all follow the choice. replace keeps the back button tidy. */}
+              <div role="group" aria-label="Size" className="mt-2.5 flex flex-wrap gap-2">
+                {sizes.map((size) => {
+                  const current = size.slug === p.slug;
+                  return (
+                    <Link
+                      key={size.slug}
+                      href={`/shop/${size.slug}`}
+                      replace
+                      scroll={false}
+                      aria-current={current ? "page" : undefined}
+                      className={`inline-flex flex-col items-start justify-center min-h-[56px] px-5 rounded-2xl border transition-colors ${
+                        current
+                          ? "bg-earth text-cream border-earth"
+                          : "border-earth/25 text-earth hover:border-clay"
+                      }`}
+                    >
+                      <span className="text-[15px] font-medium leading-tight">
+                        {size.sizeLabel}
+                      </span>
+                      <span
+                        className={`text-xs ${current ? "text-cream/75" : "text-muted-foreground"}`}
+                      >
+                        {size.price}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           <ul className="mt-6 flex flex-wrap gap-2 animate-fade-up [animation-delay:0.4s]">

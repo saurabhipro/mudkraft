@@ -7,6 +7,16 @@ import { z } from "zod";
 import { COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
 
 import { getSession } from "../auth-guard";
+import {
+  BikriupError,
+  bikriup,
+  bikriupEnabled,
+  getBikriupOrder,
+  orderToken,
+  readOrderToken,
+  type BkOrder,
+} from "../bikriup";
+import { settleBikriupPayment } from "../bikriup-payments";
 import { db } from "../db";
 import { product } from "../db/schema/catalog";
 import { order, orderEvent, orderItem, paymentTransaction } from "../db/schema/orders";
@@ -128,6 +138,8 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
   for (const line of d.items) {
     requested.set(line.slug, (requested.get(line.slug) ?? 0) + line.qty);
   }
+
+  if (bikriupEnabled()) return placeBikriupOrder(d, requested);
 
   const rows = await db.query.product.findMany({
     where: inArray(product.slug, [...requested.keys()]),
@@ -282,6 +294,62 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
   return { ok: true, token: lookupToken, method: d.method };
 }
 
+/**
+ * The order goes to Bikriup, which re-prices it from its own catalogue, checks
+ * and takes the stock, and numbers it (MK…). Staff see it in Billing › Orders
+ * at once. The browser's prices are never sent — only slugs and quantities.
+ */
+async function placeBikriupOrder(
+  d: z.infer<typeof checkoutSchema>,
+  requested: Map<string, number>,
+): Promise<CheckoutResult> {
+  let created: BkOrder;
+  try {
+    created = await bikriup<BkOrder>("/orders", {
+      method: "POST",
+      idempotencyKey: randomUUID(),
+      body: {
+        name: d.name,
+        phone: d.phone,
+        email: d.email,
+        address: [d.line1, [d.line2, d.state].filter(Boolean).join(", ")].filter(Boolean).join("\n"),
+        city: d.city,
+        pincode: d.postalCode,
+        note: d.note,
+        payment_method: d.method === "gateway" ? "online" : d.method,
+        payment_provider: d.method === "gateway" ? "razorpay" : d.method,
+        items: [...requested].map(([slug, qty]) => ({ slug, qty })),
+      },
+    });
+  } catch (error) {
+    if (error instanceof BikriupError && error.status < 500) return { ok: false, error: error.message };
+    console.error("[bikriup] order failed:", error);
+    return { ok: false, error: "We could not place the order just now. Please try again in a minute." };
+  }
+
+  const token = orderToken(created.order_no, created.phone);
+  await sendOrderConfirmationEmail({
+    to: d.email,
+    customerName: d.name,
+    orderNumber: created.order_no,
+    lookupToken: token,
+    method: d.method,
+    items: created.items.map((item) => ({
+      productName: [item.name, item.size].filter(Boolean).join(" "),
+      qty: item.qty,
+      unitPricePaise: Math.round(item.price * 100),
+      lineTotalPaise: Math.round(item.line_total * 100),
+      imagePublicId: null,
+    })),
+    subtotalPaise: Math.round(created.subtotal * 100),
+    shippingPaise: Math.round(created.delivery * 100),
+    totalPaise: Math.round(created.total * 100),
+    address: { line1: d.line1, line2: d.line2 || null, city: d.city, state: d.state, postalCode: d.postalCode },
+  });
+
+  return { ok: true, token, method: d.method };
+}
+
 // ---------------------------------------------------------------------------
 // Razorpay
 // ---------------------------------------------------------------------------
@@ -316,6 +384,33 @@ export async function initiateRazorpayPayment(token: string): Promise<InitiatePa
       ok: false,
       error: "Online payment is not available right now. Please pay via WhatsApp instead.",
     };
+  }
+
+  if (bikriupEnabled()) {
+    const o = await getBikriupOrder(token);
+    if (!o) return { ok: false, error: "Unknown order." };
+    if (o.payment_method !== "online") return { ok: false, error: "This order is not paid online." };
+    if (o.payment_status === "paid") return { ok: false, error: "This order has already been paid." };
+    if (o.status === "cancelled") return { ok: false, error: "This order was cancelled." };
+    const amountPaise = Math.round(o.total * 100);
+    try {
+      // The receipt is the order number: confirmation checks it before anything is marked paid.
+      const created = await createGatewayOrder({ amountPaise, receipt: o.order_no, notes: { order_number: o.order_no } });
+      return {
+        ok: true,
+        keyId: razorpayKeyId(),
+        gatewayOrderId: created.id,
+        amountPaise,
+        currency: "INR",
+        orderNumber: o.order_no,
+        customerName: o.customer_name,
+        customerEmail: null,
+        customerPhone: `+91${o.phone}`,
+      };
+    } catch (error) {
+      console.error("[razorpay] order create failed:", error);
+      return { ok: false, error: "Could not reach the payment gateway. Please try again." };
+    }
   }
 
   const row = await db.query.order.findFirst({
@@ -414,6 +509,8 @@ export async function confirmRazorpayPayment(token: string, input: unknown): Pro
   if (!parsed.success) return { ok: false, error: "Invalid payment confirmation." };
   const p = parsed.data;
 
+  if (bikriupEnabled()) return confirmBikriupPayment(token, p);
+
   const row = await db.query.order.findFirst({
     where: eq(order.lookupToken, token),
     columns: { id: true, paymentProvider: true, paymentStatus: true },
@@ -507,6 +604,30 @@ export async function confirmRazorpayPayment(token: string, input: unknown): Pro
   return { ok: true, paid: true };
 }
 
+async function confirmBikriupPayment(token: string, p: z.infer<typeof confirmSchema>): Promise<SettleResult> {
+  const ref = readOrderToken(token);
+  if (!ref) return { ok: false, error: "Unknown order." };
+  if (
+    !verifyPaymentSignature({
+      gatewayOrderId: p.gatewayOrderId,
+      gatewayPaymentId: p.gatewayPaymentId,
+      signature: p.signature,
+    })
+  ) {
+    return { ok: false, error: "Payment verification failed." };
+  }
+  try {
+    const out = await settleBikriupPayment({ ...p, orderNo: ref.orderNo });
+    return out.ok ? { ok: true, paid: true } : out;
+  } catch (error) {
+    console.error("[razorpay] payment settle failed:", error);
+    return {
+      ok: false,
+      error: "Could not verify the payment right now. If you were charged, it will be confirmed shortly.",
+    };
+  }
+}
+
 /**
  * Records a failed or abandoned attempt reported by the checkout modal. Purely
  * bookkeeping — the order itself stays unpaid and payable, and nothing here
@@ -519,6 +640,13 @@ export async function reportRazorpayFailure(
 ): Promise<void> {
   if (!token || token.length > 200) return;
   if (!gatewayOrderId || gatewayOrderId.length > 100) return;
+
+  // With Bikriup the order simply stays unpaid and payable; the failure shows in its log.
+  if (bikriupEnabled()) {
+    const ref = readOrderToken(token);
+    if (ref) console.warn(`[razorpay] payment failed for ${ref.orderNo}: ${reason.code ?? ""} ${reason.description ?? ""}`);
+    return;
+  }
 
   const row = await db.query.order.findFirst({
     where: eq(order.lookupToken, token),

@@ -20,7 +20,7 @@ const whatsappEnquiry = () => whatsappLink(["Namaste Mudkraft! I have an enquiry
 
 export function SiteFooter() {
   return (
-    <footer className="relative bg-earth text-cream px-6 md:px-10 pt-20 pb-10 mt-10">
+    <footer className="relative bg-earth text-cream px-6 md:px-10 pt-14 md:pt-16 pb-8 mt-10">
       <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-12">
         <div className="sm:col-span-2">
           <Link href="/" className="group flex items-center gap-4" aria-label="Mudkraft home">
@@ -46,7 +46,7 @@ export function SiteFooter() {
 
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Explore</div>
-          <ul className="space-y-3 text-cream/80">
+          <ul className="space-y-2.5 text-cream/80">
             <li>
               <Link href="/benefits" className="hover:text-gold transition-colors mk-link">
                 Benefits of Clay
@@ -94,7 +94,7 @@ export function SiteFooter() {
 
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Quick links</div>
-          <ul className="space-y-3 text-cream/80">
+          <ul className="space-y-2.5 text-cream/80">
             {QUICK_LINKS.map((link) => (
               <li key={link.href}>
                 <Link href={link.href} className="hover:text-gold transition-colors mk-link">
@@ -107,7 +107,7 @@ export function SiteFooter() {
 
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Support</div>
-          <ul className="space-y-3 text-cream/80">
+          <ul className="space-y-2.5 text-cream/80">
             <li>
               <a
                 href={whatsappEnquiry()}
@@ -150,14 +150,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <p
-        aria-hidden="true"
-        className="mk-reveal max-w-7xl mx-auto mt-16 font-display text-center leading-[0.8] tracking-[-0.04em] whitespace-nowrap text-[clamp(4.5rem,19vw,18rem)] text-cream/[0.07] select-none"
-      >
-        mudkraft
-      </p>
-
-      <div className="max-w-7xl mx-auto mt-10 pt-8 border-t border-cream/15 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cream/60">
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-cream/15 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cream/60">
         <div>© {new Date().getFullYear()} Mudkraft Studio · Khurja, India</div>
         <div className="flex items-center gap-4">
           <span className="tracking-[0.3em] uppercase hidden sm:inline">

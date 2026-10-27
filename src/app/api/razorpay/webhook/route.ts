@@ -1,6 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
+import { bikriupEnabled } from "@/server/bikriup";
+import { settleBikriupPayment } from "@/server/bikriup-payments";
 import { db } from "@/server/db";
 import { order, orderEvent, paymentTransaction } from "@/server/db/schema/orders";
 import type { GatewayPayment } from "@/server/razorpay";
@@ -45,6 +47,22 @@ export async function POST(request: Request) {
   const payment = body.payload?.payment?.entity;
 
   if ((event !== "payment.captured" && event !== "payment.failed") || !payment?.order_id) {
+    return NextResponse.json({ received: true });
+  }
+
+  // Orders live in Bikriup: a captured payment marks its order paid there. A failure
+  // needs nothing — the order stays unpaid and payable.
+  if (bikriupEnabled()) {
+    if (event === "payment.captured") {
+      try {
+        const out = await settleBikriupPayment({ gatewayOrderId: payment.order_id, gatewayPaymentId: payment.id });
+        if (!out.ok) console.warn(`[razorpay] webhook not settled: ${out.error}`);
+      } catch (error) {
+        console.error("[razorpay] webhook settle failed:", error);
+        // 500 makes Razorpay retry later, when Bikriup is reachable again.
+        return NextResponse.json({ error: "retry" }, { status: 500 });
+      }
+    }
     return NextResponse.json({ received: true });
   }
 
