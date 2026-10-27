@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { displayImage, toProductView } from "@/lib/product-view";
+import { displayImage, groupFamilies, toProductView } from "@/lib/product-view";
 import { toReviewView } from "@/lib/review-view";
 import { SITE_URL } from "@/lib/seo";
 import { getActiveProducts, getProductBySlug } from "@/server/store/products";
@@ -64,9 +64,16 @@ export default async function Page({ params }: PageProps) {
     getReviewSummary(slug),
   ]);
 
+  // Other sizes of this product (Handi 1.5 L / 2.5 L) become the size picker,
+  // and are kept out of the recommendations below.
+  const allViews = allProducts.map(toProductView);
+  const sizes = groupFamilies(allViews).find((f) => f.sizes.some((s) => s.slug === view.slug))
+    ?.sizes ?? [view];
+  const sizeSlugs = new Set(sizes.map((s) => s.slug));
+
   // Same category first, then anything else, so the rail is never empty on a
   // catalogue where a category may hold a single product.
-  const others = allProducts.filter((p) => p.slug !== view.slug).map(toProductView);
+  const others = allViews.filter((p) => !sizeSlugs.has(p.slug));
   const sameCategory = others.filter((p) => p.category === view.category);
   const alsoLove = (sameCategory.length > 0 ? sameCategory : others).slice(0, 3);
 
@@ -127,6 +134,7 @@ export default async function Page({ params }: PageProps) {
       />
       <ProductDetail
         product={view}
+        sizes={sizes}
         alsoLove={alsoLove}
         reviews={reviewViews}
         reviewSummary={summary}

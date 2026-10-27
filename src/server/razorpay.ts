@@ -53,6 +53,15 @@ export async function createGatewayOrder(params: {
   return { id: gatewayOrder.id };
 }
 
+/**
+ * The gateway order a payment belongs to. Its `receipt` is the shop's order
+ * number, which ties a payment to exactly one order when Bikriup holds them.
+ */
+export async function fetchGatewayOrder(gatewayOrderId: string): Promise<{ id: string; amount: number; receipt: string | null }> {
+  const o = await getClient().orders.fetch(gatewayOrderId);
+  return { id: o.id, amount: Number(o.amount), receipt: o.receipt ?? null };
+}
+
 /** The subset of Razorpay's payment entity the app actually reads. */
 export interface GatewayPayment {
   id: string;

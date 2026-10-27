@@ -320,7 +320,9 @@ export function CheckoutForm({
               )}
               <div className="min-w-0 flex-1">
                 <div className="truncate font-display text-base text-earth">{item.name}</div>
-                <div className="text-xs text-muted-foreground">Qty {item.qty}</div>
+                <div className="text-xs text-muted-foreground">
+                  {item.tag ? `${item.tag} · ` : ""}Qty {item.qty}
+                </div>
               </div>
               <div className="text-sm text-earth">{formatPaise(item.pricePaise * item.qty)}</div>
             </li>

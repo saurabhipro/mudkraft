@@ -15,6 +15,12 @@ import { NextResponse, type NextRequest } from "next/server";
  * a route here and consider it protected.
  */
 export function proxy(request: NextRequest) {
+  // Staff manage the shop in Bikriup once it is switched on; the old admin is retired.
+  const bikriupAdmin = process.env.BIKRIUP_ADMIN_URL;
+  if (bikriupAdmin && request.nextUrl.pathname.startsWith("/admin")) {
+    return NextResponse.redirect(bikriupAdmin);
+  }
+
   const sessionCookie = getSessionCookie(request);
 
   if (!sessionCookie) {

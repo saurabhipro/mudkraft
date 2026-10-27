@@ -5,7 +5,6 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { BannerRail } from "@/components/BannerRail";
 import { HeroPieces } from "@/components/HeroPieces";
 import handsClay from "@/assets/hands-clay.jpg";
 import potsDrying from "@/assets/pots-drying.jpg";
@@ -13,9 +12,13 @@ import benefitCooling from "@/assets/benefit-cooling.jpg";
 import benefitMinerals from "@/assets/benefit-minerals.jpg";
 import benefitNutrients from "@/assets/benefit-nutrients.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
-import { CATALOGUE_CODES } from "@/lib/catalogue";
 import { formatPaise } from "@/lib/money";
-import { displayImage, type ProductView } from "@/lib/product-view";
+import {
+  displayImage,
+  groupFamilies,
+  type ProductFamily,
+  type ProductView,
+} from "@/lib/product-view";
 import {
   useCart,
   addToCart as addToCartStore,
@@ -140,11 +143,15 @@ export function HomePage({
     return () => pending.forEach(clearTimeout);
   }, []);
 
+  // Sizes of one product (Handi 1.5 L / 2.5 L) share a card with a size picker.
+  const families = groupFamilies(products);
   // Categories come from the database, so a category added in the admin panel
-  // appears here without a code change.
-  const filterOptions = ["All", ...categories];
-  const visibleProducts =
-    activeCategory === "All" ? products : products.filter((p) => p.category === activeCategory);
+  // appears here without a code change. Empty ones are hidden, and with only one
+  // category left there is nothing to filter, so the row disappears.
+  const liveCategories = categories.filter((c) => families.some((f) => f.category === c));
+  const filterOptions = liveCategories.length > 1 ? ["All", ...liveCategories] : [];
+  const visibleFamilies =
+    activeCategory === "All" ? families : families.filter((f) => f.category === activeCategory);
 
   // Adding from the grid confirms with a toast and a bounce on the basket count
   // rather than throwing the drawer open, so browsing isn't interrupted.
@@ -152,7 +159,7 @@ export function HomePage({
     addToCartStore(p);
     timers.current.forEach(clearTimeout);
     setBump(true);
-    setToast(p.name);
+    setToast(`${p.name} ${p.sizeLabel}`.trim());
     timers.current = [
       setTimeout(() => setBump(false), 320),
       setTimeout(() => setToast(null), 2800),
@@ -200,11 +207,6 @@ export function HomePage({
           </>
         }
       />
-
-      {/* BANNERS — the dark band behind the floating header, then the moving rail */}
-      <div className="bg-[#2d1912] pt-[92px] md:pt-[116px] pb-8 md:pb-10">
-        <BannerRail products={products} />
-      </div>
 
       {/* HERO — pick a piece on the wheel */}
       <HeroPieces products={products} />
@@ -264,7 +266,7 @@ export function HomePage({
             <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
               {filterOptions.map((c) => {
                 const n =
-                  c === "All" ? products.length : products.filter((p) => p.category === c).length;
+                  c === "All" ? families.length : families.filter((f) => f.category === c).length;
                 const isActive = activeCategory === c;
                 return (
                   <button
@@ -289,83 +291,8 @@ export function HomePage({
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {visibleProducts.map((p) => (
-              <article
-                key={p.slug}
-                className="mk-reveal group relative flex flex-col rounded-[1.75rem] overflow-hidden bg-sand transition-[transform,box-shadow] duration-800 ease-[var(--ease-clay)] hover:-translate-y-2.5 hover:shadow-[0_50px_80px_-40px_rgba(59,42,34,0.55)]"
-              >
-                <Link
-                  href={`/shop/${p.slug}`}
-                  aria-label={`View ${p.name}`}
-                  className="relative block aspect-[4/5] overflow-hidden"
-                >
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.97_0.015_75)_0%,transparent_65%)]" />
-                  {displayImage(p) ? (
-                    <img
-                      src={displayImage(p)!}
-                      alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
-                      width={900}
-                      height={1125}
-                      loading="lazy"
-                      className="relative w-full h-full object-contain p-3 scale-[1.18] transition-transform duration-[1600ms] ease-[var(--ease-clay)] group-hover:scale-[1.28] group-hover:-rotate-1 drop-shadow-[0_30px_35px_rgba(80,40,20,0.35)]"
-                    />
-                  ) : (
-                    <div className="relative w-full h-full grid place-items-center text-earth/40 font-hand text-2xl">
-                      photograph coming soon
-                    </div>
-                  )}
-                  <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-ink/80 backdrop-blur text-cream text-[10px] tracking-[0.2em] uppercase">
-                    {p.tag}
-                  </span>
-                  <span className="absolute left-4 right-4 bottom-4 flex items-center justify-center min-h-[48px] rounded-full bg-cream/90 backdrop-blur text-ink text-xs tracking-[0.16em] uppercase opacity-0 translate-y-4 transition-all duration-600 ease-[var(--ease-clay)] group-hover:opacity-100 group-hover:translate-y-0">
-                    View piece
-                  </span>
-                </Link>
-
-                <div className="flex items-end justify-between gap-3 px-5 pt-4 pb-5">
-                  <div className="min-w-0">
-                    <Link
-                      href={`/shop/${p.slug}`}
-                      className="hover:text-clay-deep transition-colors"
-                    >
-                      <h3 className="font-display text-[1.75rem] leading-tight text-earth truncate">
-                        {p.name}
-                      </h3>
-                    </Link>
-                    <p className="font-hand text-xl text-clay-deep truncate">{p.note}</p>
-                    {CATALOGUE_CODES[p.slug] && (
-                      <p className="mt-1 text-[11px] tracking-[0.16em] font-medium text-muted-foreground">
-                        {CATALOGUE_CODES[p.slug]}
-                      </p>
-                    )}
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {p.compareAt && (
-                      <div className="text-xs text-muted-foreground line-through">
-                        {p.compareAt}
-                      </div>
-                    )}
-                    <div className="font-display text-xl text-earth">{p.price}</div>
-                    <button
-                      type="button"
-                      onClick={() => addToCart(p)}
-                      aria-label={`Add ${p.name} to basket`}
-                      className="mt-1.5 inline-grid place-items-center w-11 h-11 rounded-full bg-earth text-cream hover:bg-clay hover:rotate-90 active:scale-90 transition-all duration-500 ease-[var(--ease-clay)]"
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        aria-hidden="true"
-                        className="w-4 h-4"
-                      >
-                        <path d="M12 5v14M5 12h14" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </article>
+            {visibleFamilies.map((f) => (
+              <FamilyCard key={f.key} family={f} onAdd={addToCart} />
             ))}
           </div>
         </div>
@@ -986,5 +913,113 @@ export function HomePage({
         </div>
       )}
     </div>
+  );
+}
+
+/** A product card. Sizes are chips on the card: the price follows the chip, one button adds that size. */
+function FamilyCard({ family, onAdd }: { family: ProductFamily; onAdd: (p: ProductView) => void }) {
+  // Start on the largest size that is in stock, the one the catalogue and photos lead with.
+  const [slug, setSlug] = useState(() => {
+    const sizes = [...family.sizes].reverse();
+    return (sizes.find((size) => size.stockQty > 0) ?? sizes[0]).slug;
+  });
+  const p = family.sizes.find((size) => size.slug === slug) ?? family.sizes[0];
+  const soldOut = p.stockQty <= 0;
+  const few = !soldOut && p.stockQty <= 5;
+  const off = p.discountPct;
+  const image = displayImage(p);
+
+  return (
+    <article className="mk-reveal group relative flex flex-col rounded-[1.25rem] bg-sand p-2.5 pb-4 transition-[transform,box-shadow] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:shadow-[0_36px_60px_-36px_rgba(59,42,34,0.5)]">
+      <Link
+        href={`/shop/${p.slug}`}
+        aria-label={`View ${p.name}`}
+        className="relative block aspect-[4/3] overflow-hidden rounded-xl bg-[oklch(0.93_0.025_75)]"
+      >
+        {image ? (
+          <img
+            src={image}
+            alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
+            width={900}
+            height={675}
+            loading="lazy"
+            className={`absolute inset-0 m-auto w-[86%] h-[86%] object-contain mix-blend-multiply drop-shadow-[0_16px_16px_rgba(80,40,20,0.2)] transition-transform duration-[1200ms] ease-[var(--ease-clay)] group-hover:scale-[1.05] ${
+              soldOut ? "opacity-60" : ""
+            }`}
+          />
+        ) : (
+          <div className="absolute inset-0 grid place-items-center text-earth/40 font-hand text-2xl">
+            photograph coming soon
+          </div>
+        )}
+        {off > 0 && !soldOut && (
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-clay-deep px-2.5 py-1 text-[11px] font-semibold text-cream">
+            −{off}%
+          </span>
+        )}
+      </Link>
+
+      <div className="flex flex-col gap-2.5 px-2 pt-3.5">
+        <div className="flex items-baseline justify-between gap-3">
+          <Link href={`/shop/${p.slug}`} className="min-w-0 hover:text-clay-deep transition-colors">
+            <h3 className="font-display text-[1.7rem] leading-tight text-earth truncate">
+              {p.name}
+            </h3>
+          </Link>
+          <div className="shrink-0 flex items-baseline gap-2">
+            <span className="font-display text-[1.45rem] text-earth">{p.price}</span>
+            {p.compareAt && (
+              <span className="text-[13px] text-muted-foreground line-through">{p.compareAt}</span>
+            )}
+          </div>
+        </div>
+
+        <div role="group" aria-label={`${family.name} size`} className="flex flex-wrap gap-2">
+          {family.sizes.map((size) => (
+            <button
+              key={size.slug}
+              type="button"
+              onClick={() => setSlug(size.slug)}
+              aria-pressed={size.slug === p.slug}
+              className={`min-h-9 px-3.5 rounded-full border text-[12.5px] font-medium transition-colors ${
+                size.slug === p.slug
+                  ? "bg-earth text-cream border-earth"
+                  : "bg-cream border-border text-earth hover:border-clay"
+              } ${size.stockQty <= 0 ? "opacity-45 line-through" : ""}`}
+            >
+              {size.sizeLabel || "One size"}
+            </button>
+          ))}
+        </div>
+
+        <p className={`text-xs ${few ? "text-clay-deep" : "text-muted-foreground"}`}>
+          {soldOut ? "Sold out" : few ? `Only ${p.stockQty} left` : "In stock"}
+        </p>
+
+        <button
+          type="button"
+          disabled={soldOut}
+          onClick={() => onAdd(p)}
+          aria-label={
+            soldOut
+              ? `${p.name} ${p.sizeLabel} is sold out`
+              : `Add ${p.name} ${p.sizeLabel} to basket`
+          }
+          className={`flex min-h-12 items-center justify-between rounded-full pl-5 pr-1.5 text-[11.5px] uppercase tracking-[0.16em] transition-colors duration-300 ${
+            soldOut
+              ? "border border-border text-muted-foreground cursor-not-allowed"
+              : "bg-earth text-cream hover:bg-clay-deep active:scale-[0.99]"
+          }`}
+        >
+          <span>{soldOut ? "Sold out" : `Add ${p.sizeLabel || p.name}`}</span>
+          <span
+            aria-hidden="true"
+            className={`grid h-9 w-9 place-items-center rounded-full text-xl tracking-normal ${soldOut ? "opacity-0" : "bg-cream text-earth"}`}
+          >
+            +
+          </span>
+        </button>
+      </div>
+    </article>
   );
 }

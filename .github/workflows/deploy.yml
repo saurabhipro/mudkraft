@@ -1,0 +1,54 @@
+# Push or merge to main → type-check → deploy to the Bikriup VM (www.mudkraft.com).
+# The SSH key in DEPLOY_SSH_KEY can only start /usr/local/bin/mudkraft-deploy on the server
+# (forced command, no shell, no forwarding). The commit is streamed to it as a git bundle; the
+# server builds it with its own settings (/etc/mudkraft.env), so no secret lives in GitHub.
+# It switches to the new release, checks /api/health and rolls back on failure.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Pack this commit
+        run: git bundle create "$RUNNER_TEMP/main.bundle" HEAD
+      - name: Deploy to server
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes "deploy@$HOST" < "$RUNNER_TEMP/main.bundle"
+      - name: Remove key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

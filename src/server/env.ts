@@ -48,6 +48,19 @@ const serverEnvSchema = z.object({
   // Set only once the webhook is registered in the Razorpay dashboard.
   RAZORPAY_WEBHOOK_SECRET: emptyAsUndefined(z.string()),
 
+  // Bikriup runs the shop's back office: catalogue, stock, orders, reviews and
+  // enquiries. Set BIKRIUP_API_URL (e.g. https://mudkraft.bikriup.com/api/v1) and
+  // the secret key from Bikriup › Shop › Website & API to switch the site over;
+  // without them the site keeps reading its own database.
+  BIKRIUP_API_URL: emptyAsUndefined(z.string().url("BIKRIUP_API_URL must be an absolute URL")),
+  BIKRIUP_SECRET_KEY: emptyAsUndefined(z.string().startsWith("bk_sec_", "BIKRIUP_SECRET_KEY starts with bk_sec_")),
+  // The webhook signing secret (whsec_…) from the same page.
+  BIKRIUP_WEBHOOK_SECRET: emptyAsUndefined(z.string()),
+  // Where /admin sends staff, e.g. https://mudkraft.bikriup.com/admin
+  BIKRIUP_ADMIN_URL: emptyAsUndefined(z.string().url()),
+  // Public address that serves Bikriup's /uploads photos (defaults to the admin address's host).
+  BIKRIUP_MEDIA_URL: emptyAsUndefined(z.string().url()),
+
   // SMS (MSG91) is optional: without it OTPs are printed to the server console
   // — the whole delivery-verification flow stays demoable with zero setup.
   MSG91_AUTH_KEY: emptyAsUndefined(z.string()),

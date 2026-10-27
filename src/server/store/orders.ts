@@ -1,5 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 
+import { bikriupEnabled, getBikriupOrder, siteOrderStatus, sitePaymentProvider, sitePaymentStatus } from "../bikriup";
 import { db } from "../db";
 import { deliveryVerification, order } from "../db/schema/orders";
 
@@ -145,6 +146,42 @@ export async function getOrderByToken(token: string): Promise<OrderSummary | nul
   // A malformed token can never match, and refusing it early keeps obviously
   // junk values from reaching the database at all.
   if (!token || token.length > 200) return null;
+
+  // Orders live in Bikriup once it is switched on; the token is a signed order reference.
+  if (bikriupEnabled()) {
+    const o = await getBikriupOrder(token);
+    if (!o) return null;
+    const [line1, ...rest] = o.address.split("\n");
+    return {
+      id: o.order_no,
+      orderNumber: o.order_no,
+      lookupToken: token,
+      status: siteOrderStatus(o),
+      paymentStatus: sitePaymentStatus(o),
+      paymentProvider: sitePaymentProvider(o),
+      contactEmail: null,
+      contactPhone: `+91${o.phone}`,
+      shippingName: o.customer_name,
+      shippingLine1: line1 ?? "",
+      shippingLine2: rest.join(", ") || null,
+      shippingCity: o.city,
+      shippingState: "",
+      shippingPostalCode: o.pincode,
+      subtotalPaise: Math.round(o.subtotal * 100),
+      shippingPaise: Math.round(o.delivery * 100),
+      totalPaise: Math.round(o.total * 100),
+      customerNote: null,
+      createdAt: new Date(o.created_at),
+      items: o.items.map((item) => ({
+        productSlug: "",
+        productName: [item.name, item.size].filter(Boolean).join(" "),
+        imagePublicId: null,
+        unitPricePaise: Math.round(item.price * 100),
+        qty: item.qty,
+        lineTotalPaise: Math.round(item.line_total * 100),
+      })),
+    };
+  }
 
   const row = await db.query.order.findFirst({
     where: eq(order.lookupToken, token),

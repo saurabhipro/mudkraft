@@ -26,6 +26,8 @@ export function cloudinaryUrl({
   resourceType = "image",
   transforms = [],
 }: CloudinaryUrlOptions): string {
+  // A photo hosted by Bikriup arrives as a full address; there is nothing to transform.
+  if (/^https?:\/\//.test(publicId)) return publicId;
   if (!CLOUD_NAME) {
     throw new Error(
       "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not set — Cloudinary URLs cannot be built.",

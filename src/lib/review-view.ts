@@ -46,7 +46,9 @@ export function toReviewView(review: SourceReview): ReviewView {
     title: review.title,
     body: review.body,
     photo: review.photoPublicId
-      ? cloudinaryUrl({ publicId: review.photoPublicId, transforms: ["w_800"] })
+      ? /^https?:\/\//.test(review.photoPublicId)
+        ? review.photoPublicId
+        : cloudinaryUrl({ publicId: review.photoPublicId, transforms: ["w_800"] })
       : null,
     verified: review.verifiedPurchase,
   };
