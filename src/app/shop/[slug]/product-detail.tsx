@@ -206,7 +206,7 @@ export function ProductDetail({
         <span className="text-earth">{p.name}</span>
       </nav>
 
-      <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-20 md:pt-10 md:pb-28 grid md:grid-cols-[1.15fr_1fr] gap-10 md:gap-16 items-start">
+      <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-20 md:pt-10 md:pb-28 grid grid-cols-1 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-10 md:gap-16 items-start">
         <div className="md:sticky md:top-28">
           <div className="group relative aspect-square overflow-hidden rounded-[2rem] animate-fade-up">
             <ClayPlinth
@@ -215,7 +215,7 @@ export function ProductDetail({
               alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft, photograph ${shot + 1}`}
               priority
             />
-            <div className="pointer-events-none absolute left-5 top-5 flex flex-col gap-0.5 md:left-6 md:top-6">
+            <div className="pointer-events-none absolute left-5 right-[104px] top-5 flex flex-col gap-0.5 md:left-6 md:right-[120px] md:top-6">
               <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
                 {p.category || p.tag}
               </span>
@@ -608,7 +608,7 @@ export function ProductDetail({
                 All pieces →
               </Link>
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {alsoLove.map((family) => (
                 <RelatedCard key={family.key} family={family} />
               ))}
@@ -642,8 +642,8 @@ function RelatedCard({ family }: { family: ProductFamily }) {
   };
 
   return (
-    <article className="group relative flex gap-4 rounded-[1.6rem] bg-[oklch(0.925_0.025_75)] p-2.5 transition-[background-color,box-shadow] duration-500 hover:bg-white hover:shadow-[0_24px_40px_-28px_rgba(59,42,34,0.4)] sm:gap-5">
-      <div className="relative h-[200px] w-[132px] shrink-0 overflow-hidden rounded-[1.2rem] sm:h-[238px] sm:w-[180px]">
+    <article className="group relative flex min-w-0 flex-col gap-3 rounded-[1.6rem] bg-[oklch(0.925_0.025_75)] p-2.5 transition-[background-color,box-shadow] duration-500 hover:bg-white hover:shadow-[0_24px_40px_-28px_rgba(59,42,34,0.4)] sm:flex-row sm:gap-5">
+      <div className="relative h-[190px] w-full shrink-0 overflow-hidden rounded-[1.2rem] sm:h-[238px] sm:w-[180px]">
         <Link href={href} aria-label={`View ${p.name} ${p.sizeLabel}`.trim()} className="absolute inset-0">
           <ClayPlinth product={p} />
         </Link>
@@ -655,7 +655,7 @@ function RelatedCard({ family }: { family: ProductFamily }) {
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2.5 py-1 pr-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5 px-1.5 pb-1 sm:px-0 sm:py-1 sm:pr-1">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
             {[p.category, "Khurja clay"].filter(Boolean).join(" · ")}

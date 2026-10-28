@@ -218,7 +218,7 @@ export function CheckoutForm({
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
       {/* ---- details ---- */}
       <form
         className="lg:col-span-3 rounded-3xl border border-earth/15 bg-cream/50 p-6 md:p-8"
