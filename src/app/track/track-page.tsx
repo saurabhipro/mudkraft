@@ -93,9 +93,10 @@ function whatsappTrack(orderNumber: string, email: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
 
-export function TrackPage() {
+/** `initialOrder` comes from the box label's QR code (/track?order=MK260005). */
+export function TrackPage({ initialOrder = "" }: { initialOrder?: string }) {
   // Order form
-  const [orderNumber, setOrderNumber] = useState("");
+  const [orderNumber, setOrderNumber] = useState(initialOrder);
   const [email, setEmail] = useState("");
   const [orderErrors, setOrderErrors] = useState<{ orderNumber?: string; email?: string }>({});
   const [orderSubmitted, setOrderSubmitted] = useState(false);

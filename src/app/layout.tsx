@@ -37,17 +37,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
   description: DESCRIPTION,
-  authors: [{ name: "Lovable" }],
-  icons: { icon: [{ url: "/favicon.ico", type: "image/x-icon" }] },
+  authors: [{ name: "Mudkraft" }],
+  // Tab and home-screen icons come from app/icon.png and app/apple-icon.png.
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
     type: "website",
+    siteName: "Mudkraft",
     images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    site: "@Lovable",
     title: TITLE,
     description: DESCRIPTION,
     images: [OG_IMAGE],
@@ -66,7 +66,7 @@ const organizationJsonLd = {
       "@type": "Organization",
       name: "Mudkraft",
       url: SITE_URL,
-      logo: `${SITE_URL}/favicon.ico`,
+      logo: `${SITE_URL}/mudkraft-logo.png`,
       description:
         "Slow craft studio shaping pots, kulhads, planters and diyas from river clay.",
       sameAs: [FACEBOOK_URL],

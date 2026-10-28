@@ -138,13 +138,22 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
             radius={282}
             fontSize={13}
           />
-          <div className="w-[80%] aspect-square rounded-full overflow-hidden bg-sand shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85),0_0_0_1px_rgba(224,176,138,0.25)]">
-            <img
-              key={cur.slug}
-              src={displayImage(cur)!}
-              alt={cur.name}
-              className="w-full h-full object-contain p-[9%] drop-shadow-[0_24px_28px_rgba(80,40,20,0.3)] animate-in fade-in-0 zoom-in-95 duration-700"
+          {/* Product photos come on a white ground, so the disc is lit like a studio sweep
+              (near-white centre, warm rim) and the photo is multiplied onto it: the white
+              melts into the disc and only the pot remains, standing on a soft ground shadow. */}
+          <div className="relative isolate w-[80%] aspect-square rounded-full overflow-hidden bg-[radial-gradient(circle_at_50%_42%,#fffdf9_0%,#f6ece0_46%,#e3cfb9_100%)] shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85),0_0_0_1px_rgba(224,176,138,0.25),inset_0_-30px_60px_-20px_rgba(120,70,40,0.25)]">
+            <span
+              aria-hidden="true"
+              className="absolute left-1/2 bottom-[17%] w-[58%] h-[9%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(70,35,15,0.45),transparent)] blur-[6px]"
             />
+            <div className="absolute inset-0 mix-blend-multiply animate-float">
+              <img
+                key={cur.slug}
+                src={displayImage(cur)!}
+                alt={cur.name}
+                className="w-full h-full object-contain p-[12%] animate-in fade-in-0 zoom-in-95 duration-700"
+              />
+            </div>
           </div>
           <span className="absolute right-[6%] top-[6%] px-3.5 py-2 rounded-full bg-[#1c110c]/70 border border-white/[0.12] backdrop-blur text-xs tracking-[0.14em] tabular-nums">
             {pad(i + 1)} / {pad(visible.length)}
@@ -227,11 +236,13 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
                       : "border-white/[0.08] text-cream/70 hover:text-cream"
                   }`}
                 >
-                  <img
-                    src={displayImage(p)!}
-                    alt=""
-                    className="w-9 h-9 rounded-full bg-sand object-contain p-0.5"
-                  />
+                  <span className="isolate shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[radial-gradient(circle,#fffdf9,#ead9c6)]">
+                    <img
+                      src={displayImage(p)!}
+                      alt=""
+                      className="w-full h-full object-contain p-1 mix-blend-multiply"
+                    />
+                  </span>
                   {p.name}
                   {on && (
                     <span

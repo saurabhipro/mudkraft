@@ -32,9 +32,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const view = toProductView(product);
   const url = `${SITE_URL}/shop/${view.slug}`;
-  const title = `${view.name} — ${view.tag} · Mudkraft`;
+  // "Bhagona — Bhagona" read oddly where the type is the name itself.
+  const title = `${view.name}${view.tag && view.tag !== view.name ? ` — ${view.tag}` : ""} · Mudkraft`;
   const description = (view.description || view.note).slice(0, 155);
-  const image = displayImage(view);
 
   return {
     title,
@@ -42,13 +42,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternates: { canonical: url },
     // `og:type: product` is rendered as a hoisted meta tag below: Next's metadata
     // API only knows a fixed set of og types and silently drops unknown ones.
-    openGraph: {
-      title,
-      description,
-      url,
-      images: image ? [image] : undefined,
-    },
-    twitter: { card: "summary_large_image", images: image ? [image] : undefined },
+    // The share image is ./opengraph-image.tsx: the piece, its price and the Mudkraft seal.
+    openGraph: { title, description, url, siteName: "Mudkraft" },
+    twitter: { card: "summary_large_image" },
   };
 }
 
@@ -64,7 +60,7 @@ export default async function Page({ params }: PageProps) {
     getReviewSummary(slug),
   ]);
 
-  // Other sizes of this product (Handi 1.5 L / 2.5 L) become the size picker,
+  // Other variants of this product type (Handi 2.5 L, Dahi Handi 1.5 L) become the picker,
   // and are kept out of the recommendations below.
   const allViews = allProducts.map(toProductView);
   const sizes = groupFamilies(allViews).find((f) => f.sizes.some((s) => s.slug === view.slug))
@@ -127,17 +123,20 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <meta property="og:type" content="product" />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-      />
+      {/* The page comes first: Next scrolls a new page to its first visible element, and a
+          leading <meta> (hoisted into <head>) left a product opened from the collection
+          sitting at the collection's scroll position. */}
       <ProductDetail
         product={view}
         sizes={sizes}
         alsoLove={alsoLove}
         reviews={reviewViews}
         reviewSummary={summary}
+      />
+      <meta property="og:type" content="product" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
     </>
   );

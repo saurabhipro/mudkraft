@@ -4,7 +4,9 @@ import { sendEmail } from "./client";
 import {
   appBaseUrl,
   orderConfirmationEmail,
+  orderUpdateEmail,
   welcomeEmail,
+  type OrderUpdateEmailData,
   type OrderEmailData,
   type OrderEmailItem,
 } from "./templates";
@@ -66,4 +68,12 @@ export async function sendOrderConfirmationEmail(input: OrderConfirmationInput):
   });
 
   return sendEmail({ to: input.to, subject, html });
+}
+
+export async function sendOrderUpdateEmail(
+  to: string,
+  data: OrderUpdateEmailData,
+): Promise<boolean> {
+  const { subject, html } = orderUpdateEmail(data);
+  return sendEmail({ to, subject, html });
 }

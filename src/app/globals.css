@@ -287,6 +287,21 @@
   }
 }
 
+/* Site-wide scroll reveal, driven by components/SiteMotion.tsx. Uses the
+   translate property so it never fights an element's own transform. */
+.mk-pre {
+  opacity: 0;
+  translate: 0 28px;
+  transition: opacity 0.9s var(--ease-clay), translate 0.9s var(--ease-clay);
+}
+.mk-pre.mk-in { opacity: 1; translate: 0 0; }
+
+/* Every button gives a little under the finger. */
+@layer base {
+  button:not(:disabled):active,
+  a[class*="rounded-full"]:active { scale: 0.97; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

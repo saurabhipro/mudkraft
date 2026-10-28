@@ -3,13 +3,13 @@ import Link from "next/link";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { OG_IMAGE } from "@/lib/seo";
+import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import alkalineImg from "@/assets/benefit-alkaline.jpg";
 import mineralsImg from "@/assets/benefit-minerals.jpg";
 import coolingImg from "@/assets/benefit-cooling.jpg";
 import nutrientsImg from "@/assets/benefit-nutrients.jpg";
 
-const URL = "https://mudkraft.lovable.app/benefits";
+const URL = `${SITE_URL}/benefits`;
 const TITLE = "Benefits of Earthen Clay Pots — Alkaline Water, Nutrients & Natural Cooling | Mudkraft";
 const DESCRIPTION =
   "Discover the health benefits of drinking and cooking in unglazed clay pots — naturally alkaline water, preserved nutrients, gentle mineral enrichment, and electricity-free cooling. A slow guide from Mudkraft.";

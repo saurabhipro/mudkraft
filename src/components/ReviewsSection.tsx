@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
+import { ReviewForm } from "@/components/ReviewForm";
 
 function Lightbox({
   photos,
@@ -240,10 +241,12 @@ function formatDate(iso: string) {
  * on status in SQL rather than relying on a caller to remember.
  */
 export function ReviewsSection({
+  slug,
   name,
   reviews,
   summary,
 }: {
+  slug: string;
   name: string;
   reviews: ReviewView[];
   summary: ReviewSummaryView;
@@ -286,6 +289,9 @@ export function ReviewsSection({
           This piece hasn&apos;t been reviewed yet. If you&apos;ve brought one home, we&apos;d love
           to hear how it&apos;s settling in.
         </p>
+        <div className="max-w-xl">
+          <ReviewForm slug={slug} name={name} />
+        </div>
       </section>
     );
   }
@@ -358,6 +364,8 @@ export function ReviewsSection({
               Clear filter ×
             </button>
           )}
+
+          <ReviewForm slug={slug} name={name} />
 
           <p className="mt-8 text-xs text-muted-foreground leading-relaxed">
             Reviews are shared by customers with their consent. Photos show real pieces —

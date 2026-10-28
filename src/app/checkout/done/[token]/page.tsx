@@ -64,6 +64,55 @@ export default async function OrderPlacedPage({
       </section>
 
       <section className="max-w-3xl mx-auto px-6 md:px-10 pb-24">
+        {order.tracking && (
+          <div className="mb-6 rounded-3xl border border-earth/15 bg-background p-6 md:p-8">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <div>
+                <div className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
+                  Where it is
+                </div>
+                <div className="mt-1 font-display text-2xl text-earth">
+                  {order.tracking.statusLabel}
+                </div>
+              </div>
+              {order.tracking.refund && (
+                <span className="rounded-full bg-clay/10 px-4 py-1.5 text-xs tracking-widest uppercase text-clay">
+                  {order.tracking.refund === "done" ? "Refunded" : "Refund on its way"}
+                </span>
+              )}
+            </div>
+            {order.tracking.courier && (
+              <p className="mt-3 text-sm text-foreground/80">
+                Sent with <span className="text-earth">{order.tracking.courier}</span>
+                {order.tracking.trackingNo && <> · tracking no. {order.tracking.trackingNo}</>}
+              </p>
+            )}
+            {(order.tracking.trackingUrl || order.tracking.invoiceUrl) && (
+              <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                {order.tracking.trackingUrl && (
+                  <a
+                    href={order.tracking.trackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center bg-earth text-cream px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors"
+                  >
+                    Track the parcel
+                  </a>
+                )}
+                {order.tracking.invoiceUrl && (
+                  <a
+                    href={order.tracking.invoiceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center border border-earth/25 bg-background text-earth px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
+                  >
+                    Download invoice
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <div className="rounded-3xl border border-earth/15 bg-cream/50 p-6 md:p-8">
           <ul className="space-y-4">
             {order.items.map((item) => (

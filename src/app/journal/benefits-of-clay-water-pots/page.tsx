@@ -34,7 +34,7 @@ const articleJsonLd = {
     name: "Mudkraft",
     logo: {
       "@type": "ImageObject",
-      url: `${SITE_URL}/favicon.ico`,
+      url: `${SITE_URL}/mudkraft-logo.png`,
     },
   },
   mainEntityOfPage: URL,

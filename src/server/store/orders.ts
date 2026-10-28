@@ -47,6 +47,17 @@ export interface OrderSummary {
   customerNote: string | null;
   createdAt: Date;
   items: OrderSummaryItem[];
+  /** Orders kept in Bikriup: where the parcel is, the invoice and any refund. */
+  tracking?: OrderTracking;
+}
+
+export interface OrderTracking {
+  statusLabel: string;
+  courier: string;
+  trackingNo: string;
+  trackingUrl: string;
+  invoiceUrl: string;
+  refund: "" | "due" | "done";
 }
 
 export interface SavedAddress {
@@ -172,6 +183,15 @@ export async function getOrderByToken(token: string): Promise<OrderSummary | nul
       totalPaise: Math.round(o.total * 100),
       customerNote: null,
       createdAt: new Date(o.created_at),
+      tracking: {
+        statusLabel: o.status_label,
+        courier: o.courier ?? "",
+        trackingNo: o.tracking_no ?? "",
+        trackingUrl: o.tracking_url ?? "",
+        invoiceUrl: o.invoice_url ?? "",
+        refund:
+          o.payment_status === "refund_due" ? "due" : o.payment_status === "refunded" ? "done" : "",
+      },
       items: o.items.map((item) => ({
         productSlug: "",
         productName: [item.name, item.size].filter(Boolean).join(" "),

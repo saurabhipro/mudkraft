@@ -174,6 +174,39 @@ export function orderConfirmationEmail(data: OrderEmailData): RenderedEmail {
   };
 }
 
+// --- Order update (from Bikriup: confirmed, shipped, delivered, refunded…) ---
+
+export interface OrderUpdateEmailData {
+  customerName: string;
+  orderNumber: string;
+  subject: string;
+  headline: string;
+  message: string;
+  statusUrl: string;
+  invoiceUrl: string;
+  trackingUrl: string;
+}
+
+export function orderUpdateEmail(data: OrderUpdateEmailData): RenderedEmail {
+  const links = [
+    data.trackingUrl ? button(data.trackingUrl, "Track the parcel") : "",
+    data.invoiceUrl
+      ? `<a href="${data.invoiceUrl}" style="display:inline-block;margin-left:8px;color:${BRAND};font-size:15px;">Download invoice (PDF)</a>`
+      : "",
+  ].join("");
+  return {
+    subject: data.subject,
+    html: layout(
+      data.subject,
+      `<h1 style="margin:0 0 8px;font-size:24px;font-weight:normal;">${escapeHtml(data.headline)}</h1>
+       <p style="margin:0 0 4px;line-height:1.6;">Hello ${escapeHtml(data.customerName)},</p>
+       <p style="margin:0 0 24px;line-height:1.6;">${escapeHtml(data.message)}</p>
+       ${links ? `<p style="margin:0 0 24px;">${links}</p>` : ""}
+       ${button(data.statusUrl, `View order ${data.orderNumber}`)}`,
+    ),
+  };
+}
+
 // --- New product announcement ----------------------------------------------
 
 export interface NewProductEmailData {

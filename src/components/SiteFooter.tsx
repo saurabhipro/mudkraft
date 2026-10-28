@@ -63,15 +63,6 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <a
-                href="/brochure/Mudkraft-Catalogue-2026.pdf"
-                download
-                className="hover:text-gold transition-colors mk-link"
-              >
-                Catalogue 2026 (PDF)
-              </a>
-            </li>
-            <li>
               <Link href="/#story" className="hover:text-gold transition-colors mk-link">
                 Story
               </Link>

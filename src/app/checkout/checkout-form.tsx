@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { clearCart, useCart } from "@/lib/cart";
+import { clearCart, removeItem, syncStock, useCart } from "@/lib/cart";
 import { formatPaise } from "@/lib/money";
-import { COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
+import { COD_EVERYWHERE, COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
+import { cartStock } from "@/server/actions/cart";
 import { placeOrder, type CheckoutMethod } from "@/server/actions/checkout";
 
 const inputCls =
@@ -83,6 +84,16 @@ export function CheckoutForm({
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
+  // Stock may have run out since a piece went into the basket: check once on arrival.
+  const slugs = cart.map((item) => item.slug).join(",");
+  useEffect(() => {
+    if (!hydrated || !slugs) return;
+    cartStock(slugs.split(","))
+      .then(syncStock)
+      .catch(() => {});
+  }, [hydrated, slugs]);
+  const soldOut = cart.filter((item) => item.max === 0);
+
   // A note is specific to the order being placed, so it never carries over.
   const [form, setForm] = useState({ ...defaults, note: "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -96,7 +107,7 @@ export function CheckoutForm({
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
 
   // Purely presentational — `placeOrder` re-checks the PIN before accepting COD.
-  const codAvailable = isCodEligible(form.postalCode);
+  const codAvailable = COD_EVERYWHERE || isCodEligible(form.postalCode);
 
   const submit = async (method: CheckoutMethod) => {
     setError(null);
@@ -323,6 +334,18 @@ export function CheckoutForm({
                 <div className="text-xs text-muted-foreground">
                   {item.tag ? `${item.tag} · ` : ""}Qty {item.qty}
                 </div>
+                {item.max === 0 && (
+                  <div className="mt-1 flex items-center gap-2 text-xs text-red-800">
+                    Sold out
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.slug)}
+                      className="underline underline-offset-2 hover:text-clay-deep"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="text-sm text-earth">{formatPaise(item.pricePaise * item.qty)}</div>
             </li>
@@ -337,6 +360,13 @@ export function CheckoutForm({
           Shipping included · confirmed again before payment
         </p>
 
+        {soldOut.length > 0 && (
+          <p role="alert" className="mt-5 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">
+            {soldOut.length === 1 ? `${soldOut[0].name} has` : `${soldOut.length} pieces have`} sold
+            out since you added {soldOut.length === 1 ? "it" : "them"}. Remove to continue.
+          </p>
+        )}
+
         {error && (
           <p role="alert" className="mt-5 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
@@ -347,7 +377,7 @@ export function CheckoutForm({
           <button
             type="button"
             onClick={() => submit("gateway")}
-            disabled={pending !== null}
+            disabled={pending !== null || soldOut.length > 0}
             className="w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors disabled:opacity-60"
           >
             {pending === "gateway" ? "Placing order…" : "Pay now"}
@@ -357,17 +387,17 @@ export function CheckoutForm({
             <button
               type="button"
               onClick={() => submit("cod")}
-              disabled={pending !== null}
+              disabled={pending !== null || soldOut.length > 0}
               className="w-full inline-flex items-center justify-center border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
             >
-              {pending === "cod" ? "Placing order…" : "Cash on delivery"}
+              {pending === "cod" ? "Placing order…" : "Pay later · Cash on delivery"}
             </button>
           )}
 
           <button
             type="button"
             onClick={() => submit("whatsapp")}
-            disabled={pending !== null}
+            disabled={pending !== null || soldOut.length > 0}
             className="w-full inline-flex items-center justify-center gap-2 border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
           >
             {pending === "whatsapp" ? "Placing order…" : "Confirm on WhatsApp"}
@@ -375,9 +405,11 @@ export function CheckoutForm({
         </div>
 
         <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-          {codAvailable
-            ? `Cash on delivery is available for your PIN code (${COD_REGION_LABEL}).`
-            : `Cash on delivery is available in ${COD_REGION_LABEL} — enter a PIN code there to see it.`}
+          {COD_EVERYWHERE
+            ? "Pay later: pay cash on delivery when your order arrives."
+            : codAvailable
+              ? `Cash on delivery is available for your PIN code (${COD_REGION_LABEL}).`
+              : `Cash on delivery is available in ${COD_REGION_LABEL} — enter a PIN code there to see it.`}
         </p>
 
         <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">

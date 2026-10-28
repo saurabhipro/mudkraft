@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
-import { displayImage, type ProductView } from "@/lib/product-view";
+import { displayImage, variantLabel, type ProductView } from "@/lib/product-view";
 import { formatPaise } from "@/lib/money";
 import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
@@ -55,7 +55,7 @@ export function ProductDetail({
   reviewSummary,
 }: {
   product: ProductView;
-  /** Every size of this product, smallest first; a single entry when it comes in one size. */
+  /** Every variant of this product type; a single entry when there is only one. */
   sizes: ProductView[];
   alsoLove: ProductView[];
   reviews: ReviewView[];
@@ -69,12 +69,19 @@ export function ProductDetail({
   const [shot, setShot] = useState(0);
   const heroImage = pictures[shot] ?? displayImage(p);
 
+  // Bikriup says how many are left (99 when it only knows "in stock").
+  const soldOut = p.stockQty <= 0;
+  const few = !soldOut && p.stockQty <= 5;
+  // Another size is another page: its quantity starts again at one.
+  useEffect(() => setQty(1), [p.slug]);
+
   const handleAdd = () => {
-    addToCart(p, qty);
+    if (!addToCart(p, qty)) return;
     setAdded(true);
     setTimeout(() => setAdded(false), 2200);
   };
 
+  const oneName = sizes.every((s) => s.name === p.name);
   const isCookware = p.category?.toLowerCase() === "cookware";
   const quickFacts = p.specs.slice(0, 3);
   const panels: Array<{ id: string; title: string; body: ReactNode }> = [];
@@ -119,6 +126,27 @@ export function ProductDetail({
         </>
       ),
     });
+
+  // Under the photo on desktop (the left column was empty there), under the buttons on phones.
+  const perks = (
+    <ul className="mt-6 grid sm:grid-cols-3 gap-px rounded-[1.4rem] overflow-hidden border border-border bg-border">
+      {[
+        { title: "Hand packed", body: "Cushioned in a double-walled carton" },
+        { title: "Ships in 2–3 days", body: "Tracking shared on WhatsApp" },
+        { title: "Breakage cover", body: "Free replacement or refund" },
+      ].map((perk) => (
+        <li
+          key={perk.title}
+          className="bg-background px-4 py-3.5 text-[13px] leading-snug text-muted-foreground"
+        >
+          <Link href="/shipping-returns" className="block hover:text-earth transition-colors">
+            <b className="block text-sm font-semibold text-earth">{perk.title}</b>
+            {perk.body}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -168,11 +196,12 @@ export function ProductDetail({
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.97_0.015_75)_0%,transparent_65%)]" />
             {heroImage ? (
               <img
+                key={heroImage}
                 src={heroImage}
                 alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
                 width={1200}
                 height={1200}
-                className="relative w-full h-full object-contain mix-blend-multiply p-6 md:p-12 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)]"
+                className="relative w-full h-full object-contain mix-blend-multiply p-6 md:p-12 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)] animate-in fade-in zoom-in-[1.04] duration-700 ease-[var(--ease-clay)] transition-transform hover:scale-[1.06]"
               />
             ) : (
               <div className="w-full h-full grid place-items-center text-earth/40 font-hand text-3xl">
@@ -182,7 +211,7 @@ export function ProductDetail({
             <div className="absolute top-5 left-5 text-[10px] tracking-[0.2em] uppercase bg-ink/80 backdrop-blur text-cream px-3.5 py-2 rounded-full">
               {p.tag}
             </div>
-            <div className="absolute right-5 bottom-5 w-24 h-24 md:w-28 md:h-28 grid place-items-center rounded-full bg-cream">
+            <div className="absolute right-5 bottom-5 w-24 h-24 md:w-28 md:h-28 grid place-items-center rounded-full bg-ink/75 backdrop-blur">
               <svg
                 viewBox="0 0 150 150"
                 aria-hidden="true"
@@ -192,21 +221,21 @@ export function ProductDetail({
                   <path id="pd-seal" d="M75,75 m-56,0 a56,56 0 1,1 112,0 a56,56 0 1,1 -112,0" />
                 </defs>
                 <text
-                  fill="var(--clay-deep)"
+                  fill="var(--cream)"
                   className="font-sans uppercase"
                   style={{ fontSize: 12, fontWeight: 600 }}
                   textLength={350}
                   lengthAdjust="spacing"
                 >
-                  <textPath href="#pd-seal">Hand thrown · wood fired · slow made · </textPath>
+                  <textPath href="#pd-seal">Wood fired · Khurja · hand thrown · </textPath>
                 </text>
               </svg>
-              <span className="font-display italic text-2xl text-clay-deep">M</span>
+              <span className="w-3.5 h-3.5 rounded-full bg-ember animate-ring-pulse" />
             </div>
           </div>
           {pictures.length > 1 && (
             <div
-              className="mt-4 flex gap-3 overflow-x-auto pb-1"
+              className="mt-4 grid grid-cols-4 gap-3"
               role="tablist"
               aria-label="Product photographs"
             >
@@ -218,18 +247,19 @@ export function ProductDetail({
                   aria-selected={i === shot}
                   aria-label={`Photograph ${i + 1} of ${pictures.length}`}
                   onClick={() => setShot(i)}
-                  className={`shrink-0 w-20 h-20 rounded-2xl overflow-hidden bg-sand border-2 transition ${i === shot ? "border-earth" : "border-transparent opacity-70 hover:opacity-100"}`}
+                  className={`aspect-square rounded-2xl overflow-hidden bg-sand border-2 transition-[border-color,transform,opacity] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 ${i === shot ? "border-clay" : "border-transparent opacity-75 hover:opacity-100"}`}
                 >
                   <img
                     src={src}
                     alt=""
                     loading="lazy"
-                    className="w-full h-full object-contain mix-blend-multiply p-1.5"
+                    className="w-full h-full object-contain mix-blend-multiply p-2"
                   />
                 </button>
               ))}
             </div>
           )}
+          <div className="hidden md:block">{perks}</div>
         </div>
 
         <div>
@@ -314,14 +344,22 @@ export function ProductDetail({
 
           {sizes.length > 1 && (
             <div className="mt-7 animate-fade-up [animation-delay:0.35s]">
-              <div className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
-                Size
+              <div className="flex items-baseline justify-between gap-4">
+                <div className="text-[11px] tracking-[0.3em] uppercase text-earth font-medium">
+                  {oneName ? "Choose your size" : "Choose your piece"}
+                </div>
+                <div className="text-xs text-muted-foreground">{variantLabel(p, sizes)}</div>
               </div>
-              {/* Each size is its own product page, so the URL, price and basket line
+              {/* Each variant is its own product page, so the URL, price and basket line
                   all follow the choice. replace keeps the back button tidy. */}
-              <div role="group" aria-label="Size" className="mt-2.5 flex flex-wrap gap-2">
+              <div
+                role="group"
+                aria-label={oneName ? "Size" : "Variant"}
+                className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3"
+              >
                 {sizes.map((size) => {
                   const current = size.slug === p.slug;
+                  const gone = size.stockQty <= 0;
                   return (
                     <Link
                       key={size.slug}
@@ -329,19 +367,22 @@ export function ProductDetail({
                       replace
                       scroll={false}
                       aria-current={current ? "page" : undefined}
-                      className={`inline-flex flex-col items-start justify-center min-h-[56px] px-5 rounded-2xl border transition-colors ${
+                      className={`${gone && !current ? "opacity-55 " : ""}flex flex-col justify-center gap-1 min-h-[76px] px-4 py-3 rounded-[1.1rem] border-[1.5px] transition-[background-color,border-color,color,box-shadow,transform] duration-500 ease-[var(--ease-clay)] hover:-translate-y-0.5 ${
                         current
-                          ? "bg-earth text-cream border-earth"
-                          : "border-earth/25 text-earth hover:border-clay"
+                          ? "bg-earth border-earth text-cream shadow-[0_18px_36px_-22px_rgba(59,42,34,0.7)]"
+                          : "bg-cream/70 border-border text-earth hover:border-earth/50"
                       }`}
                     >
-                      <span className="text-[15px] font-medium leading-tight">
-                        {size.sizeLabel}
+                      <span className="font-display text-lg leading-tight">
+                        {oneName ? size.sizeLabel || "One size" : size.name}
                       </span>
                       <span
-                        className={`text-xs ${current ? "text-cream/75" : "text-muted-foreground"}`}
+                        className={`flex items-baseline justify-between gap-2 text-[13px] ${current ? "text-cream/75" : "text-muted-foreground"}`}
                       >
-                        {size.price}
+                        <span>{oneName ? "" : size.sizeLabel}</span>
+                        <span className={current ? "text-cream" : "text-earth/80"}>
+                          {gone ? "Sold out" : size.price}
+                        </span>
                       </span>
                     </Link>
                   );
@@ -372,18 +413,23 @@ export function ProductDetail({
               <button
                 type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="w-12 h-14 rounded-l-full text-xl text-earth hover:bg-sand transition-colors"
+                className="w-12 h-[60px] rounded-l-full text-xl text-earth hover:bg-sand transition-colors"
                 aria-label="Decrease quantity"
               >
                 −
               </button>
-              <span aria-live="polite" className="w-8 text-center font-display text-2xl text-earth">
+              <span
+                key={qty}
+                aria-live="polite"
+                className="w-8 text-center text-lg font-medium text-earth animate-in zoom-in-50 duration-300"
+              >
                 {qty}
               </span>
               <button
                 type="button"
-                onClick={() => setQty((q) => q + 1)}
-                className="w-12 h-14 rounded-r-full text-xl text-earth hover:bg-sand transition-colors"
+                onClick={() => setQty((q) => Math.min(q + 1, Math.max(1, p.stockQty)))}
+                disabled={soldOut || qty >= p.stockQty}
+                className="w-12 h-[60px] rounded-r-full text-xl text-earth hover:bg-sand transition-colors disabled:opacity-35 disabled:hover:bg-transparent"
                 aria-label="Increase quantity"
               >
                 +
@@ -393,8 +439,13 @@ export function ProductDetail({
             <button
               type="button"
               onClick={handleAdd}
-              className={`flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[56px] px-7 rounded-full text-cream text-[13px] tracking-[0.16em] uppercase transition-[background-color,transform] duration-500 ease-[var(--ease-clay)] hover:-translate-y-0.5 ${
-                added ? "bg-sage" : "bg-earth hover:bg-clay"
+              disabled={soldOut}
+              className={`flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[60px] px-7 rounded-full text-cream text-base font-medium transition-[background-color,transform] duration-500 ease-[var(--ease-clay)] ${
+                soldOut
+                  ? "bg-earth/35 cursor-not-allowed"
+                  : added
+                    ? "bg-sage hover:-translate-y-0.5 active:scale-[0.98]"
+                    : "bg-clay hover:bg-clay-deep hover:-translate-y-0.5 active:scale-[0.98]"
               }`}
             >
               {added && (
@@ -409,19 +460,30 @@ export function ProductDetail({
                   <path d="M5 12l5 5L20 7" className="animate-check-draw" />
                 </svg>
               )}
-              {added ? "Added to basket" : "Add to basket"}
+              {soldOut
+                ? "Sold out"
+                : added
+                  ? "Added to basket"
+                  : `Add to basket · ${formatPaise(p.pricePaise * qty)}`}
             </button>
           </div>
+          {(soldOut || few) && (
+            <p className="mt-3 text-sm text-clay-deep" role="status">
+              {soldOut
+                ? "Sold out for now — ask on WhatsApp and we'll tell you when the next firing is ready."
+                : `Only ${p.stockQty} left`}
+            </p>
+          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-3 animate-fade-up [animation-delay:0.5s]">
             <a
               href={whatsappBuyNow(p, qty)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mk-btn-fill flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[52px] px-6 rounded-full border border-earth/25 text-earth text-xs tracking-[0.14em] uppercase"
+              className="mk-btn-fill flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[58px] px-6 rounded-full border-[1.5px] border-earth text-earth text-base font-medium"
             >
               <WhatsAppIcon className="w-4 h-4" />
-              Buy on WhatsApp
+              Ask on WhatsApp
             </a>
             <ShareButton
               title={`${p.name} — Mudkraft`}
@@ -439,6 +501,8 @@ export function ProductDetail({
               Go to checkout →
             </Link>
           )}
+
+          <div className="md:hidden">{perks}</div>
 
           {panels.length > 0 && (
             <div className="mt-10 border-t border-border">
@@ -524,7 +588,7 @@ export function ProductDetail({
         </section>
       )}
 
-      <ReviewsSection name={p.name} reviews={reviews} summary={reviewSummary} />
+      <ReviewsSection slug={p.slug} name={p.name} reviews={reviews} summary={reviewSummary} />
 
       {alsoLove.length > 0 && (
         <section className="py-20 md:py-28 border-t border-border">

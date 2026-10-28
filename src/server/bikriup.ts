@@ -27,7 +27,7 @@ export class BikriupError extends Error {
 
 export async function bikriup<T>(
   path: string,
-  init: { method?: string; body?: unknown; idempotencyKey?: string } = {},
+  init: { method?: string; body?: unknown; idempotencyKey?: string; forwardedFor?: string } = {},
 ): Promise<T> {
   const base = (serverEnv.BIKRIUP_API_URL ?? "").replace(/\/$/, "");
   const res = await fetch(`${base}${path}`, {
@@ -36,6 +36,8 @@ export async function bikriup<T>(
       Authorization: `Bearer ${serverEnv.BIKRIUP_SECRET_KEY}`,
       ...(init.body ? { "Content-Type": "application/json" } : {}),
       ...(init.idempotencyKey ? { "Idempotency-Key": init.idempotencyKey } : {}),
+      // Bikriup rate-limits public writes per shopper; without this every shopper is this server.
+      ...(init.forwardedFor ? { "X-Forwarded-For": init.forwardedFor } : {}),
     },
     body: init.body ? JSON.stringify(init.body) : undefined,
     // Caching is done one level up with unstable_cache and tags, so the
@@ -135,7 +137,21 @@ export function toStoreProductShape(p: BkProduct) {
 
 export interface BkOrder {
   order_no: string;
-  status: "placed" | "confirmed" | "packed" | "out_for_delivery" | "delivered" | "completed" | "cancelled";
+  status:
+    | "placed"
+    | "confirmed"
+    | "packed"
+    | "shipped"
+    | "out_for_delivery"
+    | "delivered"
+    | "completed"
+    | "cancelled"
+    | "delivery_failed"
+    | "rto"
+    | "return_requested"
+    | "return_received"
+    | "returned";
+  status_label: string;
   payment_method: "cod" | "upi" | "online" | "whatsapp";
   payment_status: string;
   customer_name: string;
@@ -150,6 +166,12 @@ export interface BkOrder {
   created_at: string;
   external_ref: string;
   payment_ref: string;
+  courier?: string;
+  tracking_no?: string;
+  tracking_url?: string;
+  /** The order number is the invoice number; empty until the studio confirms the order. */
+  invoice_url?: string;
+  credit_notes?: Array<{ order_no: string; total: number; refund_status: string }>;
   items: Array<{ product_id: number; name: string; size: string; qty: number; price: number; line_total: number }>;
 }
 
@@ -191,10 +213,16 @@ export async function getBikriupOrder(token: string): Promise<BkOrder | null> {
 const ORDER_STATUS = {
   placed: "pending",
   confirmed: "confirmed",
-  packed: "dispatched",
+  packed: "crafting",
+  shipped: "dispatched",
   out_for_delivery: "out_for_delivery",
+  delivery_failed: "out_for_delivery",
   delivered: "delivered",
   completed: "delivered",
+  return_requested: "delivered",
+  return_received: "delivered",
+  rto: "cancelled",
+  returned: "cancelled",
   cancelled: "cancelled",
 } as const;
 
@@ -203,7 +231,10 @@ export function siteOrderStatus(o: BkOrder) {
 }
 
 export function sitePaymentStatus(o: BkOrder): "unpaid" | "paid" | "failed" | "refunded" {
-  return o.payment_status === "paid" ? "paid" : o.payment_status === "failed" ? "failed" : "unpaid";
+  if (o.payment_status === "refunded") return "refunded";
+  // A refund that is due is still money the buyer paid.
+  if (["paid", "refund_due", "cod_collected"].includes(o.payment_status)) return "paid";
+  return o.payment_status === "failed" ? "failed" : "unpaid";
 }
 
 export function sitePaymentProvider(o: BkOrder): string {

@@ -16,6 +16,7 @@ import { formatPaise } from "@/lib/money";
 import {
   displayImage,
   groupFamilies,
+  variantLabel,
   type ProductFamily,
   type ProductView,
 } from "@/lib/product-view";
@@ -143,15 +144,15 @@ export function HomePage({
     return () => pending.forEach(clearTimeout);
   }, []);
 
-  // Sizes of one product (Handi 1.5 L / 2.5 L) share a card with a size picker.
+  // Every variant of one product type (Handi, Dahi Handi 1.5 L, …) shares a card with a picker.
   const families = groupFamilies(products);
   // Categories come from the database, so a category added in the admin panel
   // appears here without a code change. Empty ones are hidden, and with only one
   // category left there is nothing to filter, so the row disappears.
-  const liveCategories = categories.filter((c) => families.some((f) => f.category === c));
+  const liveCategories = categories.filter((c) => families.some((f) => f.categories.includes(c)));
   const filterOptions = liveCategories.length > 1 ? ["All", ...liveCategories] : [];
   const visibleFamilies =
-    activeCategory === "All" ? families : families.filter((f) => f.category === activeCategory);
+    activeCategory === "All" ? families : families.filter((f) => f.categories.includes(activeCategory));
 
   // Adding from the grid confirms with a toast and a bounce on the basket count
   // rather than throwing the drawer open, so browsing isn't interrupted.
@@ -244,29 +245,30 @@ export function HomePage({
       </section>
 
       {/* MANIFESTO — lines fill with ink as they scroll past */}
-      <section className="px-6 md:px-10 pt-20 md:pt-28 pb-12 md:pb-20">
-        <div className="max-w-5xl mx-auto">
+      <section className="px-6 md:px-10 pt-14 md:pt-20">
+        <div className="max-w-7xl mx-auto">
           <Eyebrow>Our belief</Eyebrow>
-          <p className="mt-9 font-display text-[clamp(2.1rem,4.4vw,4rem)] leading-[1.12]">
-            <span className="mk-ink-fill block">Every pot begins as river clay</span>
-            <span className="mk-ink-fill block">in a potter&rsquo;s hands — and ends as</span>
-            <span className="mk-ink-fill block">
-              a <em>quiet object</em> that keeps your
+          {/* Two lines on desktop, so the collection follows close behind. */}
+          <p className="mt-6 font-display text-[clamp(1.6rem,2.75vw,2.6rem)] leading-[1.18] text-balance lg:text-wrap">
+            <span className="mk-ink-fill lg:block">
+              Every pot begins as river clay in a potter&rsquo;s hands — and ends as{" "}
             </span>
-            <span className="mk-ink-fill block">water cool and your food honest.</span>
+            <span className="mk-ink-fill lg:block">
+              a <em>quiet object</em> that keeps your water cool and your food honest.
+            </span>
           </p>
         </div>
       </section>
 
       {/* COLLECTION */}
-      <section id="collection" className="px-6 md:px-10 pt-12 md:pt-16 pb-24 md:pb-32">
+      <section id="collection" className="px-6 md:px-10 pt-10 md:pt-12 pb-24 md:pb-32">
         <div className="max-w-7xl mx-auto">
           <h2 className="sr-only">The collection</h2>
           <div className="flex flex-wrap-reverse items-center justify-between gap-x-8 gap-y-4 mb-10 md:mb-12">
             <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
               {filterOptions.map((c) => {
                 const n =
-                  c === "All" ? families.length : families.filter((f) => f.category === c).length;
+                  c === "All" ? families.length : families.filter((f) => f.categories.includes(c)).length;
                 const isActive = activeCategory === c;
                 return (
                   <button
@@ -854,7 +856,10 @@ export function HomePage({
                   )}
                   <div className="flex-1">
                     <div className="font-display text-lg">{x.name}</div>
-                    <div className="text-xs text-muted-foreground">{x.tag}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {x.tag}
+                      {x.max === 0 && <span className="ml-2 text-red-800">Sold out — remove</span>}
+                    </div>
                     <div className="mt-2 flex items-center gap-3">
                       <button
                         onClick={() => updateQty(x.slug, -1)}
@@ -867,7 +872,8 @@ export function HomePage({
                       <button
                         onClick={() => updateQty(x.slug, 1)}
                         aria-label={`Add one ${x.name}`}
-                        className="w-8 h-8 rounded-full border border-border hover:bg-earth hover:text-cream transition-colors"
+                        disabled={x.max !== undefined && x.qty >= x.max}
+                        className="w-8 h-8 rounded-full border border-border hover:bg-earth hover:text-cream transition-colors disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-current"
                       >
                         +
                       </button>
@@ -963,7 +969,7 @@ function FamilyCard({ family, onAdd }: { family: ProductFamily; onAdd: (p: Produ
         <div className="flex items-baseline justify-between gap-3">
           <Link href={`/shop/${p.slug}`} className="min-w-0 hover:text-clay-deep transition-colors">
             <h3 className="font-display text-[1.7rem] leading-tight text-earth truncate">
-              {p.name}
+              {family.name}
             </h3>
           </Link>
           <div className="shrink-0 flex items-baseline gap-2">
@@ -974,7 +980,7 @@ function FamilyCard({ family, onAdd }: { family: ProductFamily; onAdd: (p: Produ
           </div>
         </div>
 
-        <div role="group" aria-label={`${family.name} size`} className="flex flex-wrap gap-2">
+        <div role="group" aria-label={`${family.name} variant`} className="flex flex-wrap gap-2">
           {family.sizes.map((size) => (
             <button
               key={size.slug}
@@ -987,7 +993,7 @@ function FamilyCard({ family, onAdd }: { family: ProductFamily; onAdd: (p: Produ
                   : "bg-cream border-border text-earth hover:border-clay"
               } ${size.stockQty <= 0 ? "opacity-45 line-through" : ""}`}
             >
-              {size.sizeLabel || "One size"}
+              {variantLabel(size, family.sizes)}
             </button>
           ))}
         </div>
@@ -1011,7 +1017,7 @@ function FamilyCard({ family, onAdd }: { family: ProductFamily; onAdd: (p: Produ
               : "bg-earth text-cream hover:bg-clay-deep active:scale-[0.99]"
           }`}
         >
-          <span>{soldOut ? "Sold out" : `Add ${p.sizeLabel || p.name}`}</span>
+          <span className="truncate">{soldOut ? "Sold out" : `Add ${variantLabel(p, family.sizes)}`}</span>
           <span
             aria-hidden="true"
             className={`grid h-9 w-9 place-items-center rounded-full text-xl tracking-normal ${soldOut ? "opacity-0" : "bg-cream text-earth"}`}

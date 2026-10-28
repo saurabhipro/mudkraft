@@ -112,15 +112,18 @@ export function displayImage(product: ProductView): string | null {
 }
 
 /**
- * One product in several sizes. The catalogue has no variant model: each size
- * is its own product row (its own slug, price and stock), so the storefront
- * groups rows that share a name and category and offers them as sizes.
+ * One product type in several variants. The catalogue has no variant model: each
+ * size is its own product row (its own slug, price and stock), so the storefront
+ * groups rows that share a product type (Handi: Handi, Dahi Handi, Dahi Handi · Small)
+ * and offers them as variants. Rows without a type group by name.
  */
 export interface ProductFamily {
   key: string;
   name: string;
   category: string | null;
-  /** Smallest first. Always at least one. */
+  /** Every category its variants sit in, so a type shows under each filter. */
+  categories: string[];
+  /** Grouped by name, smallest first within a name. Always at least one. */
   sizes: ProductView[];
 }
 
@@ -134,17 +137,29 @@ function sizeInGrams(label: string): number {
   return value * 1000;
 }
 
-/** Groups products into families, keeping the order of each family's first row. */
+/** Groups products into families by type, keeping the order of each family's first row. */
 export function groupFamilies(products: ProductView[]): ProductFamily[] {
   const families = new Map<string, ProductFamily>();
   for (const p of products) {
-    const key = `${p.category ?? ""}::${p.name.toLowerCase()}`;
+    const type = p.tag.trim();
+    const key = type ? `type::${type.toLowerCase()}` : `name::${p.category ?? ""}::${p.name.toLowerCase()}`;
     const family = families.get(key);
-    if (family) family.sizes.push(p);
-    else families.set(key, { key, name: p.name, category: p.category, sizes: [p] });
+    if (family) {
+      family.sizes.push(p);
+      if (p.category && !family.categories.includes(p.category)) family.categories.push(p.category);
+    } else {
+      families.set(key, { key, name: type || p.name, category: p.category, categories: p.category ? [p.category] : [], sizes: [p] });
+    }
   }
   for (const family of families.values()) {
-    family.sizes.sort((a, b) => sizeInGrams(a.sizeLabel) - sizeInGrams(b.sizeLabel));
+    family.sizes.sort((a, b) => a.name.localeCompare(b.name) || sizeInGrams(a.sizeLabel) - sizeInGrams(b.sizeLabel));
   }
   return [...families.values()];
+}
+
+/** What a variant chip says: the size when every variant shares a name, else name and size. */
+export function variantLabel(variant: ProductView, family: ProductView[]): string {
+  const oneName = family.every((v) => v.name === variant.name);
+  if (oneName) return variant.sizeLabel || "One size";
+  return variant.sizeLabel ? `${variant.name} · ${variant.sizeLabel}` : variant.name;
 }

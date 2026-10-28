@@ -19,6 +19,8 @@ export type CartItem = {
   /** Display snapshot only — never trusted for the amount actually charged. */
   pricePaise: number;
   qty: number;
+  /** Pieces in stock when last seen; 0 = sold out since it was added. */
+  max?: number;
 };
 
 const STORAGE_KEY = "mudkraft.cart.v2";
@@ -93,11 +95,18 @@ export function useCartCount() {
   return cart.reduce((s, x) => s + x.qty, 0);
 }
 
-export function addToCart(product: ProductView, qty = 1) {
+/** Adds up to what is in stock; returns how many went in (0 when sold out). */
+export function addToCart(product: ProductView, qty = 1): number {
+  const max = product.stockQty;
+  if (max <= 0) return 0;
   const existing = state.find((x) => x.slug === product.slug);
   if (existing) {
-    state = state.map((x) => (x.slug === product.slug ? { ...x, qty: x.qty + qty } : x));
+    const next = Math.min(existing.qty + qty, max);
+    state = state.map((x) => (x.slug === product.slug ? { ...x, qty: next, max } : x));
+    emit();
+    return next - existing.qty;
   } else {
+    qty = Math.min(qty, max);
     state = [
       ...state,
       {
@@ -107,17 +116,35 @@ export function addToCart(product: ProductView, qty = 1) {
         img: product.cutout ?? product.img,
         pricePaise: product.pricePaise,
         qty,
+        max,
       },
     ];
   }
   emit();
+  return qty;
 }
 
 export function updateQty(slug: string, delta: number) {
   state = state
-    .map((x) => (x.slug === slug ? { ...x, qty: x.qty + delta } : x))
+    .map((x) => (x.slug === slug ? { ...x, qty: Math.min(x.qty + delta, x.max ?? Infinity) } : x))
     .filter((x) => x.qty > 0);
   emit();
+}
+
+/**
+ * Fresh stock from the server: lines above what is left come down to it, and
+ * sold-out lines stay (marked max 0) so the buyer sees why and removes them.
+ */
+export function syncStock(stock: Record<string, number>) {
+  let changed = false;
+  state = state.map((x) => {
+    const max = stock[x.slug] ?? 0;
+    const qty = max > 0 ? Math.min(x.qty, max) : x.qty;
+    if (max === x.max && qty === x.qty) return x;
+    changed = true;
+    return { ...x, max, qty };
+  });
+  if (changed) emit();
 }
 
 export function removeItem(slug: string) {
