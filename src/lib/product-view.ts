@@ -33,6 +33,9 @@ export interface ProductView {
   category: string | null;
   /** Free-text size, e.g. "2.5 L". What the size picker shows between siblings. */
   sizeLabel: string;
+  /** Outside measurements, whole centimetres; null when the shop has not entered them. */
+  widthCm: number | null;
+  heightCm: number | null;
   description: string;
   story: string;
   specs: Array<{ label: string; value: string }>;
@@ -52,6 +55,8 @@ interface SourceProduct {
   compareAtPaise: number | null;
   categoryName: string | null;
   sizeLabel: string;
+  widthMm?: number | null;
+  heightMm?: number | null;
   specs: Array<{ label: string; value: string }>;
   care: string[];
   fulfilmentMode: "ship_nationwide" | "local_delivery_only" | "pickup_only";
@@ -69,6 +74,14 @@ interface SourceProduct {
  * only one place needs changing if it ever moves to a column.
  */
 const CUTOUT_SUFFIX = "-cutout";
+
+/** Sizes are capacities: Bikriup may hold a bare "4" or "1.5", which means litres. */
+export function withUnit(label: string): string {
+  const t = label.trim();
+  return /^\d+(\.\d+)?$/.test(t) ? `${t} L` : t;
+}
+
+const toCm = (mm: number | null | undefined) => (mm && mm > 0 ? Math.round(mm / 10) : null);
 
 export function toProductView(product: SourceProduct): ProductView {
   const primary = product.images.find((image) => image.isPrimary) ?? product.images[0] ?? null;
@@ -93,7 +106,9 @@ export function toProductView(product: SourceProduct): ProductView {
       .filter((image) => !image.publicId.endsWith(CUTOUT_SUFFIX))
       .map((image) => cloudinaryUrl({ publicId: image.publicId, version: image.version })),
     category: product.categoryName,
-    sizeLabel: product.sizeLabel,
+    sizeLabel: withUnit(product.sizeLabel),
+    widthCm: toCm(product.widthMm),
+    heightCm: toCm(product.heightMm),
     description: product.description,
     story: product.story,
     specs: product.specs,

@@ -10,6 +10,8 @@ type Props = {
   label?: string;
   className?: string;
   compact?: boolean;
+  /** Just the icon, styled by the caller (a round button on a product card). */
+  icon?: string;
 };
 
 function getShareUrl(url?: string) {
@@ -25,6 +27,7 @@ export function ShareButton({
   label = "Share",
   className = "",
   compact = false,
+  icon,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -96,7 +99,9 @@ export function ShareButton({
         type="button"
         onClick={handleNative}
         className={
-          compact
+          icon
+            ? icon
+            : compact
             ? "inline-flex items-center gap-1.5 text-xs tracking-widest uppercase text-earth/80 hover:text-earth transition-colors"
             : "inline-flex items-center gap-2 border border-earth/30 text-earth px-5 py-3 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
         }
@@ -117,7 +122,7 @@ export function ShareButton({
           <circle cx="18" cy="19" r="3" />
           <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
         </svg>
-        {label}
+        {icon ? null : label}
       </button>
 
       {open &&

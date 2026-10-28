@@ -10,17 +10,12 @@ import { ProductDetail } from "./product-detail";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
-export async function generateStaticParams() {
-  const products = await getActiveProducts();
-  return products.map((p) => ({ slug: p.slug }));
-}
-
 /**
- * A product published after the build should not 404 until the next deploy.
- * Rendering unknown slugs on demand lets the catalogue grow between builds;
- * getProductBySlug still returns null for draft or archived items.
+ * Rendered on every visit (from the store cache, which Bikriup's webhook clears), so a
+ * change made in the admin shows on the next click — a static page lingered in the
+ * browser's router cache and needed a reload. New products need no rebuild either.
  */
-export const dynamicParams = true;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -62,16 +57,15 @@ export default async function Page({ params }: PageProps) {
 
   // Other variants of this product type (Handi 2.5 L, Dahi Handi 1.5 L) become the picker,
   // and are kept out of the recommendations below.
-  const allViews = allProducts.map(toProductView);
-  const sizes = groupFamilies(allViews).find((f) => f.sizes.some((s) => s.slug === view.slug))
-    ?.sizes ?? [view];
-  const sizeSlugs = new Set(sizes.map((s) => s.slug));
+  const families = groupFamilies(allProducts.map(toProductView));
+  const own = families.find((f) => f.sizes.some((s) => s.slug === view.slug));
+  const sizes = own?.sizes ?? [view];
 
-  // Same category first, then anything else, so the rail is never empty on a
-  // catalogue where a category may hold a single product.
-  const others = allViews.filter((p) => !sizeSlugs.has(p.slug));
-  const sameCategory = others.filter((p) => p.category === view.category);
-  const alsoLove = (sameCategory.length > 0 ? sameCategory : others).slice(0, 3);
+  // Other product types, same category first, then anything else, so the grid
+  // is never empty on a catalogue where a category may hold a single type.
+  const others = families.filter((f) => f !== own);
+  const sameCategory = others.filter((f) => view.category && f.categories.includes(view.category));
+  const alsoLove = [...sameCategory, ...others.filter((f) => !sameCategory.includes(f))].slice(0, 4);
 
   const url = `${SITE_URL}/shop/${view.slug}`;
   const image = displayImage(view);

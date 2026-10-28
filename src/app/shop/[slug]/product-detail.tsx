@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
-import { displayImage, variantLabel, type ProductView } from "@/lib/product-view";
+import { ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
+import { variantLabel, type ProductFamily, type ProductView } from "@/lib/product-view";
 import { formatPaise } from "@/lib/money";
 import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
@@ -17,6 +18,13 @@ import { whatsappLink } from "@/lib/whatsapp";
 import stepSoak from "@/assets/step-soak.jpg";
 import stepDry from "@/assets/step-dry.jpg";
 import stepOil from "@/assets/step-oil.jpg";
+
+// Delivery promises from /shipping-returns, shown beside the photographs.
+const PERKS = [
+  { text: "Ships in 2–3 days, tracking on WhatsApp", icon: "M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a1.5 1.5 0 1 0 0-.01M17 19a1.5 1.5 0 1 0 0-.01" },
+  { text: "Breakage cover, free replacement or refund", icon: "M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" },
+  { text: "Hand packed in a double-walled carton", icon: "M4 8l8-4 8 4-8 4zM4 8v8l8 4 8-4V8" },
+];
 
 // A short version of /care/season-your-handi, shown on cookware pages.
 const SEASONING = [
@@ -57,7 +65,8 @@ export function ProductDetail({
   product: ProductView;
   /** Every variant of this product type; a single entry when there is only one. */
   sizes: ProductView[];
-  alsoLove: ProductView[];
+  /** Other product types, each with its sizes. */
+  alsoLove: ProductFamily[];
   reviews: ReviewView[];
   reviewSummary: ReviewSummaryView;
 }) {
@@ -65,9 +74,12 @@ export function ProductDetail({
   const [added, setAdded] = useState(false);
   const [openPanel, setOpenPanel] = useState<string | null>("specs");
   const cartCount = useCartCount();
-  const pictures = p.gallery.length > 1 ? p.gallery : [];
-  const [shot, setShot] = useState(0);
-  const heroImage = pictures[shot] ?? displayImage(p);
+  // The cutout leads (it stands on the plinth best), then every photograph.
+  const shots = [...new Set([p.cutout, ...p.gallery, p.img].filter((x): x is string => Boolean(x)))];
+  // Another size is another page: it opens on its first photograph.
+  const [picked, setPicked] = useState({ slug: p.slug, i: 0 });
+  const shot = picked.slug === p.slug ? Math.min(picked.i, Math.max(shots.length - 1, 0)) : 0;
+  const setShot = (i: number) => setPicked({ slug: p.slug, i });
 
   // Bikriup says how many are left (99 when it only knows "in stock").
   const soldOut = p.stockQty <= 0;
@@ -129,19 +141,23 @@ export function ProductDetail({
 
   // Under the photo on desktop (the left column was empty there), under the buttons on phones.
   const perks = (
-    <ul className="mt-6 grid sm:grid-cols-3 gap-px rounded-[1.4rem] overflow-hidden border border-border bg-border">
-      {[
-        { title: "Hand packed", body: "Cushioned in a double-walled carton" },
-        { title: "Ships in 2–3 days", body: "Tracking shared on WhatsApp" },
-        { title: "Breakage cover", body: "Free replacement or refund" },
-      ].map((perk) => (
-        <li
-          key={perk.title}
-          className="bg-background px-4 py-3.5 text-[13px] leading-snug text-muted-foreground"
-        >
-          <Link href="/shipping-returns" className="block hover:text-earth transition-colors">
-            <b className="block text-sm font-semibold text-earth">{perk.title}</b>
-            {perk.body}
+    <ul className="flex flex-col justify-center gap-2 text-[13px] text-muted-foreground">
+      {PERKS.map((perk) => (
+        <li key={perk.text}>
+          <Link href="/shipping-returns" className="flex items-center gap-2.5 transition-colors hover:text-earth">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-clay-deep"
+            >
+              <path d={perk.icon} />
+            </svg>
+            {perk.text}
           </Link>
         </li>
       ))}
@@ -192,74 +208,59 @@ export function ProductDetail({
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-20 md:pt-10 md:pb-28 grid md:grid-cols-[1.15fr_1fr] gap-10 md:gap-16 items-start">
         <div className="md:sticky md:top-28">
-          <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-sand animate-fade-up">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.97_0.015_75)_0%,transparent_65%)]" />
-            {heroImage ? (
-              <img
-                key={heroImage}
-                src={heroImage}
-                alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
-                width={1200}
-                height={1200}
-                className="relative w-full h-full object-contain mix-blend-multiply p-6 md:p-12 drop-shadow-[0_35px_50px_rgba(80,40,20,0.32)] animate-in fade-in zoom-in-[1.04] duration-700 ease-[var(--ease-clay)] transition-transform hover:scale-[1.06]"
-              />
-            ) : (
-              <div className="w-full h-full grid place-items-center text-earth/40 font-hand text-3xl">
-                photograph coming soon
+          <div className="group relative aspect-square overflow-hidden rounded-[2rem] animate-fade-up">
+            <ClayPlinth
+              product={p}
+              src={shots[shot] ?? null}
+              alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft, photograph ${shot + 1}`}
+              priority
+            />
+            <div className="pointer-events-none absolute left-5 top-5 flex flex-col gap-0.5 md:left-6 md:top-6">
+              <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+                {p.category || p.tag}
+              </span>
+              {p.note && <span className="font-display text-xl italic text-clay-deep md:text-2xl">{p.note}</span>}
+            </div>
+            {/\d/.test(p.sizeLabel) && (
+              <HoldsBadge size={p.sizeLabel} className="right-5 top-5 h-[72px] w-[72px] text-[26px] md:h-20 md:w-20" />
+            )}
+            {shots.length > 1 && (
+              <div className="absolute inset-x-0 bottom-5 flex justify-center gap-2" role="tablist" aria-label="Product photographs">
+                {shots.map((src, i) => (
+                  <button
+                    key={src}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === shot}
+                    aria-label={`Photograph ${i + 1} of ${shots.length}`}
+                    onClick={() => setShot(i)}
+                    className="grid h-6 place-items-center px-0.5"
+                  >
+                    <span
+                      className={`block h-2 rounded-full transition-[width,background-color] duration-500 ease-[var(--ease-clay)] ${i === shot ? "w-7 bg-earth" : "w-2 bg-earth/25"}`}
+                    />
+                  </button>
+                ))}
               </div>
             )}
-            <div className="absolute top-5 left-5 text-[10px] tracking-[0.2em] uppercase bg-ink/80 backdrop-blur text-cream px-3.5 py-2 rounded-full">
-              {p.tag}
-            </div>
-            <div className="absolute right-5 bottom-5 w-24 h-24 md:w-28 md:h-28 grid place-items-center rounded-full bg-ink/75 backdrop-blur">
-              <svg
-                viewBox="0 0 150 150"
-                aria-hidden="true"
-                className="absolute inset-0 w-full h-full animate-spin-slow"
-              >
-                <defs>
-                  <path id="pd-seal" d="M75,75 m-56,0 a56,56 0 1,1 112,0 a56,56 0 1,1 -112,0" />
-                </defs>
-                <text
-                  fill="var(--cream)"
-                  className="font-sans uppercase"
-                  style={{ fontSize: 12, fontWeight: 600 }}
-                  textLength={350}
-                  lengthAdjust="spacing"
-                >
-                  <textPath href="#pd-seal">Wood fired · Khurja · hand thrown · </textPath>
-                </text>
-              </svg>
-              <span className="w-3.5 h-3.5 rounded-full bg-ember animate-ring-pulse" />
-            </div>
           </div>
-          {pictures.length > 1 && (
-            <div
-              className="mt-4 grid grid-cols-4 gap-3"
-              role="tablist"
-              aria-label="Product photographs"
-            >
-              {pictures.map((src, i) => (
+          <div className="mt-4 flex flex-wrap items-stretch gap-3">
+            {shots.length > 1 &&
+              shots.map((src, i) => (
                 <button
                   key={src}
                   type="button"
-                  role="tab"
-                  aria-selected={i === shot}
-                  aria-label={`Photograph ${i + 1} of ${pictures.length}`}
+                  aria-label={`Show photograph ${i + 1}`}
+                  aria-pressed={i === shot}
                   onClick={() => setShot(i)}
-                  className={`aspect-square rounded-2xl overflow-hidden bg-sand border-2 transition-[border-color,transform,opacity] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 ${i === shot ? "border-clay" : "border-transparent opacity-75 hover:opacity-100"}`}
+                  className={`group relative h-[88px] w-[88px] overflow-hidden rounded-[1.25rem] transition-opacity duration-300 ${i === shot ? "" : "opacity-80 hover:opacity-100"}`}
                 >
-                  <img
-                    src={src}
-                    alt=""
-                    loading="lazy"
-                    className="w-full h-full object-contain mix-blend-multiply p-2"
-                  />
+                  <ClayPlinth product={p} src={src} alt="" />
+                  {i === shot && <span aria-hidden="true" className="absolute inset-0 rounded-[1.25rem] ring-2 ring-inset ring-earth" />}
                 </button>
               ))}
-            </div>
-          )}
-          <div className="hidden md:block">{perks}</div>
+            <div className="hidden min-w-[220px] flex-1 pl-2 md:flex">{perks}</div>
+          </div>
         </div>
 
         <div>
@@ -502,7 +503,7 @@ export function ProductDetail({
             </Link>
           )}
 
-          <div className="md:hidden">{perks}</div>
+          <div className="mt-6 md:hidden">{perks}</div>
 
           {panels.length > 0 && (
             <div className="mt-10 border-t border-border">
@@ -593,10 +594,13 @@ export function ProductDetail({
       {alsoLove.length > 0 && (
         <section className="py-20 md:py-28 border-t border-border">
           <div className="max-w-7xl mx-auto px-6 md:px-10">
-            <div className="flex flex-wrap items-baseline justify-between gap-4 mb-10">
-              <h2 className="mk-reveal font-display font-normal text-[clamp(2.25rem,4vw,3.5rem)] text-earth">
-                Keeps good <em className="font-light text-clay">company.</em>
-              </h2>
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
+              <div>
+                <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-clay-deep">From the same kiln</p>
+                <h2 className="font-display font-normal text-[clamp(2.25rem,4vw,3.5rem)] leading-none text-earth">
+                  Keeps good <em className="font-light text-clay">company.</em>
+                </h2>
+              </div>
               <Link
                 href="/#collection"
                 className="mk-link text-xs tracking-widest uppercase text-muted-foreground hover:text-earth"
@@ -604,40 +608,147 @@ export function ProductDetail({
                 All pieces →
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {alsoLove.map((x) => (
-                <Link
-                  key={x.slug}
-                  href={`/shop/${x.slug}`}
-                  className="mk-reveal group block rounded-[1.5rem] overflow-hidden bg-sand transition-[transform,box-shadow] duration-800 ease-[var(--ease-clay)] hover:-translate-y-2 hover:shadow-[0_40px_70px_-40px_rgba(59,42,34,0.55)]"
-                >
-                  <div className="relative aspect-square overflow-hidden">
-                    {displayImage(x) ? (
-                      <img
-                        src={displayImage(x)!}
-                        alt={x.name}
-                        loading="lazy"
-                        className="w-full h-full object-contain p-5 transition-transform duration-[1600ms] ease-[var(--ease-clay)] group-hover:scale-[1.07] drop-shadow-[0_25px_35px_rgba(80,40,20,0.25)]"
-                      />
-                    ) : (
-                      <div className="w-full h-full grid place-items-center text-earth/40 font-hand text-xl">
-                        coming soon
-                      </div>
-                    )}
-                  </div>
-                  <div className="px-5 pt-3 pb-5 flex items-baseline justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-display text-2xl text-earth truncate">{x.name}</div>
-                      <div className="font-hand text-lg text-clay-deep truncate">{x.note}</div>
-                    </div>
-                    <div className="font-display text-lg text-earth shrink-0">{x.price}</div>
-                  </div>
-                </Link>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {alsoLove.map((family) => (
+                <RelatedCard key={family.key} family={family} />
               ))}
             </div>
           </div>
         </section>
       )}
     </div>
+  );
+}
+
+/** A related piece: plinth photo, sizes, measurements, share, and a one-tap add. */
+function RelatedCard({ family }: { family: ProductFamily }) {
+  const [slug, setSlug] = useState(() => {
+    const sizes = [...family.sizes].reverse();
+    return (sizes.find((size) => size.stockQty > 0) ?? sizes[0]).slug;
+  });
+  const [added, setAdded] = useState(false);
+  const p = family.sizes.find((size) => size.slug === slug) ?? family.sizes[0];
+  const soldOut = p.stockQty <= 0;
+  const few = !soldOut && p.stockQty <= 5;
+  const href = `/shop/${p.slug}`;
+  const labels = family.sizes.map((size) => size.sizeLabel || "One size");
+  const chip = (size: ProductView, i: number) =>
+    labels.indexOf(labels[i]) === labels.lastIndexOf(labels[i]) ? labels[i] : variantLabel(size, family.sizes);
+
+  const add = () => {
+    if (!addToCart(p, 1)) return;
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <article className="group relative flex gap-4 rounded-[1.6rem] bg-[oklch(0.925_0.025_75)] p-2.5 transition-[background-color,box-shadow] duration-500 hover:bg-white hover:shadow-[0_24px_40px_-28px_rgba(59,42,34,0.4)] sm:gap-5">
+      <div className="relative h-[200px] w-[132px] shrink-0 overflow-hidden rounded-[1.2rem] sm:h-[238px] sm:w-[180px]">
+        <Link href={href} aria-label={`View ${p.name} ${p.sizeLabel}`.trim()} className="absolute inset-0">
+          <ClayPlinth product={p} />
+        </Link>
+        {/\d/.test(p.sizeLabel) && <HoldsBadge size={p.sizeLabel} className="left-2.5 top-2.5 h-12 w-12 text-base" />}
+        {few && (
+          <span className="pointer-events-none absolute bottom-2.5 left-2.5 rounded-full bg-clay-deep px-2 py-0.5 text-[11px] font-semibold text-cream">
+            Only {p.stockQty} left
+          </span>
+        )}
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5 py-1 pr-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+            {[p.category, "Khurja clay"].filter(Boolean).join(" · ")}
+          </span>
+          <ShareButton
+            title={`${p.name} ${p.sizeLabel}`.trim()}
+            text={p.note || "Handcrafted clay from Mudkraft."}
+            url={`${SITE_URL}${href}`}
+            label={`Share ${p.name}`}
+            icon="-my-1 grid h-9 w-9 place-items-center rounded-full bg-cream text-earth transition-colors hover:bg-earth hover:text-cream"
+          />
+        </div>
+        <div>
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="min-w-0 truncate font-display text-[1.75rem] leading-none text-earth">
+              <Link href={href} className="transition-colors hover:text-clay-deep">
+                {family.sizes.every((size) => size.name === p.name) ? p.name : family.name}
+              </Link>
+            </h3>
+            <span className="shrink-0 font-display text-2xl text-earth">{p.price}</span>
+          </div>
+          {p.note && <p className="mt-0.5 truncate font-hand text-lg text-clay-deep">{p.note}</p>}
+        </div>
+        <p className="flex flex-wrap gap-x-3 text-[12.5px] text-muted-foreground">
+          {p.sizeLabel && (
+            <span>
+              Holds <b className="text-earth">{p.sizeLabel}</b>
+            </span>
+          )}
+          {p.widthCm && (
+            <span>
+              Ø <b className="text-earth">{p.widthCm} cm</b>
+            </span>
+          )}
+          {p.heightCm && (
+            <span>
+              Tall <b className="text-earth">{p.heightCm} cm</b>
+            </span>
+          )}
+          <span>No glaze</span>
+        </p>
+        <div role="group" aria-label={`${family.name} size`} className="flex flex-wrap gap-1.5">
+          {family.sizes.map((size, i) => (
+            <button
+              key={size.slug}
+              type="button"
+              onClick={() => setSlug(size.slug)}
+              aria-pressed={size.slug === p.slug}
+              className={`min-h-9 min-w-[52px] rounded-full border-[1.5px] px-3 text-[12.5px] transition-colors ${
+                size.slug === p.slug
+                  ? "border-earth bg-earth font-semibold text-cream"
+                  : "border-border text-earth hover:border-clay"
+              } ${size.stockQty <= 0 ? "line-through opacity-50" : ""}`}
+            >
+              {chip(size, i)}
+            </button>
+          ))}
+        </div>
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-2.5">
+          <span className="text-[11.5px] leading-snug text-muted-foreground">
+            Ships in 2–3 days
+            <br />
+            Breakage cover
+          </span>
+          {added ? (
+            <span role="status" className="flex min-h-11 items-center gap-1.5 rounded-full bg-earth px-4 text-[13px] font-semibold text-cream">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true" className="h-4 w-4">
+                <path d="M5 12.5l4.5 4.5L19 7" />
+              </svg>
+              Added
+            </span>
+          ) : (
+            <button
+              type="button"
+              disabled={soldOut}
+              onClick={add}
+              aria-label={soldOut ? `${p.name} ${p.sizeLabel} is sold out` : `Add ${p.name} ${p.sizeLabel} to basket`}
+              className="flex min-h-11 items-center gap-1.5 rounded-full bg-clay-deep px-[18px] text-[13px] font-semibold text-cream transition-colors hover:bg-earth disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground disabled:ring-1 disabled:ring-border"
+            >
+              {soldOut ? (
+                "Sold out"
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" className="h-4 w-4">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </article>
   );
 }

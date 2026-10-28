@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 
 import { GoogleOneTap } from "@/components/GoogleOneTap";
 import { SiteMotion } from "@/components/SiteMotion";
+import { WelcomePopup } from "@/components/WelcomePopup";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -16,6 +17,7 @@ export function Providers({ children }: { children: ReactNode }) {
           visitors who already have a Google session in this browser. */}
       <GoogleOneTap />
       <SiteMotion />
+      <WelcomePopup />
     </QueryClientProvider>
   );
 }

@@ -63,6 +63,7 @@ export interface BkProduct {
   category?: string;
   type?: string;
   size_label?: string;
+  dimensions_mm?: { length?: number | null; width?: number | null; height?: number | null };
   description?: string;
   story?: string;
   care?: string[];
@@ -118,6 +119,9 @@ export function toStoreProductShape(p: BkProduct) {
     description,
     story: p.story ?? "",
     sizeLabel: p.size_label ?? "",
+    // Round pots are entered as length × width; either one is the width across.
+    widthMm: p.dimensions_mm?.width || p.dimensions_mm?.length || null,
+    heightMm: p.dimensions_mm?.height || null,
     pricePaise: rupeesToPaise(p.price),
     compareAtPaise: p.mrp && p.mrp > p.price ? rupeesToPaise(p.mrp) : null,
     status: "active" as const,

@@ -24,9 +24,14 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
 };
 
+/**
+ * Rendered on every visit, never kept as a static page: the browser holds static pages it
+ * has seen for minutes, so a price or stock change in Bikriup showed only after a reload.
+ * The reads below still come from the store cache, which Bikriup's webhook clears.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
-  // Both reads go through the cached store layer, so this page is served from
-  // cache until an admin edit revalidates the `products` tag.
   const [products, categories, videos] = await Promise.all([
     getActiveProducts(),
     getCategories(),

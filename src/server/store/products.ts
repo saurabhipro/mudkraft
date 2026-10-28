@@ -38,6 +38,9 @@ export interface StoreProduct {
   description: string;
   story: string;
   sizeLabel: string;
+  /** Only Bikriup knows these; the old Neon catalogue leaves them out. */
+  widthMm?: number | null;
+  heightMm?: number | null;
   pricePaise: number;
   compareAtPaise: number | null;
   status: "draft" | "active" | "archived";

@@ -9,6 +9,8 @@ import { formatPaise } from "@/lib/money";
 import { COD_EVERYWHERE, COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
 import { cartStock } from "@/server/actions/cart";
 import { placeOrder, type CheckoutMethod } from "@/server/actions/checkout";
+import { checkCoupon } from "@/server/actions/welcome";
+import { readWelcome } from "@/lib/welcome";
 
 const inputCls =
   "mt-2 w-full rounded-2xl border border-earth/25 bg-background px-4 py-3 text-earth " +
@@ -100,10 +102,65 @@ export function CheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<CheckoutMethod | null>(null);
 
+  // Signed up in the welcome popup: fill what is still empty, and bring the code along.
+  const [welcomeCode, setWelcomeCode] = useState("");
+  useEffect(() => {
+    const w = readWelcome();
+    if (!w) return;
+    const t = window.setTimeout(() => {
+      setForm((f) => ({ ...f, name: f.name || w.name, phone: f.phone || w.phone, email: f.email || w.email }));
+      if (w.code) setWelcomeCode(w.code);
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, []);
+
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((previous) => ({ ...previous, [key]: value }));
 
-  const totalPaise = cart.reduce((sum, item) => sum + item.pricePaise * item.qty, 0);
+  const subtotalPaise = cart.reduce((sum, item) => sum + item.pricePaise * item.qty, 0);
+
+  // A code is priced by Bikriup for this exact basket; a changed basket drops the figure.
+  const basketKey = cart.map((item) => `${item.slug}:${item.qty}`).join(",");
+  const [codeInput, setCodeInput] = useState("");
+  const [coupon, setCoupon] = useState<{ code: string; discountPaise: number; totalPaise: number; basket: string } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
+  const applied = coupon && coupon.basket === basketKey ? coupon : null;
+  const totalPaise = applied ? applied.totalPaise : subtotalPaise;
+
+  const applyCode = async (code: string) => {
+    if (!code.trim() || cart.length === 0) return;
+    setChecking(true);
+    setCouponError(null);
+    const basket = basketKey;
+    const result = await checkCoupon({
+      code,
+      phone: form.phone,
+      items: cart.map((item) => ({ slug: item.slug, qty: item.qty })),
+    }).catch(() => ({ ok: false as const, error: "We couldn't check that code just now." }));
+    setChecking(false);
+    if (!result.ok) {
+      setCoupon(null);
+      setCouponError(result.error);
+      return;
+    }
+    setCodeInput(result.code);
+    setCoupon({ code: result.code, discountPaise: result.discountPaise, totalPaise: result.totalPaise, basket });
+  };
+
+  // The popup's code goes in by itself once the basket is known (and again if it changes).
+  useEffect(() => {
+    if (!hydrated || !welcomeCode || !basketKey || applied || couponError) return;
+    if (coupon && coupon.code !== welcomeCode) return;
+    const code = coupon?.code ?? welcomeCode;
+    const t = window.setTimeout(() => {
+      setCodeInput((v) => v || code);
+      void applyCode(code);
+    }, 0);
+    return () => window.clearTimeout(t);
+    // applyCode reads the latest basket and phone itself
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, welcomeCode, basketKey, applied, couponError]);
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
 
   // Purely presentational — `placeOrder` re-checks the PIN before accepting COD.
@@ -116,6 +173,7 @@ export function CheckoutForm({
 
     const result = await placeOrder({
       ...form,
+      coupon: applied?.code ?? "",
       method,
       items: cart.map((item) => ({ slug: item.slug, qty: item.qty })),
     });
@@ -352,7 +410,71 @@ export function CheckoutForm({
           ))}
         </ul>
 
-        <div className="mt-6 flex items-baseline justify-between border-t border-earth/15 pt-5">
+        <form
+          className="mt-6 border-t border-earth/15 pt-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void applyCode(codeInput);
+          }}
+        >
+          <label htmlFor="coupon" className={labelCls}>
+            Welcome or offer code
+          </label>
+          <div className="mt-2 flex gap-2">
+            <input
+              id="coupon"
+              value={codeInput}
+              onChange={(e) => {
+                setCodeInput(e.target.value.toUpperCase());
+                setCouponError(null);
+              }}
+              placeholder="WELCOME10"
+              autoComplete="off"
+              className="min-w-0 flex-1 rounded-2xl border border-earth/25 bg-background px-4 py-2.5 uppercase tracking-wider text-earth placeholder:normal-case placeholder:tracking-normal placeholder:text-earth/40 focus:outline-none focus:ring-2 focus:ring-earth/40"
+            />
+            {applied ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setCoupon(null);
+                  setCodeInput("");
+                  setWelcomeCode("");
+                }}
+                className="shrink-0 rounded-full border border-earth/25 px-4 text-xs tracking-widest uppercase text-earth hover:bg-earth hover:text-cream transition-colors"
+              >
+                Remove
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={checking || !codeInput.trim()}
+                className="shrink-0 rounded-full bg-earth px-5 text-xs tracking-widest uppercase text-cream hover:bg-clay transition-colors disabled:opacity-50"
+              >
+                {checking ? "Checking…" : "Apply"}
+              </button>
+            )}
+          </div>
+          {couponError && (
+            <p role="alert" className="mt-2 text-xs text-red-800">
+              {couponError}
+            </p>
+          )}
+        </form>
+
+        {applied && (
+          <div className="mt-4 space-y-1.5 text-sm">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Pieces</span>
+              <span>{formatPaise(subtotalPaise)}</span>
+            </div>
+            <div className="flex justify-between text-clay-deep">
+              <span>Code {applied.code}</span>
+              <span>−{formatPaise(applied.discountPaise)}</span>
+            </div>
+          </div>
+        )}
+
+        <div className={`flex items-baseline justify-between ${applied ? "mt-3" : "mt-5"} border-t border-earth/15 pt-5`}>
           <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
           <span className="font-display text-3xl text-earth">{formatPaise(totalPaise)}</span>
         </div>

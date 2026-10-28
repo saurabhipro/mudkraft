@@ -94,6 +94,8 @@ const checkoutSchema = z.object({
     .regex(/^[1-9]\d{5}$/, "Enter a 6-digit PIN code"),
   note: z.string().trim().max(500).default(""),
   method: z.enum(["gateway", "whatsapp", "cod"]),
+  /** The welcome code (or any shop code). Bikriup checks it, and once-per-number, again. */
+  coupon: z.string().trim().max(40).default(""),
   items: z.array(lineSchema).min(1, "Your basket is empty").max(MAX_LINES),
 });
 
@@ -317,6 +319,7 @@ async function placeBikriupOrder(
         pincode: d.postalCode,
         note: d.note,
         payment_method: d.method === "gateway" ? "online" : d.method,
+        coupon: d.coupon || undefined,
         payment_provider: d.method === "gateway" ? "razorpay" : d.method,
         items: [...requested].map(([slug, qty]) => ({ slug, qty })),
       },

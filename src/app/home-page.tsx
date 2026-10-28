@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { HeroPieces } from "@/components/HeroPieces";
+import { ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
+import { ShareButton } from "@/components/ShareButton";
+import { SITE_URL } from "@/lib/seo";
 import handsClay from "@/assets/hands-clay.jpg";
 import potsDrying from "@/assets/pots-drying.jpg";
 import benefitCooling from "@/assets/benefit-cooling.jpg";
@@ -14,7 +17,6 @@ import benefitNutrients from "@/assets/benefit-nutrients.jpg";
 import studentPottery from "@/assets/student-pottery.jpg";
 import { formatPaise } from "@/lib/money";
 import {
-  displayImage,
   groupFamilies,
   variantLabel,
   type ProductFamily,
@@ -22,7 +24,6 @@ import {
 } from "@/lib/product-view";
 import {
   useCart,
-  addToCart as addToCartStore,
   updateQty as updateQtyStore,
   removeItem as removeItemStore,
 } from "@/lib/cart";
@@ -135,14 +136,6 @@ export function HomePage({
   const cart = useCart();
   const [open, setOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("All");
-  const [bump, setBump] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  useEffect(() => {
-    const pending = timers.current;
-    return () => pending.forEach(clearTimeout);
-  }, []);
 
   // Every variant of one product type (Handi, Dahi Handi 1.5 L, …) shares a card with a picker.
   const families = groupFamilies(products);
@@ -154,18 +147,6 @@ export function HomePage({
   const visibleFamilies =
     activeCategory === "All" ? families : families.filter((f) => f.categories.includes(activeCategory));
 
-  // Adding from the grid confirms with a toast and a bounce on the basket count
-  // rather than throwing the drawer open, so browsing isn't interrupted.
-  const addToCart = (p: ProductView) => {
-    addToCartStore(p);
-    timers.current.forEach(clearTimeout);
-    setBump(true);
-    setToast(`${p.name} ${p.sizeLabel}`.trim());
-    timers.current = [
-      setTimeout(() => setBump(false), 320),
-      setTimeout(() => setToast(null), 2800),
-    ];
-  };
   const updateQty = (slug: string, delta: number) => updateQtyStore(slug, delta);
   const removeItem = (slug: string) => removeItemStore(slug);
 
@@ -198,9 +179,7 @@ export function HomePage({
             >
               Basket
               <span
-                className={`inline-flex items-center justify-center min-w-[30px] h-[30px] px-1.5 rounded-full bg-clay text-cream text-[12px] font-medium tracking-normal transition-transform duration-500 ease-[var(--ease-spring)] ${
-                  bump ? "scale-[1.35]" : "scale-100"
-                }`}
+                className="inline-flex items-center justify-center min-w-[30px] h-[30px] px-1.5 rounded-full bg-clay text-cream text-[12px] font-medium tracking-normal"
               >
                 {count}
               </span>
@@ -294,7 +273,7 @@ export function HomePage({
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {visibleFamilies.map((f) => (
-              <FamilyCard key={f.key} family={f} onAdd={addToCart} />
+              <FamilyCard key={f.key} family={f} />
             ))}
           </div>
         </div>
@@ -777,38 +756,6 @@ export function HomePage({
 
       <SiteFooter />
 
-      {/* ADDED TOAST */}
-      {toast && (
-        <div
-          role="status"
-          className="fixed left-4 right-4 sm:left-auto sm:right-24 bottom-24 sm:bottom-6 z-[90] flex items-center gap-3.5 pl-3.5 pr-3 py-3 rounded-[1.25rem] bg-ink text-cream shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)] animate-fade-up"
-        >
-          <span className="grid place-items-center w-10 h-10 rounded-xl bg-sage shrink-0">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              aria-hidden="true"
-              className="w-[18px] h-[18px]"
-            >
-              <path d="M5 12l5 5L20 7" className="animate-check-draw" />
-            </svg>
-          </span>
-          <span className="text-sm flex-1">{toast} added to your basket</span>
-          <button
-            type="button"
-            onClick={() => {
-              setToast(null);
-              setOpen(true);
-            }}
-            className="min-h-[40px] px-4 rounded-full bg-cream/10 text-[11px] tracking-[0.16em] uppercase hover:bg-cream/20 transition-colors"
-          >
-            View
-          </button>
-        </div>
-      )}
-
       {/* CART DRAWER */}
       {open && (
         <div className="fixed inset-0 z-[100]">
@@ -922,8 +869,11 @@ export function HomePage({
   );
 }
 
-/** A product card. Sizes are chips on the card: the price follows the chip, one button adds that size. */
-function FamilyCard({ family, onAdd }: { family: ProductFamily; onAdd: (p: ProductView) => void }) {
+/**
+ * A product card: the piece on its clay plinth, what it holds and measures, and its sizes.
+ * Picking a size changes the price and the page the card opens; buying happens there.
+ */
+function FamilyCard({ family }: { family: ProductFamily }) {
   // Start on the largest size that is in stock, the one the catalogue and photos lead with.
   const [slug, setSlug] = useState(() => {
     const sizes = [...family.sizes].reverse();
@@ -932,100 +882,116 @@ function FamilyCard({ family, onAdd }: { family: ProductFamily; onAdd: (p: Produ
   const p = family.sizes.find((size) => size.slug === slug) ?? family.sizes[0];
   const soldOut = p.stockQty <= 0;
   const few = !soldOut && p.stockQty <= 5;
-  const off = p.discountPct;
-  const image = displayImage(p);
+  const href = `/shop/${p.slug}`;
+  // Chips say the size alone, unless two variants share one (then the name tells them apart).
+  const labels = family.sizes.map((size) => size.sizeLabel || "One size");
+  const chip = (size: ProductView, i: number) =>
+    labels.indexOf(labels[i]) === labels.lastIndexOf(labels[i]) ? labels[i] : variantLabel(size, family.sizes);
+  const facts = [
+    { label: "Holds", value: p.sizeLabel },
+    { label: "Wide", value: p.widthCm ? `${p.widthCm} cm` : "" },
+    { label: "Tall", value: p.heightCm ? `${p.heightCm} cm` : "" },
+  ].filter((f) => f.value);
 
   return (
-    <article className="mk-reveal group relative flex flex-col rounded-[1.25rem] bg-sand p-2.5 pb-4 transition-[transform,box-shadow] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:shadow-[0_36px_60px_-36px_rgba(59,42,34,0.5)]">
-      <Link
-        href={`/shop/${p.slug}`}
-        aria-label={`View ${p.name}`}
-        className="relative block aspect-[4/3] overflow-hidden rounded-xl bg-[oklch(0.93_0.025_75)]"
-      >
-        {image ? (
-          <img
-            src={image}
-            alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft`}
-            width={900}
-            height={675}
-            loading="lazy"
-            className={`absolute inset-0 m-auto w-[86%] h-[86%] object-contain mix-blend-multiply drop-shadow-[0_16px_16px_rgba(80,40,20,0.2)] transition-transform duration-[1200ms] ease-[var(--ease-clay)] group-hover:scale-[1.05] ${
-              soldOut ? "opacity-60" : ""
-            }`}
-          />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center text-earth/40 font-hand text-2xl">
-            photograph coming soon
-          </div>
-        )}
-        {off > 0 && !soldOut && (
-          <span className="absolute left-2.5 top-2.5 rounded-full bg-clay-deep px-2.5 py-1 text-[11px] font-semibold text-cream">
-            −{off}%
+    <article className="group relative flex flex-col rounded-[1.6rem] bg-sand p-2.5 transition-[transform,box-shadow] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:shadow-[0_34px_56px_-34px_rgba(59,42,34,0.55)]">
+      <div className="relative aspect-[5/4] overflow-hidden rounded-[1.2rem]">
+        <Link href={href} aria-label={`View ${p.name} ${p.sizeLabel}`.trim()} className="absolute inset-0">
+          <ClayPlinth product={p} />
+        </Link>
+        {/\d/.test(p.sizeLabel) && <HoldsBadge size={p.sizeLabel} className="left-3 top-3 h-14 w-14 text-[19px]" />}
+        {few && (
+          <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-clay-deep px-2.5 py-1 text-[11.5px] font-semibold text-cream">
+            Only {p.stockQty} left
           </span>
         )}
-      </Link>
+        <ShareButton
+          title={`${p.name} ${p.sizeLabel}`.trim()}
+          text={p.note || "Handcrafted clay from Mudkraft."}
+          url={`${SITE_URL}${href}`}
+          label={`Share ${p.name}`}
+          icon="grid h-11 w-11 place-items-center rounded-full bg-cream/95 text-earth transition-colors hover:bg-earth hover:text-cream"
+          className="absolute! right-3 top-3"
+        />
+      </div>
 
-      <div className="flex flex-col gap-2.5 px-2 pt-3.5">
-        <div className="flex items-baseline justify-between gap-3">
-          <Link href={`/shop/${p.slug}`} className="min-w-0 hover:text-clay-deep transition-colors">
-            <h3 className="font-display text-[1.7rem] leading-tight text-earth truncate">
-              {family.name}
+      <div className="flex flex-1 flex-col gap-3 px-2 pb-1 pt-3.5">
+        <div>
+          <p className="text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+            {[p.category, "Khurja clay"].filter(Boolean).join(" · ")}
+          </p>
+          <div className="mt-1 flex items-baseline justify-between gap-3">
+            <h3 className="min-w-0 truncate font-display text-[1.75rem] leading-tight text-earth">
+              <Link href={href} className="transition-colors hover:text-clay-deep">
+                {family.sizes.every((size) => size.name === p.name) ? p.name : family.name}
+              </Link>
             </h3>
-          </Link>
-          <div className="shrink-0 flex items-baseline gap-2">
-            <span className="font-display text-[1.45rem] text-earth">{p.price}</span>
-            {p.compareAt && (
-              <span className="text-[13px] text-muted-foreground line-through">{p.compareAt}</span>
-            )}
+            <div className="flex shrink-0 items-baseline gap-1.5">
+              {p.compareAt && (
+                <span className="text-[12px] text-muted-foreground line-through">{p.compareAt}</span>
+              )}
+              <span className="font-display text-[1.5rem] text-earth">{p.price}</span>
+            </div>
           </div>
+          {p.note && <p className="font-hand text-[19px] leading-snug text-clay-deep">{p.note}</p>}
         </div>
 
-        <div role="group" aria-label={`${family.name} variant`} className="flex flex-wrap gap-2">
-          {family.sizes.map((size) => (
+        {facts.length > 0 && (
+          <dl
+            className="grid gap-1 rounded-2xl bg-[oklch(0.935_0.022_75)] p-1"
+            style={{ gridTemplateColumns: `repeat(${facts.length}, minmax(0, 1fr))` }}
+          >
+            {facts.map((f, i) => (
+              <div key={f.label} className={`flex flex-col-reverse px-2 py-1.5 ${i ? "border-l border-border/70" : ""}`}>
+                <dt className="text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">{f.label}</dt>
+                <dd className="text-sm font-semibold text-earth">{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <div role="group" aria-label={`${family.name} size`} className="flex flex-wrap gap-2">
+          {family.sizes.map((size, i) => (
             <button
               key={size.slug}
               type="button"
               onClick={() => setSlug(size.slug)}
               aria-pressed={size.slug === p.slug}
-              className={`min-h-9 px-3.5 rounded-full border text-[12.5px] font-medium transition-colors ${
+              className={`min-h-10 min-w-[60px] rounded-full border-[1.5px] px-3.5 text-[13.5px] transition-colors ${
                 size.slug === p.slug
-                  ? "bg-earth text-cream border-earth"
-                  : "bg-cream border-border text-earth hover:border-clay"
-              } ${size.stockQty <= 0 ? "opacity-45 line-through" : ""}`}
+                  ? "border-earth bg-earth font-semibold text-cream"
+                  : "border-border font-medium text-earth hover:border-clay"
+              } ${size.stockQty <= 0 ? "line-through opacity-50" : ""}`}
             >
-              {variantLabel(size, family.sizes)}
+              {chip(size, i)}
             </button>
           ))}
         </div>
 
-        <p className={`text-xs ${few ? "text-clay-deep" : "text-muted-foreground"}`}>
-          {soldOut ? "Sold out" : few ? `Only ${p.stockQty} left` : "In stock"}
-        </p>
+        <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+          {CARD_PROMISES.map((promise) => (
+            <li key={promise} className="flex items-center gap-1.5">
+              <span aria-hidden="true" className="h-1 w-1 rounded-full bg-clay" />
+              {promise}
+            </li>
+          ))}
+        </ul>
 
-        <button
-          type="button"
-          disabled={soldOut}
-          onClick={() => onAdd(p)}
-          aria-label={
-            soldOut
-              ? `${p.name} ${p.sizeLabel} is sold out`
-              : `Add ${p.name} ${p.sizeLabel} to basket`
-          }
-          className={`flex min-h-12 items-center justify-between rounded-full pl-5 pr-1.5 text-[11.5px] uppercase tracking-[0.16em] transition-colors duration-300 ${
-            soldOut
-              ? "border border-border text-muted-foreground cursor-not-allowed"
-              : "bg-earth text-cream hover:bg-clay-deep active:scale-[0.99]"
-          }`}
-        >
-          <span className="truncate">{soldOut ? "Sold out" : `Add ${variantLabel(p, family.sizes)}`}</span>
-          <span
-            aria-hidden="true"
-            className={`grid h-9 w-9 place-items-center rounded-full text-xl tracking-normal ${soldOut ? "opacity-0" : "bg-cream text-earth"}`}
-          >
-            +
+        <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
+          <span className={`flex items-center gap-1.5 text-xs ${soldOut || few ? "font-semibold text-clay-deep" : "text-[oklch(0.45_0.08_130)]"}`}>
+            <span aria-hidden="true" className={`h-[7px] w-[7px] rounded-full ${soldOut || few ? "bg-clay" : "bg-sage"}`} />
+            {soldOut ? "Sold out" : "In stock · ships in 2–3 days"}
           </span>
-        </button>
+          <Link
+            href={href}
+            className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-earth transition-[gap,color] hover:text-clay-deep group-hover:gap-2.5"
+          >
+            View <Arrow />
+          </Link>
+        </div>
       </div>
     </article>
   );
 }
+
+const CARD_PROMISES = ["Wood-fired", "Lab-tested food safe", "No glaze"];
