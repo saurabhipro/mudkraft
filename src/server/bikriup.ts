@@ -176,7 +176,7 @@ export interface BkOrder {
   /** The order number is the invoice number; empty until the studio confirms the order. */
   invoice_url?: string;
   credit_notes?: Array<{ order_no: string; total: number; refund_status: string }>;
-  items: Array<{ product_id: number; name: string; size: string; qty: number; price: number; line_total: number }>;
+  items: Array<{ product_id: number; slug?: string; name: string; size: string; qty: number; price: number; line_total: number }>;
 }
 
 /**
@@ -184,8 +184,8 @@ export interface BkOrder {
  * the link carries the number and phone signed with the site's secret — it can
  * be checked without a database, and cannot be walked.
  */
-function sign(payload: string) {
-  return createHmac("sha256", `order-link:${serverEnv.BIKRIUP_SECRET_KEY}`).update(payload).digest("base64url").slice(0, 32);
+function sign(payload: string, key: string = serverEnv.BIKRIUP_SECRET_KEY ?? "") {
+  return createHmac("sha256", `order-link:${key}`).update(payload).digest("base64url").slice(0, 32);
 }
 
 export function orderToken(orderNo: string, phone: string): string {
@@ -196,9 +196,15 @@ export function orderToken(orderNo: string, phone: string): string {
 export function readOrderToken(token: string): { orderNo: string; phone: string } | null {
   const [payload, mac] = String(token).split(".");
   if (!payload || !mac || mac.length !== 32) return null;
-  const want = Buffer.from(sign(payload));
   const got = Buffer.from(mac);
-  if (want.length !== got.length || !timingSafeEqual(want, got)) return null;
+  // Links made here are signed with the secret key; links the desk sends (WhatsApp / SMS when an
+  // order ships) are signed with the webhook secret both sides already share.
+  const keys = [serverEnv.BIKRIUP_SECRET_KEY, serverEnv.BIKRIUP_WEBHOOK_SECRET].filter(Boolean) as string[];
+  const valid = keys.some((key) => {
+    const want = Buffer.from(sign(payload, key));
+    return want.length === got.length && timingSafeEqual(want, got);
+  });
+  if (!valid) return null;
   const [orderNo, phone] = Buffer.from(payload, "base64url").toString().split(".");
   return orderNo && phone ? { orderNo, phone } : null;
 }

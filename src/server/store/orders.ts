@@ -193,7 +193,7 @@ export async function getOrderByToken(token: string): Promise<OrderSummary | nul
           o.payment_status === "refund_due" ? "due" : o.payment_status === "refunded" ? "done" : "",
       },
       items: o.items.map((item) => ({
-        productSlug: "",
+        productSlug: item.slug ?? "",
         productName: [item.name, item.size].filter(Boolean).join(" "),
         imagePublicId: null,
         unitPricePaise: Math.round(item.price * 100),

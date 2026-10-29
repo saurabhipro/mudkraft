@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { clearCart, removeItem, syncStock, useCart } from "@/lib/cart";
+import { clearCart, removeItem, syncStock, updateQty, useCart } from "@/lib/cart";
 import { formatPaise } from "@/lib/money";
 import { COD_EVERYWHERE, COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
 import { cartStock } from "@/server/actions/cart";
@@ -13,7 +13,7 @@ import { checkCoupon } from "@/server/actions/welcome";
 import { readWelcome } from "@/lib/welcome";
 
 const inputCls =
-  "mt-2 w-full rounded-2xl border border-earth/25 bg-background px-4 py-3 text-earth " +
+  "mt-2 w-full rounded-2xl border border-earth/40 bg-background px-4 py-3 text-earth " +
   "placeholder:text-earth/40 focus:outline-none focus:ring-2 focus:ring-earth/40";
 
 const labelCls = "block text-xs tracking-widest uppercase text-earth/70";
@@ -194,7 +194,7 @@ export function CheckoutForm({
 
   if (!hydrated) {
     return (
-      <div className="rounded-3xl border border-earth/15 bg-cream/40 p-8 text-sm text-muted-foreground">
+      <div className="rounded-3xl border-2 border-earth/30 bg-cream p-8 text-sm text-muted-foreground">
         Loading your basket…
       </div>
     );
@@ -202,7 +202,7 @@ export function CheckoutForm({
 
   if (cart.length === 0) {
     return (
-      <div className="rounded-3xl border border-earth/15 bg-cream/40 p-10 text-center">
+      <div className="rounded-3xl border-2 border-earth/30 bg-cream p-10 text-center">
         <div className="font-hand text-3xl text-clay">the basket waits, quietly</div>
         <p className="mt-3 text-sm text-muted-foreground">
           There is nothing to check out yet.
@@ -221,7 +221,7 @@ export function CheckoutForm({
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
       {/* ---- details ---- */}
       <form
-        className="lg:col-span-3 rounded-3xl border border-earth/15 bg-cream/50 p-6 md:p-8"
+        className="lg:col-span-3 rounded-3xl border-2 border-earth/30 bg-cream p-6 md:p-8"
         onSubmit={(event) => event.preventDefault()}
         noValidate
       >
@@ -369,29 +369,60 @@ export function CheckoutForm({
       </form>
 
       {/* ---- summary and payment ---- */}
-      <aside className="lg:col-span-2 h-fit rounded-3xl border border-earth/15 bg-cream/50 p-6 md:p-8 lg:sticky lg:top-24">
+      <aside className="lg:col-span-2 h-fit rounded-3xl border-2 border-earth/45 bg-cream p-6 md:p-8 shadow-[0_18px_40px_-24px_rgba(59,42,34,0.55)] lg:sticky lg:top-24">
         <h2 className="font-display text-2xl text-earth">
           {count} {count === 1 ? "piece" : "pieces"}
         </h2>
 
-        <ul className="mt-5 space-y-4">
+        <ul className="mt-5 divide-y divide-earth/25 rounded-2xl border border-earth/30 bg-sand/60">
           {cart.map((item) => (
-            <li key={item.slug} className="flex gap-3">
+            <li key={item.slug} className="flex gap-4 p-4">
               {item.img ? (
-                <img
-                  src={item.img}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-16 w-14 shrink-0 rounded-lg bg-background object-contain p-1"
-                />
+                <div className="grid h-24 w-24 shrink-0 place-items-center rounded-2xl bg-[radial-gradient(circle_at_50%_40%,oklch(0.97_0.02_75),oklch(0.86_0.05_65))]">
+                  <img
+                    src={item.img}
+                    alt={item.name}
+                    className="h-full w-full object-contain p-1.5 mix-blend-multiply brightness-[1.06] contrast-[1.06]"
+                  />
+                </div>
               ) : (
-                <div className="h-16 w-14 shrink-0 rounded-lg bg-earth/5" aria-hidden="true" />
+                <div className="h-24 w-24 shrink-0 rounded-2xl bg-earth/10" aria-hidden="true" />
               )}
               <div className="min-w-0 flex-1">
-                <div className="truncate font-display text-base text-earth">{item.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {item.tag ? `${item.tag} · ` : ""}Qty {item.qty}
-                </div>
+                <div className="font-display text-lg leading-tight text-earth">{item.name}</div>
+                {item.tag && <div className="mt-0.5 text-xs text-earth/75">{item.tag}</div>}
+                <div className="mt-1 text-sm font-medium text-earth/85">{formatPaise(item.pricePaise)} each</div>
+                {item.max !== 0 && (
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="inline-flex items-center rounded-full border-2 border-earth/50 bg-background text-earth">
+                      <button
+                        type="button"
+                        aria-label={`Fewer ${item.name}`}
+                        onClick={() => updateQty(item.slug, -1)}
+                        className="h-8 w-8 rounded-full text-lg leading-none hover:bg-earth hover:text-cream transition-colors"
+                      >
+                        −
+                      </button>
+                      <span className="min-w-8 text-center text-sm font-semibold" aria-live="polite">{item.qty}</span>
+                      <button
+                        type="button"
+                        aria-label={`More ${item.name}`}
+                        onClick={() => updateQty(item.slug, 1)}
+                        disabled={item.max !== undefined && item.qty >= item.max}
+                        className="h-8 w-8 rounded-full text-lg leading-none hover:bg-earth hover:text-cream transition-colors disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-earth"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.slug)}
+                      className="text-xs text-earth/75 underline underline-offset-2 hover:text-clay-deep"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
                 {item.max === 0 && (
                   <div className="mt-1 flex items-center gap-2 text-xs text-red-800">
                     Sold out
@@ -405,13 +436,13 @@ export function CheckoutForm({
                   </div>
                 )}
               </div>
-              <div className="text-sm text-earth">{formatPaise(item.pricePaise * item.qty)}</div>
+              <div className="text-base font-semibold text-earth">{formatPaise(item.pricePaise * item.qty)}</div>
             </li>
           ))}
         </ul>
 
         <form
-          className="mt-6 border-t border-earth/15 pt-5"
+          className="mt-6 border-t-2 border-earth/25 pt-5"
           onSubmit={(e) => {
             e.preventDefault();
             void applyCode(codeInput);
@@ -474,7 +505,7 @@ export function CheckoutForm({
           </div>
         )}
 
-        <div className={`flex items-baseline justify-between ${applied ? "mt-3" : "mt-5"} border-t border-earth/15 pt-5`}>
+        <div className={`flex items-baseline justify-between ${applied ? "mt-3" : "mt-5"} border-t-2 border-earth/25 pt-5`}>
           <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
           <span className="font-display text-3xl text-earth">{formatPaise(totalPaise)}</span>
         </div>

@@ -185,6 +185,8 @@ export interface OrderUpdateEmailData {
   statusUrl: string;
   invoiceUrl: string;
   trackingUrl: string;
+  /** When set, the message ends with "Track your order: Click here" linking to this address. */
+  clickHereUrl?: string;
 }
 
 export function orderUpdateEmail(data: OrderUpdateEmailData): RenderedEmail {
@@ -200,7 +202,11 @@ export function orderUpdateEmail(data: OrderUpdateEmailData): RenderedEmail {
       data.subject,
       `<h1 style="margin:0 0 8px;font-size:24px;font-weight:normal;">${escapeHtml(data.headline)}</h1>
        <p style="margin:0 0 4px;line-height:1.6;">Hello ${escapeHtml(data.customerName)},</p>
-       <p style="margin:0 0 24px;line-height:1.6;">${escapeHtml(data.message)}</p>
+       <p style="margin:0 0 24px;line-height:1.6;">${escapeHtml(data.message)}${
+         data.clickHereUrl
+           ? `<br>Track your order: <a href="${data.clickHereUrl}" style="color:${BRAND};font-weight:600;">Click here</a>`
+           : ""
+       }</p>
        ${links ? `<p style="margin:0 0 24px;">${links}</p>` : ""}
        ${button(data.statusUrl, `View order ${data.orderNumber}`)}`,
     ),

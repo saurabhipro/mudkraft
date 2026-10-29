@@ -135,6 +135,7 @@ export async function POST(request: Request) {
         statusUrl: `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}`,
         invoiceUrl: o.invoice_url ?? "",
         trackingUrl: o.tracking_url ?? "",
+        clickHereUrl: o.status === "shipped" ? `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}` : undefined,
       });
     }
   }

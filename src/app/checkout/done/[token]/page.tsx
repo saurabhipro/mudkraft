@@ -7,6 +7,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { cloudinaryThumb } from "@/lib/cloudinary";
 import { formatPaise } from "@/lib/money";
 import { whatsappLink } from "@/lib/whatsapp";
+import { displayImage, toProductView } from "@/lib/product-view";
+import { getProductBySlug } from "@/server/store/products";
 import { getOrderByToken } from "@/server/store/orders";
 
 export const metadata: Metadata = {
@@ -23,6 +25,18 @@ export default async function OrderPlacedPage({
   const order = await getOrderByToken(token);
 
   if (!order) notFound();
+
+  // Order lines keep a Cloudinary id only for orders made on the site itself; every line is
+  // shown with the same transparent cut-out the product cards use, found again by its slug.
+  const photos = new Map<string, string>();
+  await Promise.all(
+    order.items.map(async (item) => {
+      if (!item.productSlug) return;
+      const product = await getProductBySlug(item.productSlug).catch(() => null);
+      const photo = product ? displayImage(toProductView(product)) : null;
+      if (photo) photos.set(item.productSlug, photo);
+    }),
+  );
 
   const paid = order.paymentStatus === "paid";
   const viaWhatsApp = order.paymentProvider === "whatsapp";
@@ -57,7 +71,7 @@ export default async function OrderPlacedPage({
                 : "Your order is saved but not yet paid. You can pay whenever you are ready — nothing is dispatched until then."}
         </p>
 
-        <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-earth/20 bg-cream/60 px-5 py-2.5">
+        <div className="mt-6 inline-flex items-center gap-3 rounded-full border-2 border-earth/40 bg-cream px-5 py-2.5">
           <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Order</span>
           <span className="font-display text-xl text-earth">{order.orderNumber}</span>
         </div>
@@ -65,7 +79,7 @@ export default async function OrderPlacedPage({
 
       <section className="max-w-3xl mx-auto px-6 md:px-10 pb-24">
         {order.tracking && (
-          <div className="mb-6 rounded-3xl border border-earth/15 bg-background p-6 md:p-8">
+          <div className="mb-6 rounded-3xl border-2 border-earth/40 bg-cream p-6 md:p-8 shadow-[0_18px_40px_-24px_rgba(59,42,34,0.55)]">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <div>
                 <div className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
@@ -104,7 +118,7 @@ export default async function OrderPlacedPage({
                     href={order.tracking.invoiceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center border border-earth/25 bg-background text-earth px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
+                    className="flex-1 inline-flex items-center justify-center border-2 border-earth/45 bg-background text-earth px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
                   >
                     Download invoice
                   </a>
@@ -113,32 +127,36 @@ export default async function OrderPlacedPage({
             )}
           </div>
         )}
-        <div className="rounded-3xl border border-earth/15 bg-cream/50 p-6 md:p-8">
-          <ul className="space-y-4">
-            {order.items.map((item) => (
-              <li key={item.productSlug} className="flex gap-4">
-                {item.imagePublicId ? (
-                  <img
-                    src={cloudinaryThumb(item.imagePublicId, 96)}
-                    alt=""
-                    aria-hidden="true"
-                    className="h-20 w-16 shrink-0 rounded-lg bg-background object-contain p-1"
-                  />
-                ) : (
-                  <div className="h-20 w-16 shrink-0 rounded-lg bg-earth/5" aria-hidden="true" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="font-display text-lg text-earth">{item.productName}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {formatPaise(item.unitPricePaise)} × {item.qty}
+        <div className="rounded-3xl border-2 border-earth/40 bg-cream p-6 md:p-8 shadow-[0_18px_40px_-24px_rgba(59,42,34,0.55)]">
+          <ul className="divide-y divide-earth/25 rounded-2xl border border-earth/30 bg-sand/60">
+            {order.items.map((item, i) => {
+              const photo = photos.get(item.productSlug) ?? (item.imagePublicId ? cloudinaryThumb(item.imagePublicId, 200) : null);
+              return (
+                <li key={`${item.productSlug}-${i}`} className="flex gap-4 p-4">
+                  {photo ? (
+                    <div className="grid h-24 w-24 shrink-0 place-items-center rounded-2xl bg-[radial-gradient(circle_at_50%_40%,oklch(0.97_0.02_75),oklch(0.86_0.05_65))]">
+                      <img
+                        src={photo}
+                        alt={item.productName}
+                        className="h-full w-full object-contain p-1.5 mix-blend-multiply brightness-[1.06] contrast-[1.06]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-24 w-24 shrink-0 rounded-2xl bg-earth/10" aria-hidden="true" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display text-xl text-earth">{item.productName}</div>
+                    <div className="mt-1 text-sm text-earth/80">
+                      {formatPaise(item.unitPricePaise)} × {item.qty}
+                    </div>
                   </div>
-                </div>
-                <div className="text-sm text-earth">{formatPaise(item.lineTotalPaise)}</div>
-              </li>
-            ))}
+                  <div className="text-base font-semibold text-earth">{formatPaise(item.lineTotalPaise)}</div>
+                </li>
+              );
+            })}
           </ul>
 
-          <div className="mt-6 flex items-baseline justify-between border-t border-earth/15 pt-5">
+          <div className="mt-6 flex items-baseline justify-between border-t-2 border-earth/25 pt-5">
             <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
             <span className="font-display text-3xl text-earth">
               {formatPaise(order.totalPaise)}
@@ -146,7 +164,7 @@ export default async function OrderPlacedPage({
           </div>
           <p className="mt-1 text-right text-[11px] text-muted-foreground">Shipping included</p>
 
-          <div className="mt-8 grid gap-6 border-t border-earth/15 pt-6 sm:grid-cols-2">
+          <div className="mt-8 grid gap-6 border-t-2 border-earth/25 pt-6 sm:grid-cols-2">
             <div>
               <h2 className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
                 Delivering to
@@ -205,7 +223,7 @@ export default async function OrderPlacedPage({
             className={`flex-1 inline-flex items-center justify-center px-6 py-4 rounded-full text-xs tracking-widest uppercase transition-colors ${
               viaWhatsApp && !paid
                 ? "bg-earth text-cream hover:bg-clay"
-                : "border border-earth/25 bg-background text-earth hover:bg-earth hover:text-cream"
+                : "border-2 border-earth/45 bg-background text-earth hover:bg-earth hover:text-cream"
             }`}
           >
             {viaWhatsApp && !paid ? "Message us on WhatsApp" : "Questions? Message us"}
