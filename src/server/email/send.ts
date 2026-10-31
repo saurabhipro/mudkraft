@@ -5,8 +5,11 @@ import {
   appBaseUrl,
   orderConfirmationEmail,
   orderUpdateEmail,
+  signInAlertEmail,
+  signInCodeEmail,
   welcomeEmail,
   type OrderUpdateEmailData,
+  type SignInAlertData,
   type OrderEmailData,
   type OrderEmailItem,
 } from "./templates";
@@ -44,6 +47,8 @@ export interface OrderConfirmationInput {
   shippingPaise: number;
   totalPaise: number;
   address: OrderEmailData["address"];
+  /** Optional extras the template can show: invoice, GST, discount, arrival window… */
+  extras?: Partial<OrderEmailData>;
 }
 
 export async function sendOrderConfirmationEmail(input: OrderConfirmationInput): Promise<boolean> {
@@ -65,6 +70,7 @@ export async function sendOrderConfirmationEmail(input: OrderConfirmationInput):
     totalPaise: input.totalPaise,
     address: input.address,
     statusUrl: `${appBaseUrl()}/checkout/done/${input.lookupToken}`,
+    ...input.extras,
   });
 
   return sendEmail({ to: input.to, subject, html });
@@ -75,5 +81,16 @@ export async function sendOrderUpdateEmail(
   data: OrderUpdateEmailData,
 ): Promise<boolean> {
   const { subject, html } = orderUpdateEmail(data);
+  return sendEmail({ to, subject, html });
+}
+
+/** Not wired into sign-in yet: the site signs in with Google/password, and OTPs go by SMS. */
+export async function sendSignInCodeEmail(to: string, code: string): Promise<boolean> {
+  const { subject, html } = signInCodeEmail(to, code);
+  return sendEmail({ to, subject, html });
+}
+
+export async function sendSignInAlertEmail(to: string, data: SignInAlertData): Promise<boolean> {
+  const { subject, html } = signInAlertEmail(data);
   return sendEmail({ to, subject, html });
 }

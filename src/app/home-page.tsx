@@ -6,6 +6,13 @@ import { useState, type CSSProperties } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { HeroPieces } from "@/components/HeroPieces";
+import {
+  HomeFilm,
+  InYourKitchen,
+  MadeByHand,
+  StudioStories,
+  WorkshopGallery,
+} from "@/components/HomeMedia";
 import { ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
 import { ShareButton } from "@/components/ShareButton";
 import { SITE_URL } from "@/lib/seo";
@@ -191,6 +198,9 @@ export function HomePage({
       {/* HERO — pick a piece on the wheel */}
       <HeroPieces products={products} />
 
+      {/* FILM — looping video under the hero */}
+      <HomeFilm />
+
       {/* CROSSED TAPES */}
       <section aria-label="How we make" className="relative h-[170px] md:h-[210px] overflow-hidden">
         <div className="absolute -left-[5%] -right-[5%] top-9 md:top-12 rotate-[2.5deg] bg-earth py-4 md:py-5 overflow-hidden">
@@ -278,6 +288,8 @@ export function HomePage({
           </div>
         </div>
       </section>
+
+      <MadeByHand />
 
       {/* CRAFT */}
       <section
@@ -377,6 +389,8 @@ export function HomePage({
           </div>
         </div>
       </section>
+
+      <InYourKitchen />
 
       {/* FOUR ELEMENTS */}
       <section className="px-6 md:px-10 py-24 md:py-36">
@@ -543,6 +557,8 @@ export function HomePage({
         </div>
       </section>
 
+      <WorkshopGallery />
+
       {/* STORY — the potter family, in numbers, and how a pot is made */}
       <section id="story" className="px-6 md:px-10 pb-16 md:pb-24">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-14 lg:gap-20 items-center">
@@ -698,6 +714,8 @@ export function HomePage({
           </div>
         </section>
       )}
+
+      <StudioStories />
 
       {/* NEWSLETTER */}
       <section id="journal" className="px-4 sm:px-6 md:px-10 pb-16">
