@@ -10,6 +10,8 @@ import { formatPaise } from "@/lib/money";
 import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
 import { addToCart, useCartCount } from "@/lib/cart";
+import { productSeo } from "@/lib/categories";
+import { toItem, track } from "@/lib/analytics";
 import { ShareButton } from "@/components/ShareButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { SITE_URL } from "@/lib/seo";
@@ -86,9 +88,14 @@ export function ProductDetail({
   const few = !soldOut && p.stockQty <= 5;
   // Another size is another page: its quantity starts again at one.
   useEffect(() => setQty(1), [p.slug]);
+  useEffect(() => {
+    track("view_item", { currency: "INR", value: p.pricePaise / 100, items: [toItem(p)] });
+  }, [p]);
 
   const handleAdd = () => {
-    if (!addToCart(p, qty)) return;
+    const n = addToCart(p, qty);
+    if (!n) return;
+    track("add_to_cart", { currency: "INR", value: (p.pricePaise * n) / 100, items: [toItem(p, n)] });
     setAdded(true);
     setTimeout(() => setAdded(false), 2200);
   };
@@ -212,7 +219,7 @@ export function ProductDetail({
             <ClayPlinth
               product={p}
               src={shots[shot] ?? null}
-              alt={`Handcrafted ${p.name} — ${p.tag} from Mudkraft, photograph ${shot + 1}`}
+              alt={p.imageAlts[shots[shot] ?? ""] || `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`}
               priority
             />
             <div className="pointer-events-none absolute left-5 right-[104px] top-5 flex flex-col gap-0.5 md:left-6 md:right-[120px] md:top-6">
@@ -274,6 +281,7 @@ export function ProductDetail({
             <span className="mk-line">
               <span style={{ animationDelay: "0.1s" }}>{p.name}</span>
             </span>
+            <span className="sr-only">{p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? ` ${p.sizeLabel}` : ""} – unglazed clay</span>
           </h1>
 
           {(() => {
@@ -636,7 +644,9 @@ function RelatedCard({ family }: { family: ProductFamily }) {
     labels.indexOf(labels[i]) === labels.lastIndexOf(labels[i]) ? labels[i] : variantLabel(size, family.sizes);
 
   const add = () => {
-    if (!addToCart(p, 1)) return;
+    const n = addToCart(p, 1);
+    if (!n) return;
+    track("add_to_cart", { currency: "INR", value: p.pricePaise / 100, items: [toItem(p, n)] });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };

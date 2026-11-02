@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { CATEGORY_PAGES, productSeo } from "@/lib/categories";
+import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import { displayImage, groupFamilies, toProductView } from "@/lib/product-view";
 import { toReviewView } from "@/lib/review-view";
+import { breadcrumbs, priceValidUntil, availability, returnPolicy, shippingDetails } from "@/lib/schema";
 import { SITE_URL } from "@/lib/seo";
 import { getActiveProducts, getProductBySlug } from "@/server/store/products";
 import { getApprovedReviews, getReviewSummary } from "@/server/store/reviews";
@@ -27,12 +30,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const view = toProductView(product);
   const url = `${SITE_URL}/shop/${view.slug}`;
-  // "Bhagona — Bhagona" read oddly where the type is the name itself.
-  const title = `${view.name}${view.tag && view.tag !== view.name ? ` — ${view.tag}` : ""} · Mudkraft`;
-  const description = (view.description || view.note).slice(0, 155);
+  // Built from the product's data so every size has its own title that says what people search for.
+  const { title, description } = productSeo(view);
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: url },
     // `og:type: product` is rendered as a hoisted meta tag below: Next's metadata
@@ -71,23 +73,43 @@ export default async function Page({ params }: PageProps) {
   const image = displayImage(view);
   const reviewViews = reviews.map(toReviewView);
 
+  const seo = productSeo(view);
+  const photos = [...new Set([image, ...view.gallery].filter((x): x is string => Boolean(x)))].slice(0, 6);
+  const landing = CATEGORY_PAGES.find((c) => c.slug !== "clay-cookware" && c.match(view));
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: view.name,
-    description: view.description || view.note,
-    image: image ?? undefined,
+    name: seo.label,
+    description: view.description || view.note || seo.description,
+    image: photos.length ? photos : undefined,
+    sku: CATALOGUE_CODES[catalogueSlug(view) ?? ""] ?? view.slug,
     brand: { "@type": "Brand", name: "Mudkraft" },
     category: view.category ?? undefined,
+    material: "Unglazed river clay",
+    size: view.sizeLabel || undefined,
+    // Sizes of one piece are variants of one product family, not competing duplicates.
+    isVariantOf:
+      sizes.length > 1
+        ? {
+            "@type": "ProductGroup",
+            name: own?.name ?? view.name,
+            productGroupID: `mudkraft-${(own?.name ?? view.name).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+            variesBy: "https://schema.org/size",
+          }
+        : undefined,
     offers: {
       "@type": "Offer",
       price: (view.pricePaise / 100).toFixed(2),
       priceCurrency: "INR",
-      availability:
-        product.trackInventory && product.stockQty <= 0
-          ? "https://schema.org/OutOfStock"
-          : "https://schema.org/InStock",
+      priceValidUntil: priceValidUntil(),
+      itemCondition: "https://schema.org/NewCondition",
+      // Mirrors the page's own "sold out" rule: a stock of 0 means unavailable.
+      availability: availability(product.trackInventory === false ? 1 : view.stockQty),
       url,
+      seller: { "@type": "Organization", name: "Mudkraft" },
+      shippingDetails,
+      hasMerchantReturnPolicy: returnPolicy,
     },
     aggregateRating:
       summary.count > 0
@@ -128,6 +150,19 @@ export default async function Page({ params }: PageProps) {
         reviewSummary={summary}
       />
       <meta property="og:type" content="product" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            ...breadcrumbs([
+              { name: "Home", url: `${SITE_URL}/` },
+              ...(landing ? [{ name: landing.label, url: `${SITE_URL}/${landing.slug}` }] : []),
+              { name: seo.label, url },
+            ]),
+          }),
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}

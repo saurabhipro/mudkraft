@@ -38,7 +38,7 @@ export function ClayPlinth({
         <img
           key={image}
           src={image}
-          alt={alt ?? `Handcrafted ${product.name} from Mudkraft`}
+          alt={alt ?? product.imageAlts[image] ?? `${product.name} ${product.sizeLabel} – unglazed clay, handmade in Khurja`.replace(/\s+/g, " ")}
           loading={priority ? "eager" : "lazy"}
           className={`absolute left-[14%] top-[16%] h-[68%] w-[72%] object-contain object-bottom transition-transform duration-1000 ease-[var(--ease-clay)] group-hover:-translate-y-2 group-hover:scale-[1.04] ${
             cutout ? "" : "mix-blend-multiply brightness-[1.06] contrast-[1.06]"

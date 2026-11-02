@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { displayImage, toProductView } from "@/lib/product-view";
+import { availability } from "@/lib/schema";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getCategories } from "@/server/store/categories";
 import { getActiveProducts } from "@/server/store/products";
@@ -8,10 +9,10 @@ import { getChannelVideos } from "@/server/youtube";
 import { HomePage } from "./home-page";
 
 const DESCRIPTION =
-  "Mudkraft is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.";
+  "Buy handmade unglazed clay handi, kadai, dahi handi and matka from Khurja. Wood-fired, lab-tested with no lead, cadmium or arsenic. Free delivery across India.";
 
 export const metadata: Metadata = {
-  title: "Mudkraft — Soulful Handcrafted Clay Pots, Kulhads & Matkas",
+  title: "Mudkraft – Handmade Clay Cookware & Mitti Ke Bartan Online | Unglazed",
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/` },
   openGraph: {
@@ -34,10 +35,17 @@ export const dynamic = "force-dynamic";
 export default async function Page() {
   const [products, categories, videos] = await Promise.all([
     getActiveProducts(),
-    getCategories(),
+    // The filter chips are a nicety: a failed lookup must never turn the home page into a 500.
+    getCategories().catch((error) => {
+      console.error("[home] categories lookup failed; using the products' own", error);
+      return null;
+    }),
     getChannelVideos(),
   ]);
   const views = products.map(toProductView);
+  const categoryNames =
+    categories?.map((c) => c.name) ??
+    [...new Set(views.map((v) => v.category).filter((c): c is string => Boolean(c)))];
 
   const productsJsonLd = {
     "@context": "https://schema.org",
@@ -52,7 +60,7 @@ export default async function Page() {
         // Schema.org expects a plain decimal, so convert out of paise.
         price: (p.pricePaise / 100).toFixed(2),
         priceCurrency: "INR",
-        availability: "https://schema.org/InStock",
+        availability: availability(p.stockQty),
         url: `${SITE_URL}/shop/${p.slug}`,
       },
     })),
@@ -66,7 +74,7 @@ export default async function Page() {
       />
       <HomePage
         products={views}
-        categories={categories.map((c) => c.name)}
+        categories={categoryNames}
         videos={videos}
       />
     </>

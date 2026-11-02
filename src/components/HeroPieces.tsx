@@ -88,9 +88,9 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
       <div className="max-w-7xl mx-auto grid gap-y-10 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)_minmax(0,19rem)] lg:gap-x-14 xl:gap-x-20 items-center">
         {/* Copy */}
         <div className="text-center lg:text-left">
-          <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/[0.06] border border-white/[0.12] text-xs tracking-[0.08em] text-[#e0b08a]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e0b08a]" /> Handmade in Khurja
-          </span>
+          <h1 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/[0.06] border border-white/[0.12] text-xs font-normal tracking-[0.08em] text-[#e0b08a]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e0b08a]" /> Handmade unglazed clay cookware from Khurja
+          </h1>
           <h2 className="mt-5 font-display font-normal text-[clamp(2.75rem,6vw,4.75rem)] leading-[0.96]">
             {count} pieces.
             <br className="hidden lg:block" />{" "}

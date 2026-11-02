@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Caveat } from "next/font/google";
 import type { ReactNode } from "react";
 
-import { FACEBOOK_URL } from "@/lib/catalogue";
+import { FACEBOOK_URL, SALES_EMAIL, SALES_PHONE_DISPLAY } from "@/lib/catalogue";
+import { YOUTUBE_CHANNEL_URL } from "@/lib/youtube";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -31,7 +32,7 @@ const caveat = Caveat({
 
 const TITLE = "Mudkraft — Soulful Handcrafted Clay";
 const DESCRIPTION =
-  "Mudkraft is a slow craft studio shaping pots, kulhads, planters and diyas from river clay — made by hand, fired with fire, rooted in earth.";
+  "Buy handmade unglazed clay handi, kadai, dahi handi and matka from Khurja. Wood-fired, lab-tested with no lead, cadmium or arsenic. Free delivery across India.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -68,8 +69,18 @@ const organizationJsonLd = {
       url: SITE_URL,
       logo: `${SITE_URL}/mudkraft-logo.png`,
       description:
-        "Slow craft studio shaping pots, kulhads, planters and diyas from river clay.",
-      sameAs: [FACEBOOK_URL],
+        "Handmade unglazed clay cookware and matkas from Khurja, wood-fired and lab-tested.",
+      email: SALES_EMAIL,
+      telephone: SALES_PHONE_DISPLAY,
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        email: SALES_EMAIL,
+        telephone: SALES_PHONE_DISPLAY,
+        areaServed: "IN",
+        availableLanguage: ["English", "Hindi"],
+      },
+      sameAs: [FACEBOOK_URL, YOUTUBE_CHANNEL_URL],
     },
     {
       "@type": "WebSite",

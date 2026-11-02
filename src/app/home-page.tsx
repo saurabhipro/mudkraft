@@ -441,7 +441,7 @@ export function HomePage({
         <div className="max-w-7xl mx-auto">
           <Eyebrow>Why clay</Eyebrow>
           <h2 className="mk-reveal mt-6 mb-12 md:mb-14 font-display font-normal text-[clamp(2.5rem,5vw,4.5rem)] leading-none max-w-3xl text-earth">
-            What your grandmother <em className="font-light text-clay">already knew.</em>
+            Why <em className="font-light text-clay">unglazed clay.</em>
           </h2>
           <div className="grid md:grid-cols-3 auto-rows-[240px] md:auto-rows-[280px] gap-5">
             <Link
@@ -458,7 +458,7 @@ export function HomePage({
               <div className="absolute left-7 right-7 bottom-7">
                 <h3 className="font-display text-4xl">Naturally cool</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-cream/85">
-                  Porous walls breathe, so water cools as it evaporates — no fridge needed.
+                  Porous walls breathe, so water stays cooler than the room as it evaporates, with no fridge needed.
                 </p>
               </div>
             </Link>
@@ -474,7 +474,7 @@ export function HomePage({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-kiln/80 to-transparent to-60%" />
               <h3 className="absolute left-7 bottom-6 font-display text-[2.1rem]">
-                Rich in minerals
+                Pure river clay
               </h3>
             </Link>
             <Link
@@ -493,9 +493,9 @@ export function HomePage({
                 <path d="M9 15a3 3 0 0 0 3 3" />
               </svg>
               <div>
-                <h3 className="font-display text-[2.1rem]">Gently alkaline</h3>
+                <h3 className="font-display text-[2.1rem]">Lab-tested, lead-free</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-cream/90">
-                  Clay balances acidic water and food, the slow way.
+                  No lead, cadmium or arsenic found. pH 7.2, near-neutral.
                 </p>
               </div>
             </Link>
@@ -512,7 +512,7 @@ export function HomePage({
               <div className="absolute inset-0 bg-gradient-to-r from-kiln/80 to-transparent to-65%" />
               <div className="absolute left-8 top-1/2 -translate-y-1/2 max-w-xs">
                 <h3 className="font-display text-[2.35rem] leading-tight">
-                  Food that keeps its nutrients
+                  Slow, even heat for cooking
                 </h3>
                 <span className="mt-4 inline-flex items-center gap-2 pb-1 border-b border-gold text-xs tracking-[0.18em] uppercase">
                   Read all benefits{" "}
@@ -891,7 +891,7 @@ export function HomePage({
  * A product card: the piece on its clay plinth, what it holds and measures, and its sizes.
  * Picking a size changes the price and the page the card opens; buying happens there.
  */
-function FamilyCard({ family }: { family: ProductFamily }) {
+export function FamilyCard({ family }: { family: ProductFamily }) {
   // Start on the largest size that is in stock, the one the catalogue and photos lead with.
   const [slug, setSlug] = useState(() => {
     const sizes = [...family.sizes].reverse();

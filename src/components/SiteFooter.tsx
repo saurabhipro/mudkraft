@@ -48,6 +48,31 @@ export function SiteFooter() {
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Explore</div>
           <ul className="space-y-2.5 text-cream/80">
             <li>
+              <Link href="/clay-cookware" className="hover:text-gold transition-colors mk-link">
+                Clay cookware
+              </Link>
+            </li>
+            <li>
+              <Link href="/clay-handi" className="hover:text-gold transition-colors mk-link">
+                Clay handi
+              </Link>
+            </li>
+            <li>
+              <Link href="/clay-kadai" className="hover:text-gold transition-colors mk-link">
+                Clay kadai
+              </Link>
+            </li>
+            <li>
+              <Link href="/dahi-handi" className="hover:text-gold transition-colors mk-link">
+                Dahi handi
+              </Link>
+            </li>
+            <li>
+              <Link href="/clay-water-pot" className="hover:text-gold transition-colors mk-link">
+                Clay matka
+              </Link>
+            </li>
+            <li>
               <Link href="/benefits" className="hover:text-gold transition-colors mk-link">
                 Benefits of Clay
               </Link>

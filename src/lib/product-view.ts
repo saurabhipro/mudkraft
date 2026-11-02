@@ -30,6 +30,8 @@ export interface ProductView {
   cutout: string | null;
   /** Every photograph, cover first (cutouts excluded) — the product page's gallery. */
   gallery: string[];
+  /** Alt text Bikriup holds for a photograph, keyed by its URL. Photos without one are not listed. */
+  imageAlts: Record<string, string>;
   category: string | null;
   /** Free-text size, e.g. "2.5 L". What the size picker shows between siblings. */
   sizeLabel: string;
@@ -65,6 +67,7 @@ interface SourceProduct {
     publicId: string;
     version: string | null;
     isPrimary: boolean;
+    alt?: string;
   }>;
 }
 
@@ -105,6 +108,13 @@ export function toProductView(product: SourceProduct): ProductView {
     gallery: product.images
       .filter((image) => !image.publicId.endsWith(CUTOUT_SUFFIX))
       .map((image) => cloudinaryUrl({ publicId: image.publicId, version: image.version })),
+    imageAlts: Object.fromEntries(
+      product.images
+        // Bikriup fills a photo's alt with the product name when the shop wrote none; that says
+        // less than the keyword fallback the pages use, so only a deliberate description counts.
+        .filter((image) => image.alt?.trim() && image.alt.trim().toLowerCase() !== product.name.trim().toLowerCase())
+        .map((image) => [cloudinaryUrl({ publicId: image.publicId, version: image.version }), image.alt!.trim()]),
+    ),
     category: product.categoryName,
     sizeLabel: withUnit(product.sizeLabel),
     widthCm: toCm(product.widthMm),
