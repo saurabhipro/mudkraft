@@ -1,4 +1,5 @@
 import { POLICY } from "@/lib/policy";
+import type { ProductView } from "@/lib/product-view";
 import { SITE_URL } from "@/lib/seo";
 
 /** Schema.org pieces shared by the product pages and the home page, all read from the policy file. */
@@ -34,6 +35,17 @@ export const priceValidUntil = () => {
   d.setFullYear(d.getFullYear() + 1);
   return d.toISOString().slice(0, 10);
 };
+
+/**
+ * Id shared by the sizes of one piece, or null for a piece with a single size. A product type can
+ * hold different pieces (Handi and Dahi Handi), so siblings are told apart by name, where a
+ * suffix like "· Small" still counts as the same piece.
+ */
+export function variantGroupId(p: ProductView, siblings: ProductView[]): string | null {
+  const base = (name: string) => name.split("·")[0].trim().toLowerCase();
+  const same = siblings.filter((s) => base(s.name) === base(p.name));
+  return same.length > 1 ? `mudkraft-${base(p.name).replace(/[^a-z0-9]+/g, "-")}` : null;
+}
 
 export function breadcrumbs(trail: Array<{ name: string; url: string }>) {
   return {

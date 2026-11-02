@@ -5,7 +5,7 @@ import { CATEGORY_PAGES, productSeo } from "@/lib/categories";
 import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import { displayImage, groupFamilies, toProductView } from "@/lib/product-view";
 import { toReviewView } from "@/lib/review-view";
-import { breadcrumbs, priceValidUntil, availability, returnPolicy, shippingDetails } from "@/lib/schema";
+import { breadcrumbs, priceValidUntil, availability, returnPolicy, shippingDetails, variantGroupId } from "@/lib/schema";
 import { SITE_URL } from "@/lib/seo";
 import { getActiveProducts, getProductBySlug } from "@/server/store/products";
 import { getApprovedReviews, getReviewSummary } from "@/server/store/reviews";
@@ -77,6 +77,8 @@ export default async function Page({ params }: PageProps) {
   const photos = [...new Set([image, ...view.gallery].filter((x): x is string => Boolean(x)))].slice(0, 6);
   const landing = CATEGORY_PAGES.find((c) => c.slug !== "clay-cookware" && c.match(view));
 
+  const groupId = variantGroupId(view, sizes);
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -89,15 +91,14 @@ export default async function Page({ params }: PageProps) {
     material: "Unglazed river clay",
     size: view.sizeLabel || undefined,
     // Sizes of one piece are variants of one product family, not competing duplicates.
-    isVariantOf:
-      sizes.length > 1
-        ? {
-            "@type": "ProductGroup",
-            name: own?.name ?? view.name,
-            productGroupID: `mudkraft-${(own?.name ?? view.name).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-            variesBy: "https://schema.org/size",
-          }
-        : undefined,
+    isVariantOf: groupId
+      ? {
+          "@type": "ProductGroup",
+          name: view.name.split("·")[0].trim(),
+          productGroupID: groupId,
+          variesBy: "https://schema.org/size",
+        }
+      : undefined,
     offers: {
       "@type": "Offer",
       price: (view.pricePaise / 100).toFixed(2),
