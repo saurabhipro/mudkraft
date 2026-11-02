@@ -122,11 +122,10 @@ export function HomeFilm() {
         ref={ref}
         src={`${M}/film.mp4`}
         poster={`${M}/film-poster.jpg`}
-        autoPlay
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="none"
         onPlay={() => setPaused(false)}
         onPause={() => setPaused(true)}
         aria-label="Dal simmering in a Mudkraft clay handi on the stove"

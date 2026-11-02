@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
@@ -11,6 +12,7 @@ import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
 import type { ReviewSummaryView, ReviewView } from "@/lib/review-view";
 import { addToCart, useCartCount } from "@/lib/cart";
 import { productSeo } from "@/lib/categories";
+import { POLICY } from "@/lib/policy";
 import { toItem, track } from "@/lib/analytics";
 import { ShareButton } from "@/components/ShareButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
@@ -99,6 +101,26 @@ export function ProductDetail({
     setAdded(true);
     setTimeout(() => setAdded(false), 2200);
   };
+
+  // "Buy now" skips the basket: it adds the piece and goes straight to checkout.
+  const router = useRouter();
+  const handleBuyNow = () => {
+    const n = addToCart(p, qty);
+    if (!n) return;
+    track("add_to_cart", { currency: "INR", value: (p.pricePaise * n) / 100, items: [toItem(p, n)] });
+    router.push("/checkout");
+  };
+
+  // The phone buy bar shows once the main button has scrolled out of view.
+  const ctaRef = useRef<HTMLButtonElement>(null);
+  const [barOn, setBarOn] = useState(false);
+  useEffect(() => {
+    const el = ctaRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setBarOn(!e.isIntersecting), { threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [p.slug]);
 
   const oneName = sizes.every((s) => s.name === p.name);
   const isCookware = p.category?.toLowerCase() === "cookware";
@@ -446,6 +468,7 @@ export function ProductDetail({
             </div>
 
             <button
+              ref={ctaRef}
               type="button"
               onClick={handleAdd}
               disabled={soldOut}
@@ -476,6 +499,15 @@ export function ProductDetail({
                   : `Add to basket · ${formatPaise(p.pricePaise * qty)}`}
             </button>
           </div>
+          {!soldOut && (
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              className="mt-3 w-full min-h-[58px] rounded-full bg-earth px-7 text-base font-medium text-cream transition-[background-color,transform] duration-500 ease-[var(--ease-clay)] hover:-translate-y-0.5 hover:bg-earth/90 active:scale-[0.98]"
+            >
+              Buy now · {formatPaise(p.pricePaise * qty)}
+            </button>
+          )}
           {(soldOut || few) && (
             <p className="mt-3 text-sm text-clay-deep" role="status">
               {soldOut
@@ -487,6 +519,7 @@ export function ProductDetail({
           <div className="mt-3 flex flex-wrap items-center gap-3 animate-fade-up [animation-delay:0.5s]">
             <a
               href={whatsappBuyNow(p, qty)}
+              onClick={() => track("generate_lead", { method: "whatsapp", item_id: p.slug })}
               target="_blank"
               rel="noopener noreferrer"
               className="mk-btn-fill flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[58px] px-6 rounded-full border-[1.5px] border-earth text-earth text-base font-medium"
@@ -501,6 +534,13 @@ export function ProductDetail({
               label="Share"
             />
           </div>
+
+          <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
+            {POLICY.delivery.split(",")[0]} · Cash on delivery available ·{" "}
+            <Link href="/soil-report" className="underline underline-offset-2 hover:text-earth">
+              Lab-tested, lead-free
+            </Link>
+          </p>
 
           {added && (
             <Link
@@ -624,6 +664,33 @@ export function ProductDetail({
           </div>
         </section>
       )}
+
+      {/* Phone buy bar: the price and Buy now stay in reach once the main button scrolls away. */}
+      <div
+        aria-hidden={!barOn || soldOut}
+        className={`fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 pt-3 backdrop-blur transition-transform duration-500 ease-[var(--ease-clay)] md:hidden pb-[max(0.75rem,env(safe-area-inset-bottom))] ${
+          barOn && !soldOut ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-earth">
+              {p.name}
+              {p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? ` · ${p.sizeLabel}` : ""}
+            </p>
+            <p className="text-sm text-clay-deep">{formatPaise(p.pricePaise * qty)}</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            tabIndex={barOn && !soldOut ? 0 : -1}
+            className="min-h-[48px] shrink-0 rounded-full bg-clay px-7 text-base font-medium text-cream active:scale-[0.97]"
+          >
+            Buy now
+          </button>
+        </div>
+      </div>
+      <div aria-hidden="true" className="h-20 md:hidden" />
     </div>
   );
 }

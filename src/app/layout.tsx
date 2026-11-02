@@ -37,6 +37,10 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
+  // Search Console's "HTML tag" ownership check; omitted until the token is set.
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
   description: DESCRIPTION,
   authors: [{ name: "Mudkraft" }],
   // Tab and home-screen icons come from app/icon.png and app/apple-icon.png.
