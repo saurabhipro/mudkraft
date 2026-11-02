@@ -1,6 +1,6 @@
 # Mudkraft: SEO, AI search and launch plan
 
-Last updated: 2 Nov 2026. Live site: https://www.mudkraft.com
+Last updated: 2 Nov 2026 (evening). Live site: https://www.mudkraft.com
 
 How to read this file:
 
@@ -21,9 +21,12 @@ How to read this file:
 | Google Analytics 4 | `G-F16PQW6P0C` live in the site |
 | Merchant Center | Account created; feed `https://www.mudkraft.com/feeds/google.xml` added |
 | Google Business Profile | Created; verification pending |
-| `mudkraft.lovable.app` | **Still live**: a duplicate under our brand name. Must be removed. |
+| `mudkraft.lovable.app` | **Taken down** (returns 404 "Project not found"). Done. |
 | Push-to-deploy (GitHub Actions) | **Broken**, see section 1 |
 | Meta Pixel | Code live, **off** until a Pixel ID is set |
+| Speed (live, phone) | Measured 2 Nov: load 0.5-1.0 s, layout shift 0, home film not downloaded at load. Nothing to fix. |
+| IndexNow (Bing) | Built: key file + automatic ping when the catalogue changes + `npm run indexnow` for all pages |
+| Review prompts | Built: "Review your pieces" button in the delivered email, and review links on the delivered order page |
 | Instagram | Hidden in the footer until a handle is set |
 
 Why the site is not in Google search yet: Google had never heard of "mudkraft", so it suggests "muscraft".
@@ -89,8 +92,7 @@ C. **Workflow (ME, done).** It now names the missing secret, or the "Permission 
 
 ## 2. YOU: do these now (about 1-2 hours)
 
-1. **Take down `mudkraft.lovable.app`.** lovable.dev > the Mudkraft project > Publish > Unpublish (or delete the project).
-   *Done when* the address shows an error page. Tell me and I will confirm.
+1. ~~Take down `mudkraft.lovable.app`~~ **Done 2 Nov** (verified: 404).
 2. **Merchant Center feed.** Merchant Center > Products > Diagnostics. Send me any "Disapproved" or error text.
    *Done when* products show as Approved (out-of-stock items are fine).
 3. **Merchant Center settings.** Add the shipping (free delivery in India, 2-3 day dispatch, 2-9 days transit) and returns
@@ -130,14 +132,14 @@ If a page stays "Crawled, currently not indexed" after about 10 days, send me th
 
 | # | Work | Needs from you |
 |---|---|---|
-| 1 | **IndexNow**: tell Bing (so ChatGPT search / Copilot) about new and changed pages instantly | nothing |
+| 1 | ~~**IndexNow**~~ **Done.** After each deploy run `npm run indexnow` once (also pings automatically when you edit products in Bikriup) | nothing |
 | 2 | **Instagram link** in footer + site schema | Instagram handle |
 | 3 | **Meta Pixel on** (code is live, only needs the ID in the VM env, then a rebuild) | Pixel ID |
 | 4 | **Meta Conversions API** (server side purchase events, de-duplicated with the Pixel) | Meta access token |
-| 5 | **Review prompts**: link in the order emails, plus an on-page prompt | nothing |
-| 6 | **More guides** (Matka vs fridge water; best handi size for a family; a Hindi mitti ke bartan page); FAQ blocks on every category page | review the copy |
+| 5 | ~~**Review prompts**~~ **Done** (delivered email + order page) | nothing |
+| 6 | **More guides.** Done: how to cook dal in a clay handi. Next: best handi size for a family; a Hindi mitti ke bartan page | review the copy |
 | 7 | **Banners and announcement bar**, edited in Bikriup admin (Bikriup deploy first, then Mudkraft) | the offer messages |
-| 8 | **Cache and speed pass**: public pages send `no-store` today; check PageSpeed on mobile and fix anything under 90 | nothing |
+| 8 | ~~**Speed pass**~~ **Done**: measured on the live site, already fast. Re-check after the banners ship | nothing |
 | 9 | **Auto-deploy check** after section 1 | section 1 done |
 
 Rules I follow so the SEO stays safe: no health claims the lab report does not support; one shipping/returns wording

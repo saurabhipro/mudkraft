@@ -448,6 +448,8 @@ export function orderUpdateEmail(data: OrderUpdateEmailData): RenderedEmail {
   const buttons = [
     data.trackingUrl ? button(data.trackingUrl, "Track the parcel") : "",
     data.invoiceUrl ? outlineButton(data.invoiceUrl, "Download invoice (PDF)") : "",
+    // Opens the order page, which lists each piece with a link to its review form.
+    data.status === "delivered" && data.statusUrl ? outlineButton(data.statusUrl, "Review your pieces") : "",
   ].filter(Boolean);
 
   return {

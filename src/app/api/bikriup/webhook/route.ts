@@ -2,8 +2,10 @@ import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { formatPaise } from "@/lib/money";
+import { SITE_URL } from "@/lib/seo";
 import { orderToken, verifyBikriupSignature } from "@/server/bikriup";
 import { sendOrderUpdateEmail } from "@/server/email/send";
+import { pingIndexNow } from "@/server/indexnow";
 import { appBaseUrl } from "@/server/email/templates";
 import { CACHE_TAGS } from "@/server/store/tags";
 
@@ -84,7 +86,7 @@ function orderMessage(
       return {
         subject: `Order ${no} delivered`,
         headline: "Delivered — enjoy your clay",
-        message: `Order ${no} has been delivered. If anything arrived broken, write to us within 7 days with a photo.`,
+        message: `Order ${no} has been delivered. If anything arrived broken, write to us within 7 days with a photo. If you are enjoying it, a short review helps other cooks find us.`,
       };
     case "cancelled":
       return {
@@ -118,10 +120,13 @@ export async function POST(request: Request) {
 
   if (body.event === "catalog.changed") {
     revalidateTag(CACHE_TAGS.products, IMMEDIATELY);
-    for (const slug of body.data?.slugs ?? []) {
+    const slugs = body.data?.slugs ?? [];
+    for (const slug of slugs) {
       revalidateTag(CACHE_TAGS.product(slug), IMMEDIATELY);
       revalidateTag(CACHE_TAGS.reviews(slug), IMMEDIATELY);
     }
+    // Not awaited: the shop's save must not wait on Bing.
+    void pingIndexNow([`${SITE_URL}/`, ...slugs.map((slug) => `${SITE_URL}/shop/${slug}`)]);
   }
 
   if (body.event === "order.updated" && body.data?.email && body.data.order_no && body.data.phone) {

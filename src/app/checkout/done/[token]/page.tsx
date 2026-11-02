@@ -168,6 +168,28 @@ export default async function OrderPlacedPage({
             })}
           </ul>
 
+          {order.status === "delivered" && order.items.some((i) => i.productSlug) && (
+            <div className="mt-6 rounded-2xl bg-sand p-5">
+              <h2 className="font-display text-2xl text-earth">How is your clay?</h2>
+              <p className="mt-1 text-sm text-foreground/80">
+                A short review, with a photo if you can, helps other cooks choose.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {order.items
+                  .filter((i) => i.productSlug)
+                  .map((i) => (
+                    <Link
+                      key={i.productSlug}
+                      href={`/shop/${i.productSlug}#reviews`}
+                      className="rounded-full border border-earth/40 px-4 py-2 text-xs uppercase tracking-widest text-earth transition-colors hover:bg-earth hover:text-cream"
+                    >
+                      Review {i.productName}
+                    </Link>
+                  ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 flex items-baseline justify-between border-t-2 border-earth/25 pt-5">
             <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
             <span className="font-display text-3xl text-earth">

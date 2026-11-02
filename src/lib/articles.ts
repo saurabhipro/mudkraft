@@ -9,6 +9,13 @@ export interface Article {
 
 export const ARTICLES: Article[] = [
   {
+    href: "/journal/how-to-cook-dal-in-a-clay-handi",
+    title: "How to Cook Dal in a Clay Handi: Step by Step",
+    description:
+      "A simple method for dal in a mitti ki handi: what to prepare, the slow heat that keeps the pot safe, and the mistakes to avoid.",
+    date: "2026-11-02",
+  },
+  {
     href: "/journal/is-clay-cookware-safe",
     title: "Is Clay Cookware Safe? Our Lab Report Explained",
     description:
