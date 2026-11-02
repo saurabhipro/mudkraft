@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Caveat } from "next/font/google";
 import type { ReactNode } from "react";
 
-import { FACEBOOK_URL, SALES_EMAIL, SALES_PHONE_DISPLAY } from "@/lib/catalogue";
+import { FACEBOOK_URL, INSTAGRAM_URL, SALES_EMAIL, SALES_PHONE_DISPLAY } from "@/lib/catalogue";
 import { YOUTUBE_CHANNEL_URL } from "@/lib/youtube";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { Providers } from "./providers";
@@ -84,7 +84,7 @@ const organizationJsonLd = {
         areaServed: "IN",
         availableLanguage: ["English", "Hindi"],
       },
-      sameAs: [FACEBOOK_URL, YOUTUBE_CHANNEL_URL],
+      sameAs: [FACEBOOK_URL, YOUTUBE_CHANNEL_URL, INSTAGRAM_URL].filter(Boolean),
     },
     {
       "@type": "WebSite",

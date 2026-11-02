@@ -41,4 +41,6 @@ export function catalogueSlug(p: { slug: string; name: string; sizeLabel: string
 
 export const SALES_EMAIL = "sales@mudkraft.com";
 export const SALES_PHONE_DISPLAY = "+91 70420 05946";
+/** The brand's Instagram profile, e.g. "https://www.instagram.com/<handle>". Empty hides every Instagram link. */
+export const INSTAGRAM_URL = "";
 export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61595958894218";

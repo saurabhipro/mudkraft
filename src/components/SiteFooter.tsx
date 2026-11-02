@@ -2,7 +2,8 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { ShareButton } from "@/components/ShareButton";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
-import { FACEBOOK_URL, SALES_EMAIL } from "@/lib/catalogue";
+import { FACEBOOK_URL, INSTAGRAM_URL, SALES_EMAIL } from "@/lib/catalogue";
+import { YOUTUBE_CHANNEL_URL } from "@/lib/youtube";
 import { whatsappLink } from "@/lib/whatsapp";
 
 const ENQUIRY_EMAIL = SALES_EMAIL;
@@ -159,14 +160,26 @@ export function SiteFooter() {
             </li>
             <li>
               <a
-                href="https://instagram.com"
+                href={YOUTUBE_CHANNEL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gold transition-colors mk-link"
               >
-                Instagram
+                YouTube
               </a>
             </li>
+            {INSTAGRAM_URL && (
+              <li>
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-gold transition-colors mk-link"
+                >
+                  Instagram
+                </a>
+              </li>
+            )}
           </ul>
         </div>
       </div>
