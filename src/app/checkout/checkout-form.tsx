@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { clearCart, removeItem, syncStock, updateQty, useCart } from "@/lib/cart";
+import { toItem, track } from "@/lib/analytics";
 import { formatPaise } from "@/lib/money";
 import { COD_EVERYWHERE, COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
 import { cartStock } from "@/server/actions/cart";
@@ -96,6 +97,18 @@ export function CheckoutForm({
   }, [hydrated, slugs]);
   const soldOut = cart.filter((item) => item.max === 0);
 
+  // One begin_checkout per visit to this page, once the basket has loaded.
+  const [began, setBegan] = useState(false);
+  useEffect(() => {
+    if (!hydrated || began || cart.length === 0) return;
+    setBegan(true);
+    track("begin_checkout", {
+      currency: "INR",
+      value: cart.reduce((sum, i) => sum + i.pricePaise * i.qty, 0) / 100,
+      items: cart.map((i) => toItem(i, i.qty)),
+    });
+  }, [hydrated, began, cart]);
+
   // A note is specific to the order being placed, so it never carries over.
   const [form, setForm] = useState({ ...defaults, note: "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -170,6 +183,7 @@ export function CheckoutForm({
     setError(null);
     setFieldErrors({});
     setPending(method);
+    track("add_payment_info", { payment_type: method, currency: "INR" });
 
     const result = await placeOrder({
       ...form,

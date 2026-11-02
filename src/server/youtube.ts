@@ -13,6 +13,9 @@ const FEED_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_
 /** One real fetch per hour per server; everything else is served from cache. */
 const REVALIDATE_SECONDS = 3600;
 
+/** We sell unglazed cookware only; planter / terracotta decor videos stay off the site. */
+const OFF_RANGE_TITLE = /planter|terracotta/i;
+
 function decodeXmlEntities(value: string): string {
   return value
     .replace(/&lt;/g, "<")
@@ -54,7 +57,7 @@ export async function getChannelVideos(): Promise<YouTubeVideo[]> {
     // Feed order is newest-first already, but sort defensively — the gallery's
     // "latest two" promise depends on it.
     videos.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
-    return videos;
+    return videos.filter((v) => !OFF_RANGE_TITLE.test(v.title));
   } catch (error) {
     console.error("[youtube] feed fetch failed", error);
     return [];

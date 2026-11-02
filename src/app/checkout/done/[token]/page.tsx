@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SiteFooter } from "@/components/SiteFooter";
+import { PurchaseEvent } from "@/components/PurchaseEvent";
 import { SiteHeader } from "@/components/SiteHeader";
 import { cloudinaryThumb } from "@/lib/cloudinary";
 import { formatPaise } from "@/lib/money";
@@ -53,6 +54,17 @@ export default async function OrderPlacedPage({
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader />
+      <PurchaseEvent
+        orderNumber={order.orderNumber}
+        value={order.totalPaise / 100}
+        shipping={order.shippingPaise / 100}
+        items={order.items.map((i) => ({
+          item_id: i.productSlug,
+          item_name: i.productName,
+          price: i.unitPricePaise / 100,
+          quantity: i.qty,
+        }))}
+      />
 
       <section className="max-w-3xl mx-auto px-6 md:px-10 pt-24 pb-8">
         <div className="text-xs tracking-[0.35em] uppercase text-clay">

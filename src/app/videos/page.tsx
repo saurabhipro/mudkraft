@@ -9,7 +9,7 @@ import { getChannelVideos } from "@/server/youtube";
 
 const TITLE = "Videos — Mudkraft";
 const DESCRIPTION =
-  "Watch the wheel turn: films from the Mudkraft studio — throwing, glazing and firing river clay by hand.";
+  "Watch the wheel turn: films from the Mudkraft studio — throwing, shaping and wood-firing unglazed river clay by hand.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -38,7 +38,7 @@ export default async function VideosPage() {
           Watch the <span className="italic">wheel turn</span>
         </h1>
         <p className="mt-5 text-lg leading-relaxed text-foreground/80 max-w-2xl">
-          Little films from the studio — clay being centred, glazed and drawn from the kiln. The
+          Little films from the studio — clay being centred, shaped and drawn from the wood kiln, no glaze. The
           full collection lives on our YouTube channel.
         </p>
       </section>

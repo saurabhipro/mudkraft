@@ -5,9 +5,9 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 
 const URL = `${SITE_URL}/journal/benefits-of-clay-water-pots`;
-const TITLE = "Benefits of Matka Water & How to Season a Clay Pot — Mudkraft";
+const TITLE = "Matka Water: How a Clay Pot Cools Water & How to Season It — Mudkraft";
 const DESCRIPTION =
-  "A slow guide to drinking water from an earthen pot — the natural cooling, mineral alkalinity, and gut-friendly benefits of matka water, plus how to season and clean a new clay pot without soap.";
+  "A plain guide to matka water: how an unglazed clay pot cools water without electricity, how to season a new matka, and how to clean it without soap.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Benefits of Matka Water & How to Season a Clay Pot",
+  headline: "Matka Water: How a Clay Pot Cools Water & How to Season It",
   description: DESCRIPTION,
   author: { "@type": "Organization", name: "Mudkraft" },
   publisher: {
@@ -59,11 +59,11 @@ export default function ArticlePage() {
       <article className="max-w-3xl mx-auto px-6 py-20">
         <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6">— journal</p>
         <h1 className="text-4xl md:text-6xl font-display text-earth leading-[1.05] text-balance">
-          The quiet benefits of <span className="italic">matka water</span>, and how to season a new clay pot.
+          How a <span className="italic">matka</span> cools your water, and how to season a new clay pot.
         </h1>
         <p className="mt-6 text-lg text-muted-foreground">
           For centuries, Indian households have kept their drinking water in earthen pots — matkas and surahis
-          thrown from river clay. Modern labs are only now catching up with what our grandmothers already knew.
+          thrown from river clay. Here is how they work, and how to look after one.
         </p>
 
         <section className="prose prose-lg mt-14 max-w-none text-foreground space-y-6">
@@ -71,27 +71,23 @@ export default function ArticlePage() {
           <p>
             Unglazed terracotta is <em>micro-porous</em>. Thousands of tiny channels let water seep
             slowly through the wall, evaporate on the outside, and cool the vessel from within — a natural,
-            electricity-free refrigeration. Water inside a matka typically sits 8–12 °C below room temperature,
-            without the harsh chill of a fridge that can shock the throat and slow digestion.
+            electricity-free refrigeration. Water inside a matka stays cooler than the room, and never as icy
+            as a fridge.
           </p>
 
-          <h2 className="text-3xl font-display text-earth mt-12">The health benefits of drinking earthen-pot water</h2>
+          <h2 className="text-3xl font-display text-earth mt-12">Why people choose an earthen pot</h2>
           <ul className="list-disc pl-6 space-y-2">
             <li>
-              <strong>Naturally alkaline.</strong> Clay is slightly alkaline; it gently raises the pH of the water,
-              which helps balance acidity and soothe the gut.
+              <strong>Natural cooling.</strong> Evaporation through the clay wall cools the water, with no
+              fridge and no power.
             </li>
             <li>
-              <strong>Trace minerals.</strong> As water passes through the pot&apos;s walls, it picks up small amounts
-              of iron, magnesium and calcium from the clay — a mild, natural mineralisation.
+              <strong>Clean, unglazed clay.</strong> Our clay was tested by the Central Glass &amp; Ceramic
+              Research Institute: no lead, cadmium or arsenic found, and a near-neutral pH of 7.2. See the{" "}
+              <Link href="/soil-report" className="text-clay underline">soil report</Link>.
             </li>
             <li>
-              <strong>Gentle on the throat.</strong> Cool but never icy — matka water is often recommended
-              in Ayurveda for people with sensitive throats, asthma, or a slow metabolism.
-            </li>
-            <li>
-              <strong>No plastic leaching.</strong> Unlike plastic bottles left in the sun, an earthen pot
-              adds nothing chemical to the water.
+              <strong>No plastic.</strong> Nothing is glazed, painted or lined. It is fired river clay all the way through.
             </li>
             <li>
               <strong>Better for the planet.</strong> No refrigeration, no plastic, and at the end of its life,
@@ -129,7 +125,7 @@ export default function ArticlePage() {
           </p>
 
           <p className="mt-12 font-hand text-2xl text-clay">
-            One good matka, one small ritual — and your water tastes like the river again.
+            One good matka, one small ritual, and a cooler glass of water every day.
           </p>
         </section>
 

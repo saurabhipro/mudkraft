@@ -10,9 +10,9 @@ import coolingImg from "@/assets/benefit-cooling.jpg";
 import nutrientsImg from "@/assets/benefit-nutrients.jpg";
 
 const URL = `${SITE_URL}/benefits`;
-const TITLE = "Benefits of Earthen Clay Pots — Alkaline Water, Nutrients & Natural Cooling | Mudkraft";
+const TITLE = "Why Cook & Store Water in Unglazed Clay — Lab-Tested, Natural Cooling | Mudkraft";
 const DESCRIPTION =
-  "Discover the health benefits of drinking and cooking in unglazed clay pots — naturally alkaline water, preserved nutrients, gentle mineral enrichment, and electricity-free cooling. A slow guide from Mudkraft.";
+  "Why unglazed clay: lab-tested river clay with no lead, cadmium or arsenic, natural evaporative cooling for water, and slow even heat for cooking. A plain guide from Mudkraft.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -28,23 +28,23 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
 };
 
-const COMPARE_COLUMNS = ["Taste", "Minerals", "Temperature", "Footprint"];
+const COMPARE_COLUMNS = ["Material", "Temperature", "Power", "Plastic"];
 
 const COMPARE_ROWS = [
   {
     name: "Clay matka",
     ours: true,
-    cells: ["Alkaline, gentle", "Natural iron, Mg, Ca", "Naturally cool", "Zero plastic, zero power"],
+    cells: ["Unglazed river clay", "Naturally cool by evaporation", "None needed", "None"],
   },
   {
     name: "Plastic bottle",
     ours: false,
-    cells: ["Acidic", "None", "Warms in the sun", "Can leach microplastics"],
+    cells: ["Plastic", "Warms in the sun", "None needed", "Plastic"],
   },
   {
     name: "Steel, from fridge",
     ours: false,
-    cells: ["Ice-cold", "None", "Harsh on the throat", "Needs electricity"],
+    cells: ["Steel", "Ice-cold", "Needs electricity", "None"],
   },
 ];
 
@@ -59,56 +59,56 @@ type Benefit = {
 
 const BENEFITS: Benefit[] = [
   {
-    eyebrow: "01 — Water",
-    title: "Naturally alkaline water",
+    eyebrow: "01 — Clean clay",
+    title: "Lab-tested, nothing added",
     body:
-      "Clay is faintly alkaline. As water rests inside an unglazed matka, its pH lifts gently — softening the sharp acidity of tap water and calming the gut. What you sip in the morning is water the way rivers meant it to be.",
+      "Our pots are shaped by hand from river clay and wood-fired for 48 hours. There is no glaze and no paint, so the only thing your food or water touches is fired clay. The clay was tested by the Central Glass & Ceramic Research Institute.",
     points: [
-      "Balances the body's pH after sleep and meals",
-      "Eases acidity, heartburn and bloating",
-      "Tastes rounder, sweeter — never metallic",
-    ],
-    image: alkalineImg.src,
-    alt: "Overhead view of clear water resting inside a terracotta matka in warm morning light",
-  },
-  {
-    eyebrow: "02 — Minerals",
-    title: "Trace minerals from the earth",
-    body:
-      "As water seeps slowly through the pot's micro-porous walls, it picks up small, natural amounts of iron, magnesium and calcium from the river clay. A soft mineralisation — nothing added, nothing stripped.",
-    points: [
-      "Iron & magnesium from Ganges-plain silt",
-      "No chlorine aftertaste, no plastic leaching",
-      "The pot literally gives back to the water",
+      "No lead, cadmium or arsenic found in the lab report",
+      "pH 7.2, near-neutral",
+      "Read the numbers yourself on our soil report page",
     ],
     image: mineralsImg.src,
     alt: "Macro close-up of porous terracotta wall showing tiny channels in warm red-brown clay",
   },
   {
-    eyebrow: "03 — Cooling",
+    eyebrow: "02 — Cooling",
     title: "Cool water without electricity",
     body:
-      "Thousands of tiny pores let a whisper of water evaporate through the pot's skin. That evaporation cools the vessel from within — 8 to 12 °C below room temperature, without the harsh chill of a fridge that shocks the throat.",
+      "Thousands of tiny pores let a whisper of water evaporate through the pot's skin. That evaporation cools the vessel from within, so water stays pleasantly cooler than the room, without a fridge.",
     points: [
-      "Ayurveda-friendly — kind to throat, lungs, teeth",
       "No refrigerator, no power, no plastic bottle",
-      "Perfect for Indian summers — the old way",
+      "Cooler than room temperature, never ice-cold",
+      "Perfect for Indian summers, the old way",
     ],
     image: coolingImg.src,
     alt: "Hands pouring cool water from a clay bottle into a small clay cup in a warm Indian kitchen",
   },
   {
-    eyebrow: "04 — Nutrients",
-    title: "Nutrients preserved in slow cooking",
+    eyebrow: "03 — Cooking",
+    title: "Slow, even heat for the handi",
     body:
-      "A handi cooks the way grandmothers cook — low, slow, and even. Clay holds heat gently and lets steam breathe through its walls, so vitamins, minerals and delicate flavours stay in the food, not lost to a hot metal pan.",
+      "A handi cooks the way grandmothers cook: low, slow and even. Clay holds heat gently and lets steam breathe through its walls, so dals, biryani and curries simmer softly and the flavour deepens.",
     points: [
-      "Retains B-vitamins, iron and moisture in dals & rice",
-      "Needs 30–40% less oil than metal cookware",
-      "Alkaline clay balances the acidity of tomato & tamarind curries",
+      "Holds heat long after the flame is off",
+      "Great for dal, rice, biryani and slow curries",
+      "Season it once, then it only gets better",
     ],
     image: nutrientsImg.src,
     alt: "A terracotta handi cooking dal on a low blue flame, gentle steam rising",
+  },
+  {
+    eyebrow: "04 — Everyday",
+    title: "Plastic-free, power-free",
+    body:
+      "A matka holds your drinking water with no plastic and no power. Each piece is hand-thrown in Khurja, so no two are exactly alike.",
+    points: [
+      "Unglazed river clay, made by hand",
+      "Breakage cover: free replacement if it arrives broken",
+      "Free delivery across India",
+    ],
+    image: alkalineImg.src,
+    alt: "Overhead view of clear water resting inside a terracotta matka in warm morning light",
   },
 ];
 
@@ -122,12 +122,12 @@ export default function BenefitsPage() {
         <section className="max-w-5xl mx-auto px-6 md:px-10 pt-10 md:pt-16 pb-16 text-center">
           <p className="text-xs tracking-[0.4em] uppercase text-clay mb-6">— why clay</p>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-display text-earth leading-[1.05] text-balance">
-            The quiet gifts of an <span className="italic">earthen pot</span>.
+            Why choose <span className="italic">unglazed clay</span>.
           </h1>
           <p className="mt-8 max-w-2xl mx-auto text-base md:text-lg text-muted-foreground leading-relaxed">
-            For two thousand summers, Indian kitchens have kept their water and cooked their meals in
-            unglazed clay. Modern labs are only now catching up with what our grandmothers already knew —
-            that the pot itself is part of the recipe.
+            For generations, Indian kitchens have kept their water and cooked their meals in unglazed
+            clay. Here is what we can tell you plainly about ours: how it is made, what the lab found,
+            and how it behaves on the stove and on the shelf.
           </p>
         </section>
 
@@ -232,7 +232,7 @@ export default function BenefitsPage() {
         {/* CTA */}
         <section className="py-24 px-6 md:px-10 text-center">
           <p className="font-hand text-2xl md:text-3xl text-clay mb-8">
-            One good matka, one small ritual — and your water tastes like the river again.
+            One good matka, one small ritual, and a cooler glass of water every day.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link

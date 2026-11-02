@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { POLICY } from "@/lib/policy";
 import { OG_IMAGE } from "@/lib/seo";
 import { whatsappLink } from "@/lib/whatsapp";
 
@@ -35,19 +36,19 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Do you ship across India?",
-    a: "Yes. We ship pan-India with careful straw-and-cotton packing. Shipping timelines and cost are shared on WhatsApp before we confirm your order.",
+    a: `Yes. ${POLICY.delivery}. Every piece is packed in ${POLICY.packing}. Orders leave the studio within ${POLICY.dispatch}; delivery takes 2–4 working days in Delhi NCR and 5–9 elsewhere in India.`,
   },
   {
     q: "How do I place an order?",
-    a: "Add pieces to your cart and tap Checkout — it opens WhatsApp with your order pre-filled. We reply within a few hours with total, shipping, and payment details.",
+    a: "Add pieces to your basket and tap Checkout. Enter your delivery details, pay online or choose cash on delivery, and you will get a confirmation with tracking on WhatsApp. Prefer to ask first? Message us on WhatsApp.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "UPI, bank transfer, and major cards through a shared payment link. Payment is confirmed on WhatsApp before dispatch.",
+    a: `${POLICY.payments} ${POLICY.cod}`,
   },
   {
     q: "Can I return or exchange a pot?",
-    a: "If your piece arrives damaged in transit, send us a photo within 48 hours of delivery and we will replace it. Because each vessel is hand-thrown, minor variation in shape, tone, and finish is part of the craft — not a defect.",
+    a: `${POLICY.breakage} Unused pieces can be returned within ${POLICY.returnDays} days of delivery. Because each vessel is hand-thrown, minor variation in shape, tone, and finish is part of the craft, not a defect.`,
   },
   {
     q: "Do you host workshops or school visits?",

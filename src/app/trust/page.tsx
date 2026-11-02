@@ -110,8 +110,8 @@ const SECTIONS: Section[] = [
       <p>
         Every Mudkraft vessel is thrown by hand from river clay, sun-dried, and fired in a wood
         kiln with no chemical glaze. Because each piece is made one at a time, minor variation in
-        shape, tone, and finish is part of the craft — not a defect. Damage during transit is
-        replaced free within 48 hours of delivery.
+        shape, tone, and finish is part of the craft — not a defect. If a piece arrives
+        broken, we replace it or refund you in full; share an unboxing photo or video within 48 hours of delivery.
       </p>
     ),
   },

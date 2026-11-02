@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
+import { Analytics } from "@/components/Analytics";
 import { GoogleOneTap } from "@/components/GoogleOneTap";
 import { SiteMotion } from "@/components/SiteMotion";
 import { WelcomePopup } from "@/components/WelcomePopup";
@@ -18,6 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <GoogleOneTap />
       <SiteMotion />
       <WelcomePopup />
+      <Analytics />
     </QueryClientProvider>
   );
 }
