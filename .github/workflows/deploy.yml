@@ -50,12 +50,18 @@ jobs:
           [ -n "$KNOWN_HOSTS" ] || { echo "::error::GitHub secret DEPLOY_KNOWN_HOSTS is not set (see SEO-PLAN.md, section 0)"; exit 1; }
           [ -n "$HOST" ] || { echo "::error::GitHub secret DEPLOY_HOST is not set (see SEO-PLAN.md, section 0)"; exit 1; }
           install -m 700 -d ~/.ssh
-          # Strip Windows line endings that can sneak in when a key is pasted into a secret.
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          # The secret may hold the key as pasted (BEGIN/END lines) or as one line of base64, which a
+          # web form cannot mangle: `base64 -w0 ~/.ssh/mudkraft_deploy`. Windows line endings are stripped.
+          if printf '%s' "$SSH_KEY" | grep -q 'BEGIN'; then
+            printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          else
+            printf '%s' "$SSH_KEY" | tr -d ' \r\n' | base64 -d > ~/.ssh/deploy_key 2>/dev/null || true
+          fi
+          chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
           # The fingerprint is public: compare it with `ssh-keygen -lf ~/.ssh/mudkraft_deploy.pub` on your machine.
           FP=$(ssh-keygen -y -f ~/.ssh/deploy_key 2>/dev/null | ssh-keygen -lf - 2>/dev/null) || {
-            echo "::error::DEPLOY_SSH_KEY is not a valid private key. Copy the whole output of: cat ~/.ssh/mudkraft_deploy (including the BEGIN and END lines)."
+            echo "::error::DEPLOY_SSH_KEY is not a valid private key. Set it to the one-line output of: base64 -w0 ~/.ssh/mudkraft_deploy"
             exit 1
           }
           echo "::notice::Deploy key in use: $FP"
