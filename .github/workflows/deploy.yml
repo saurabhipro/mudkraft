@@ -50,10 +50,17 @@ jobs:
           [ -n "$KNOWN_HOSTS" ] || { echo "::error::GitHub secret DEPLOY_KNOWN_HOSTS is not set (see SEO-PLAN.md, section 0)"; exit 1; }
           [ -n "$HOST" ] || { echo "::error::GitHub secret DEPLOY_HOST is not set (see SEO-PLAN.md, section 0)"; exit 1; }
           install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes "deploy@$HOST" < "$RUNNER_TEMP/main.bundle" || {
-            echo "::error::Deploy failed. 'Permission denied' means the deploy key is not installed on the VM for mudkraft-deploy (SEO-PLAN.md, section 0). Anything else: read the lines above."
+          # Strip Windows line endings that can sneak in when a key is pasted into a secret.
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          # The fingerprint is public: compare it with `ssh-keygen -lf ~/.ssh/mudkraft_deploy.pub` on your machine.
+          FP=$(ssh-keygen -y -f ~/.ssh/deploy_key 2>/dev/null | ssh-keygen -lf - 2>/dev/null) || {
+            echo "::error::DEPLOY_SSH_KEY is not a valid private key. Copy the whole output of: cat ~/.ssh/mudkraft_deploy (including the BEGIN and END lines)."
+            exit 1
+          }
+          echo "::notice::Deploy key in use: $FP"
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes "deploy@$HOST" < "$RUNNER_TEMP/main.bundle" 2> "$RUNNER_TEMP/ssh.err" || {
+            echo "::error::Deploy failed. SSH said: $(tail -3 "$RUNNER_TEMP/ssh.err" | tr '\n' ' ')"
             exit 1
           }
       - name: Remove key
