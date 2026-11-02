@@ -40,5 +40,5 @@ export function catalogueSlug(p: { slug: string; name: string; sizeLabel: string
 }
 
 export const SALES_EMAIL = "sales@mudkraft.com";
-export const SALES_PHONE_DISPLAY = "+91 99906 49990";
+export const SALES_PHONE_DISPLAY = "+91 70420 05946";
 export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61595958894218";

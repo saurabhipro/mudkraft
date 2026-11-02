@@ -8,7 +8,7 @@
  */
 
 /** Country code and number, no `+` or spaces — the format wa.me expects. */
-export const WHATSAPP_NUMBER = "919990649990";
+export const WHATSAPP_NUMBER = "917042005946";
 
 /**
  * Builds a wa.me deep link with a prefilled message.
