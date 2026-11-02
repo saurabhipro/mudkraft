@@ -41,3 +41,6 @@ next-env.d.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Leftover files from the Windows-drive mount
+.fuse_hidden*
