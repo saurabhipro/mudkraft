@@ -73,6 +73,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/journal" className="hover:text-gold transition-colors mk-link">
+                Journal
+              </Link>
+            </li>
+            <li>
               <Link href="/benefits" className="hover:text-gold transition-colors mk-link">
                 Benefits of Clay
               </Link>

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { FamilyCard } from "@/app/home-page";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ARTICLES } from "@/lib/articles";
 import { CATEGORY_PAGES, categoryBySlug } from "@/lib/categories";
 import { formatPaise } from "@/lib/money";
 import { groupFamilies, toProductView } from "@/lib/product-view";
@@ -134,9 +135,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
               {c.label}
             </Link>
           ))}
-          <Link href="/care/season-your-handi" className="text-earth underline-offset-4 hover:text-clay hover:underline">
-            How to season a clay handi
-          </Link>
+          {ARTICLES.slice(0, 4).map((a) => (
+            <Link key={a.href} href={a.href} className="text-earth underline-offset-4 hover:text-clay hover:underline">
+              {a.title}
+            </Link>
+          ))}
           <Link href="/soil-report" className="text-earth underline-offset-4 hover:text-clay hover:underline">
             Lab report
           </Link>

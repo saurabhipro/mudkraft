@@ -1,3 +1,4 @@
+import { ARTICLES } from "@/lib/articles";
 import { CATEGORY_PAGES } from "@/lib/categories";
 import { POLICY } from "@/lib/policy";
 import { toProductView } from "@/lib/product-view";
@@ -29,8 +30,8 @@ export async function GET() {
     ),
     "",
     "## Guides",
-    `- [How to season a clay handi](${SITE_URL}/care/season-your-handi)`,
-    `- [Matka water: how a clay pot cools water](${SITE_URL}/journal/benefits-of-clay-water-pots)`,
+    ...ARTICLES.map((a) => `- [${a.title}](${SITE_URL}${a.href}): ${a.description}`),
+    `- [Journal index](${SITE_URL}/journal)`,
     `- [Soil and lab report](${SITE_URL}/soil-report)`,
     `- [Why unglazed clay](${SITE_URL}/benefits)`,
     `- [FAQ](${SITE_URL}/faq)`,
