@@ -8,6 +8,7 @@ import { toProductView } from "@/lib/product-view";
 
 import { BikriupError, bikriup, bikriupEnabled } from "../bikriup";
 import { getActiveProducts } from "../store/products";
+import { sendWhatsApp } from "../whatsapp";
 
 /**
  * The welcome popup: a visitor's name, mobile and email go into Bikriup's customers
@@ -85,6 +86,15 @@ export async function joinWelcome(input: unknown): Promise<JoinResult> {
         forwardedFor: (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim(),
       },
     );
+    // The code on WhatsApp too, so it is still there at checkout. A MARKETING message:
+    // only for people who ticked the opt-in, and never twice for a used code.
+    if (d.optIn && out.coupon && !out.coupon_used) {
+      await sendWhatsApp(d.phone, {
+        template: "welcome",
+        body: [d.name.split(/\s+/)[0], String(out.coupon.percent), out.coupon.code],
+        button: out.coupon.code,
+      });
+    }
     return { ok: true, code: out.coupon?.code ?? null, percent: out.coupon?.percent ?? 0, alreadyUsed: out.coupon_used };
   } catch (error) {
     if (error instanceof BikriupError && error.status === 429) {

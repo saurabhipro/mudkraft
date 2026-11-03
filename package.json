@@ -18,7 +18,9 @@
     "db:reset-data": "tsx scripts/reset-data.ts",
     "excel:check": "tsx scripts/excel-roundtrip.ts",
     "price:report": "tsx scripts/price-report.ts",
-    "bikriup:export": "tsx scripts/export-to-bikriup.ts"
+    "bikriup:export": "tsx scripts/export-to-bikriup.ts",
+    "whatsapp:templates": "tsx scripts/whatsapp-templates.ts",
+    "whatsapp:flow": "tsx scripts/whatsapp-flow.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -8,6 +8,8 @@ import { sendOrderUpdateEmail } from "@/server/email/send";
 import { pingIndexNow } from "@/server/indexnow";
 import { appBaseUrl } from "@/server/email/templates";
 import { CACHE_TAGS } from "@/server/store/tags";
+import { chatStatus, sendRaw, sendWhatsApp } from "@/server/whatsapp";
+import { orderStepMessage } from "@/server/whatsapp/orders";
 
 /**
  * Bikriup tells the site when something changed, so cached pages refresh at
@@ -15,8 +17,11 @@ import { CACHE_TAGS } from "@/server/store/tags";
  * signing secret into BIKRIUP_WEBHOOK_SECRET, in Bikriup › Shop › Website & API.
  *
  *   catalog.changed — price, stock, photo, new item or an approved review
- *   order.updated   — the studio moved an order on: the buyer gets an email
- *                     (confirmed with the invoice, shipped with tracking, …)
+ *   order.updated   — the studio moved an order on: the buyer gets an email and
+ *                     a WhatsApp message (confirmed with the invoice, shipped
+ *                     with tracking, …; server/whatsapp/orders.ts lists them)
+ *   chat.reply      — the studio answered a WhatsApp chat in Bikriup › WhatsApp:
+ *                     send it from the studio's number and report back
  */
 
 const IMMEDIATELY = { expire: 0 } as const;
@@ -129,22 +134,38 @@ export async function POST(request: Request) {
     void pingIndexNow([`${SITE_URL}/`, ...slugs.map((slug) => `${SITE_URL}/shop/${slug}`)]);
   }
 
-  if (body.event === "order.updated" && body.data?.email && body.data.order_no && body.data.phone) {
+  if (body.event === "order.updated" && body.data?.order_no && body.data.phone) {
     const o = body.data;
     const text = orderMessage(o);
-    if (text) {
-      await sendOrderUpdateEmail(o.email!, {
-        ...text,
-        customerName: (o.customer_name ?? "").split(" ")[0] || "there",
-        orderNumber: o.order_no!,
-        statusUrl: `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}`,
-        status: o.status,
-        courier: o.courier,
-        trackingNo: o.tracking_no,
-        invoiceUrl: o.invoice_url ?? "",
-        trackingUrl: o.tracking_url ?? "",
-        clickHereUrl: o.status === "shipped" ? `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}` : undefined,
-      });
+    const whatsapp = orderStepMessage(o);
+    await Promise.all([
+      text && o.email
+        ? sendOrderUpdateEmail(o.email, {
+            ...text,
+            customerName: (o.customer_name ?? "").split(" ")[0] || "there",
+            orderNumber: o.order_no!,
+            statusUrl: `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}`,
+            status: o.status,
+            courier: o.courier,
+            trackingNo: o.tracking_no,
+            invoiceUrl: o.invoice_url ?? "",
+            trackingUrl: o.tracking_url ?? "",
+            clickHereUrl: o.status === "shipped" ? `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}` : undefined,
+          })
+        : null,
+      whatsapp ? sendWhatsApp(o.phone!, whatsapp) : null,
+    ]);
+  }
+
+  if (body.event === "chat.reply") {
+    const r = body.data as { message_id?: number; phone?: string; text?: string } | undefined;
+    if (r?.phone && r.text) {
+      const sent = await sendRaw(r.phone, { type: "text", text: { body: r.text, preview_url: /https?:\/\//.test(r.text) } });
+      await chatStatus(
+        sent.ok
+          ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
+          : { message_id: r.message_id, status: "failed", error: sent.error },
+      );
     }
   }
 

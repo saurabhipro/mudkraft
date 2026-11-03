@@ -29,6 +29,8 @@ import {
   razorpayKeyId,
   verifyPaymentSignature,
 } from "../razorpay";
+import { sendWhatsApp } from "../whatsapp";
+import { orderReceived } from "../whatsapp/orders";
 
 export type CheckoutResult =
   | { ok: true; token: string; method: CheckoutMethod }
@@ -292,6 +294,7 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
       postalCode: d.postalCode,
     },
   });
+  if (created) await sendWhatsApp(d.phone, orderReceived(d.name, created.orderNumber, totalPaise, lookupToken));
 
   return { ok: true, token: lookupToken, method: d.method };
 }
@@ -349,6 +352,7 @@ async function placeBikriupOrder(
     totalPaise: Math.round(created.total * 100),
     address: { line1: d.line1, line2: d.line2 || null, city: d.city, state: d.state, postalCode: d.postalCode },
   });
+  await sendWhatsApp(d.phone, orderReceived(d.name, created.order_no, Math.round(created.total * 100), token));
 
   return { ok: true, token, method: d.method };
 }

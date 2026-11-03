@@ -66,6 +66,21 @@ const serverEnvSchema = z.object({
   MSG91_AUTH_KEY: emptyAsUndefined(z.string()),
   MSG91_SENDER_ID: emptyAsUndefined(z.string()),
   MSG91_DLT_TEMPLATE_ID: emptyAsUndefined(z.string()),
+
+  // WhatsApp Cloud API (Meta) is optional: without the number id and token the
+  // order messages are skipped and the emails still go. Values come from
+  // developers.facebook.com › the Mudkraft app › WhatsApp › API Setup; the token
+  // is a System User's permanent one, never the 24-hour test token.
+  WHATSAPP_PHONE_NUMBER_ID: emptyAsUndefined(z.string()),
+  WHATSAPP_ACCESS_TOKEN: emptyAsUndefined(z.string()),
+  // App › Settings › Basic › App secret: proves a webhook came from Meta.
+  WHATSAPP_APP_SECRET: emptyAsUndefined(z.string()),
+  // Any long random string, typed into the app's webhook settings as "Verify token".
+  WHATSAPP_VERIFY_TOKEN: emptyAsUndefined(z.string()),
+  // Commerce Manager › the catalogue connected to the number: its id (for the bestsellers list).
+  WHATSAPP_CATALOG_ID: emptyAsUndefined(z.string()),
+  // The checkout form, printed by `npm run whatsapp:flow`. Without it a cart gets a link to the website.
+  WHATSAPP_FLOW_ID: emptyAsUndefined(z.string()),
 });
 
 const parsed = serverEnvSchema.safeParse(process.env);

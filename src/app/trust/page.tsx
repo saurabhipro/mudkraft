@@ -39,11 +39,12 @@ const SECTIONS: Section[] = [
     heading: "What we collect",
     body: (
       <>
-        <p>When you place an order or enquiry through WhatsApp, we receive the name, phone number,
-        and shipping address you send us, along with the items you selected. We store this only to
-        prepare and ship your order.</p>
-        <p className="mt-3">The cart on this website lives in your browser&apos;s local storage. It does
-        not leave your device until you tap Checkout and send us the message on WhatsApp.</p>
+        <p>When you place an order, we receive your name, mobile number, email, delivery address
+        and the pieces you chose. When you join our welcome offer or send an enquiry, we receive
+        the name, number and email you enter. We use these to prepare, ship and support your
+        order, and to answer you.</p>
+        <p className="mt-3">Your order and contact details are kept in our order-management system
+        (Bikriup), which runs on servers in India.</p>
       </>
     ),
   },
@@ -52,10 +53,24 @@ const SECTIONS: Section[] = [
     heading: "How payment works",
     body: (
       <p>
-        We share a payment link (UPI, bank transfer, or card) over WhatsApp after confirming your
-        order. Payments are processed by the payment provider on their own secure infrastructure —
-        we never see or store your card or bank credentials.
+        Online payments (UPI, card, net banking) are processed by Razorpay on their own secure
+        systems. We never see or store your card or bank details. Cash on delivery is collected by
+        our courier.
       </p>
+    ),
+  },
+  {
+    label: "WhatsApp",
+    heading: "Messages on WhatsApp",
+    body: (
+      <>
+        <p>We send order updates to the mobile number on your order through WhatsApp (Meta&apos;s
+        WhatsApp Business Platform): order received, payment, confirmed with your invoice,
+        packed, shipped with tracking, out for delivery, delivered, and any cancellation, return
+        or refund. If you message us, we use that conversation only to help you.</p>
+        <p className="mt-3">Offers are sent only if you tick the box to receive them, and you can
+        stop them at any time by replying STOP or asking us.</p>
+      </>
     ),
   },
   {
@@ -63,9 +78,10 @@ const SECTIONS: Section[] = [
     heading: "Cookies & analytics",
     body: (
       <p>
-        We use a small amount of browser local storage to remember your cart. We do not run
-        advertising trackers on this site. If we add analytics in future to understand which pages
-        are useful, we will update this page.
+        We remember your cart in your browser. We use Google Analytics and the Meta Pixel to
+        understand which pages and products are useful and, when we advertise, which adverts lead
+        to orders. These use cookies; you can block them in your browser settings and the shop
+        still works.
       </p>
     ),
   },
@@ -74,8 +90,9 @@ const SECTIONS: Section[] = [
     heading: "Who we share data with",
     body: (
       <p>
-        Your shipping details are shared only with our courier partner to deliver your order.
-        We do not sell or rent your contact information to anyone.
+        Only the services that make an order work: our courier (to deliver it), Razorpay (to take
+        payment), Meta&apos;s WhatsApp and our email provider (to send you updates), and Google and
+        Meta for the analytics above. We do not sell or rent your contact information to anyone.
       </p>
     ),
   },
