@@ -7,7 +7,6 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { OrdersEnquiries } from "@/components/OrdersEnquiries";
 import { SALES_EMAIL } from "@/lib/catalogue";
 import handsClay from "@/assets/hands-clay.jpg";
-import studentPottery from "@/assets/student-pottery.jpg";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import { sendWorkshopEnquiry } from "@/server/actions/enquiries";
 
@@ -205,11 +204,11 @@ export function WorkshopsPage() {
         <div className="grid md:grid-cols-12 gap-10 items-center">
           <div className="md:col-span-7 order-2 md:order-1">
             <img
-              src={studentPottery.src}
-              alt="A student shaping a small bowl on the potter's wheel during a Mudkraft workshop"
+              src="/media/ws-potters.jpg"
+              alt="A student shaping clay on the potter's wheel, guided by a Mudkraft potter"
               loading="lazy"
-              width={1024}
-              height={1024}
+              width={900}
+              height={675}
               className="w-full aspect-[4/3] object-cover rounded-[2rem] shadow-[0_40px_100px_-30px_rgba(80,40,20,0.5)]"
             />
           </div>

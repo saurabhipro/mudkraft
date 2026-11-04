@@ -5,6 +5,7 @@ import { availability } from "@/lib/schema";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getCategories } from "@/server/store/categories";
 import { getActiveProducts } from "@/server/store/products";
+import { imageBoxes } from "@/server/image-box";
 import { getChannelVideos } from "@/server/youtube";
 import { HomePage } from "./home-page";
 
@@ -43,6 +44,7 @@ export default async function Page() {
     getChannelVideos(),
   ]);
   const views = products.map(toProductView);
+  const boxes = await imageBoxes(views.map(displayImage));
   const categoryNames =
     categories?.map((c) => c.name) ??
     [...new Set(views.map((v) => v.category).filter((c): c is string => Boolean(c)))];
@@ -72,11 +74,7 @@ export default async function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productsJsonLd) }}
       />
-      <HomePage
-        products={views}
-        categories={categoryNames}
-        videos={videos}
-      />
+      <HomePage products={views} categories={categoryNames} videos={videos} boxes={boxes} />
     </>
   );
 }

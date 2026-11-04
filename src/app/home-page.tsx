@@ -21,11 +21,11 @@ import potsDrying from "@/assets/pots-drying.jpg";
 import benefitCooling from "@/assets/benefit-cooling.jpg";
 import benefitMinerals from "@/assets/benefit-minerals.jpg";
 import benefitNutrients from "@/assets/benefit-nutrients.jpg";
-import studentPottery from "@/assets/student-pottery.jpg";
 import { formatPaise } from "@/lib/money";
 import {
   groupFamilies,
   variantLabel,
+  type ImageBox,
   type ProductFamily,
   type ProductView,
 } from "@/lib/product-view";
@@ -135,10 +135,12 @@ export function HomePage({
   products,
   categories,
   videos,
+  boxes,
 }: {
   products: ProductView[];
   categories: string[];
   videos: YouTubeVideo[];
+  boxes: Record<string, ImageBox>;
 }) {
   const cart = useCart();
   const [open, setOpen] = useState(false);
@@ -196,7 +198,7 @@ export function HomePage({
       />
 
       {/* HERO — pick a piece on the wheel */}
-      <HeroPieces products={products} />
+      <HeroPieces products={products} boxes={boxes} />
 
       {/* FILM — looping video under the hero */}
       <HomeFilm />
@@ -548,8 +550,8 @@ export function HomePage({
           </div>
           <div className="group relative min-h-[360px] md:min-h-[480px] overflow-hidden">
             <img
-              src={studentPottery.src}
-              alt="A student shaping a small bowl on the wheel"
+              src="/media/ws-potters.jpg"
+              alt="A Mudkraft potter guiding a student at the wheel in the studio"
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1800ms] ease-[var(--ease-clay)] group-hover:scale-[1.06]"
             />
@@ -676,12 +678,11 @@ export function HomePage({
             <circle cx="32" cy="32" r="6" fill="var(--clay)" />
           </svg>
           <p className="mk-reveal font-display italic text-[clamp(1.75rem,3.8vw,3.4rem)] leading-[1.2] text-earth text-balance">
-            &ldquo;<span className="not-italic">Mudkraft</span> is the craft of earth in your hands.
+            &ldquo;<span className="not-italic mr-[0.12em]">Mudkraft</span> is the craft of earth in your hands.
             We think of every home that keeps our clay as another quiet birth — of stillness, of
             ritual, of a slower way to hold what matters.&rdquo;
           </p>
-          <div className="mt-8 font-hand text-[1.75rem] text-clay-deep">— Ananya, founder</div>
-          <p className="mt-6 text-[11px] tracking-[0.24em] uppercase text-muted-foreground">
+          <p className="mt-10 text-[11px] tracking-[0.24em] uppercase text-muted-foreground">
             Handmade in Khurja, India · A slow craft studio from the banks of the Ganges
           </p>
         </div>

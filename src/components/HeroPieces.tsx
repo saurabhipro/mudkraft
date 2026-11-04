@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, Droplet } from "lucide-react";
 
-import { displayImage, groupFamilies, type ProductView } from "@/lib/product-view";
+import { displayImage, groupFamilies, type ImageBox, type ProductView } from "@/lib/product-view";
 
 /** How long each piece is shown before the next one comes round. */
 const PIECE_MS = 5000;
@@ -21,7 +21,14 @@ type Tab = "All" | "Cookware" | "Serveware";
 
 const COUNT_WORDS = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
 
-export function HeroPieces({ products }: { products: ProductView[] }) {
+export function HeroPieces({
+  products,
+  boxes = {},
+}: {
+  products: ProductView[];
+  /** Where the piece sits in each photo, so every piece is shown at the same size. */
+  boxes?: Record<string, ImageBox>;
+}) {
   // One entry per product, not per size: each family is shown through its first size that has a
   // photograph, so only our own products with a picture are listed.
   const pieces = groupFamilies(products)
@@ -89,7 +96,8 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
         {/* Copy */}
         <div className="text-center lg:text-left">
           <h1 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/[0.06] border border-white/[0.12] text-xs font-normal tracking-[0.08em] text-[#e0b08a]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e0b08a]" /> Handmade unglazed clay cookware from Khurja
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e0b08a]" /> Handmade unglazed clay
+            cookware from Khurja
           </h1>
           <h2 className="mt-5 font-display font-normal text-[clamp(2.75rem,6vw,4.75rem)] leading-[0.96]">
             {count} pieces.
@@ -147,11 +155,11 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
               className="absolute left-1/2 bottom-[17%] w-[58%] h-[9%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(70,35,15,0.45),transparent)] blur-[6px]"
             />
             <div className="absolute inset-0 mix-blend-multiply animate-float">
-              <img
+              <PieceImage
                 key={cur.slug}
                 src={displayImage(cur)!}
                 alt={cur.name}
-                className="w-full h-full object-contain p-[12%] animate-in fade-in-0 zoom-in-95 duration-700"
+                box={boxes[displayImage(cur)!]}
               />
             </div>
           </div>
@@ -280,6 +288,38 @@ export function HeroPieces({ products }: { products: ProductView[] }) {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The photo cropped to the piece itself, fitted into one frame that stands on the ground
+ * shadow: a wide bhagona and a tall jug come out equally large, whatever margin the photo had.
+ * Without a measured box the photo is shown whole, as before.
+ */
+function PieceImage({ src, alt, box }: { src: string; alt: string; box?: ImageBox }) {
+  const anim = "animate-in fade-in-0 zoom-in-95 duration-700";
+  if (!box) {
+    return <img src={src} alt={alt} className={`w-full h-full object-contain p-[12%] ${anim}`} />;
+  }
+  return (
+    <div className="absolute left-[16%] right-[16%] top-[14%] bottom-[21%] flex items-end justify-center [container-type:size]">
+      <div
+        className={`relative overflow-hidden ${anim}`}
+        style={{ width: `min(100cqw, ${100 * box.ratio}cqh)`, aspectRatio: box.ratio }}
+      >
+        <img
+          src={src}
+          alt={alt}
+          className="absolute max-w-none"
+          style={{
+            width: `${100 / box.w}%`,
+            height: `${100 / box.h}%`,
+            left: `${(-100 * box.x) / box.w}%`,
+            top: `${(-100 * box.y) / box.h}%`,
+          }}
+        />
+      </div>
+    </div>
   );
 }
 

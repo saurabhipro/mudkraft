@@ -45,6 +45,15 @@ export interface ProductView {
   fulfilmentMode: "ship_nationwide" | "local_delivery_only" | "pickup_only";
 }
 
+/** The piece's extent inside a photo, as fractions of the photo; ratio is its width ÷ height. */
+export interface ImageBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  ratio: number;
+}
+
 /** Minimal structural type so this module needn't import the server store. */
 interface SourceProduct {
   slug: string;
