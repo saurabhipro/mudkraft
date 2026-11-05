@@ -38,6 +38,7 @@ export async function POST(request: Request) {
   const raw = Buffer.from(await request.arrayBuffer());
   // The same Meta app as WhatsApp, so the same app secret signs these.
   if (!verifyWhatsAppSignature(raw, request.headers.get("x-hub-signature-256"))) {
+    console.error("[meta] webhook refused: signature does not match WHATSAPP_APP_SECRET");
     return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
 
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
 
   const channel =
     body.object === "instagram" ? "instagram" : body.object === "page" ? "messenger" : null;
+  const events = (body.entry ?? []).reduce((n, e) => n + (e.messaging?.length ?? 0), 0);
+  console.log(`[meta] webhook: object=${body.object ?? "?"} events=${events}`);
   if (channel) {
     const work: Promise<void>[] = [];
     for (const entry of body.entry ?? []) {
