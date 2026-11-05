@@ -81,6 +81,16 @@ const serverEnvSchema = z.object({
   WHATSAPP_CATALOG_ID: emptyAsUndefined(z.string()),
   // The checkout form, printed by `npm run whatsapp:flow`. Without it a cart gets a link to the website.
   WHATSAPP_FLOW_ID: emptyAsUndefined(z.string()),
+
+  // Instagram and Messenger chats (optional, same Meta app as WhatsApp, so the app secret and
+  // verify token above serve both). The Facebook Page's id and a long-lived Page access token
+  // with pages_messaging and instagram_manage_messages; the Instagram account is linked to the Page.
+  META_PAGE_ID: emptyAsUndefined(z.string()),
+  META_PAGE_ACCESS_TOKEN: emptyAsUndefined(z.string()),
+  // App › Settings › Basic › App ID: tells our own sends apart from replies typed in Meta's inbox.
+  META_APP_ID: emptyAsUndefined(z.string()),
+  // The Instagram professional account's id (Page › linked Instagram), when Instagram is connected.
+  INSTAGRAM_ACCOUNT_ID: emptyAsUndefined(z.string()),
 });
 
 const parsed = serverEnvSchema.safeParse(process.env);

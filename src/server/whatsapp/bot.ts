@@ -8,7 +8,7 @@ import { BikriupError, bikriup, orderToken, type BkOrder } from "../bikriup";
 import { sendOrderConfirmationEmail } from "../email/send";
 import { serverEnv } from "../env";
 import { getActiveProducts } from "../store/products";
-import { logChat, sendChat, sendText, type ChatKind } from ".";
+import { fetchMedia, logChat, sendChat, sendText, type ChatKind } from ".";
 import { FLOW_SCREEN } from "./flow";
 
 /**
@@ -36,6 +36,11 @@ export interface IncomingMessage {
     button_reply?: { id: string; title: string };
     nfm_reply?: { response_json?: string };
   };
+  image?: { id: string; caption?: string; mime_type?: string };
+  sticker?: { id: string; mime_type?: string };
+  audio?: { id: string; mime_type?: string; voice?: boolean };
+  video?: { id: string; caption?: string; mime_type?: string };
+  document?: { id: string; caption?: string; filename?: string; mime_type?: string };
   order?: { product_items?: Array<{ product_retailer_id: string; quantity: number }> };
 }
 
@@ -76,6 +81,18 @@ function describe(m: IncomingMessage): { kind: ChatKind; text: string } {
       return { kind: "form", text: "Filled in the delivery form" };
   }
   if (m.type === "button") return { kind: "text", text: m.button?.text ?? "" };
+  // A caption, when there is one, is what they said; Bikriup shows the file above it.
+  if (m.type === "image")
+    return { kind: "media", text: m.image?.caption?.trim() || "Sent a photo" };
+  if (m.type === "video")
+    return { kind: "media", text: m.video?.caption?.trim() || "Sent a video" };
+  if (m.type === "audio") return { kind: "media", text: "Sent a voice note" };
+  if (m.type === "document") {
+    // Bikriup reads the first line as the file name and the rest as the caption.
+    const name = m.document?.filename?.trim() || "Sent a document";
+    const caption = m.document?.caption?.trim();
+    return { kind: "media", text: caption && caption !== name ? `${name}\n${caption}` : name };
+  }
   return {
     kind: "media",
     text: `Sent ${m.type === "image" ? "a photo" : m.type === "audio" ? "a voice note" : `a ${m.type}`}`,
@@ -84,6 +101,8 @@ function describe(m: IncomingMessage): { kind: ChatKind; text: string } {
 
 export async function handleIncoming(m: IncomingMessage, profileName: string): Promise<void> {
   const { kind, text } = describe(m);
+  const mediaId = (m.image ?? m.sticker ?? m.audio ?? m.video ?? m.document)?.id;
+  const media = mediaId ? await fetchMedia(mediaId) : null;
   const chat = await logChat({
     phone: m.from,
     dir: "in",
@@ -91,6 +110,7 @@ export async function handleIncoming(m: IncomingMessage, profileName: string): P
     body: text,
     name: profileName,
     wa_id: m.id,
+    ...(media ? { media } : {}),
   });
   const first = profileName.trim().split(/\s+/)[0] || "";
 
