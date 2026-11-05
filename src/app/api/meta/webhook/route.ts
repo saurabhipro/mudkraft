@@ -31,7 +31,25 @@ export function GET(request: Request) {
 
 interface MetaBody {
   object?: string;
-  entry?: Array<{ id?: string; messaging?: MessagingEvent[] }>;
+  entry?: Array<{
+    id?: string;
+    messaging?: MessagingEvent[];
+    // Some deliveries (and the dashboard's Test button) wrap each event as a field change.
+    changes?: Array<{ field?: string; value?: MessagingEvent }>;
+  }>;
+}
+
+/** Every messaging event in a delivery, whichever of Meta's two shapes it came in. */
+function eventsOf(body: MetaBody): MessagingEvent[] {
+  const out: MessagingEvent[] = [];
+  for (const entry of body.entry ?? []) {
+    out.push(...(entry.messaging ?? []));
+    for (const c of entry.changes ?? []) {
+      if ((c.field === "messages" || c.field === "messaging_postbacks") && c.value?.sender)
+        out.push(c.value);
+    }
+  }
+  return out;
 }
 
 export async function POST(request: Request) {
@@ -51,19 +69,17 @@ export async function POST(request: Request) {
 
   const channel =
     body.object === "instagram" ? "instagram" : body.object === "page" ? "messenger" : null;
-  const events = (body.entry ?? []).reduce((n, e) => n + (e.messaging?.length ?? 0), 0);
-  console.log(`[meta] webhook: object=${body.object ?? "?"} events=${events}`);
+  const events = eventsOf(body);
+  console.log(`[meta] webhook: object=${body.object ?? "?"} events=${events.length}`);
   if (channel) {
     const work: Promise<void>[] = [];
-    for (const entry of body.entry ?? []) {
-      for (const ev of entry.messaging ?? []) {
-        if (!ev.message && !ev.postback) continue; // read and delivery receipts
-        work.push(
-          handleSocial(channel, ev).catch((error) => {
-            console.error(`[${channel}] bot failed:`, error);
-          }),
-        );
-      }
+    for (const ev of events) {
+      if (!ev.message && !ev.postback) continue; // read and delivery receipts
+      work.push(
+        handleSocial(channel, ev).catch((error) => {
+          console.error(`[${channel}] bot failed:`, error);
+        }),
+      );
     }
     await Promise.all(work);
   }
