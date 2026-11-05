@@ -95,7 +95,7 @@ export const TEMPLATES = {
   out_for_delivery: {
     name: "mk_order_out_for_delivery",
     category: "UTILITY",
-    body: "Hi {{1}}, your order {{2}} is out for delivery today.\n\nPayment: {{3}}.",
+    body: "Hi {{1}}, your order {{2}} is out for delivery today.\n\nPayment: {{3}}.\n\nPlease keep your phone handy for the delivery partner's call.",
     example: ["Asha", "MK-1024", "cash on delivery, please keep ₹1,200 ready"],
     button: ORDER_PAGE,
   },
@@ -123,7 +123,7 @@ export const TEMPLATES = {
   cancelled: {
     name: "mk_order_cancelled",
     category: "UTILITY",
-    body: "Hi {{1}}, your order {{2}} has been cancelled.\n\nRefund: {{3}}.",
+    body: "Hi {{1}}, your order {{2}} has been cancelled.\n\nRefund: {{3}}.\n\nReply here if you have any questions.",
     example: [
       "Asha",
       "MK-1024",
@@ -148,7 +148,7 @@ export const TEMPLATES = {
   returned: {
     name: "mk_return_complete",
     category: "UTILITY",
-    body: "Hi {{1}}, the return for order {{2}} is complete.\n\nRefund: {{3}}.",
+    body: "Hi {{1}}, the return for order {{2}} is complete.\n\nRefund: {{3}}.\n\nThank you for your patience.",
     example: [
       "Asha",
       "MK-1024",
