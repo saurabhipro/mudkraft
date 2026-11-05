@@ -67,8 +67,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "malformed body" }, { status: 400 });
   }
 
+  // Without INSTAGRAM_ACCOUNT_ID, Instagram is left to Meta Business Suite: its DMs are ignored here.
   const channel =
-    body.object === "instagram" ? "instagram" : body.object === "page" ? "messenger" : null;
+    body.object === "instagram" && serverEnv.INSTAGRAM_ACCOUNT_ID
+      ? "instagram"
+      : body.object === "page"
+        ? "messenger"
+        : null;
   const events = eventsOf(body);
   console.log(`[meta] webhook: object=${body.object ?? "?"} events=${events.length}`);
   if (channel) {
