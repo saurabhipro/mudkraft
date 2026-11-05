@@ -382,6 +382,17 @@ export async function chatConfig(fresh = false): Promise<ChatConfig> {
  * The first questions (ice breakers) on both, and Messenger's menu next to the
  * typing box. A channel whose bot is off has them removed.
  */
+/** True when the profile's ice breakers / menu were written by this bot (payloads "start:…"). */
+async function ownProfile(url: string): Promise<boolean> {
+  const res = await fetch(`${url}&fields=ice_breakers,persistent_menu`, {
+    headers: auth(),
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) return false;
+  const text = await res.text();
+  return text.includes('"payload":"start:');
+}
+
 export async function syncProfiles(cfg?: ChatConfig) {
   if (!socialEnabled()) return;
   const c = cfg ?? (await chatConfig(true));
@@ -426,6 +437,9 @@ export async function syncProfiles(cfg?: ChatConfig) {
     if (t.platform === "instagram" && !serverEnv.INSTAGRAM_ACCOUNT_ID) continue;
     const url = `${GRAPH_URL}/${serverEnv.META_PAGE_ID}/messenger_profile?platform=${t.platform}`;
     try {
+      // Bot off: clear only what this bot set. Questions and menus made in Meta Business
+      // Suite (its "Frequently asked questions") live in the same place and are left alone.
+      if (!t.on && !(await ownProfile(url))) continue;
       const res = await fetch(url, {
         method: t.on ? "POST" : "DELETE",
         headers: { ...auth(), "Content-Type": "application/json" },
