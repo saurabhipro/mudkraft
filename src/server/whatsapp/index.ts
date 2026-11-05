@@ -146,7 +146,9 @@ export function sendText(
     to,
     kind,
     text,
-    { type: "text", text: { body: text, preview_url: /https?:\/\//.test(text) } },
+    // No link preview cards: the site's wide share image crops badly in chats, and
+    // WhatsApp Web often leaves an empty card. The link stays tappable.
+    { type: "text", text: { body: text, preview_url: false } },
     mode,
   );
 }
