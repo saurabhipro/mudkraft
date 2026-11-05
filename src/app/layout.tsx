@@ -37,6 +37,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
+  applicationName: "Mudkraft",
   // Search Console's "HTML tag" ownership check; omitted until the token is set.
   ...(process.env.GOOGLE_SITE_VERIFICATION
     ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
@@ -89,6 +90,7 @@ const organizationJsonLd = {
     {
       "@type": "WebSite",
       name: "Mudkraft",
+      alternateName: ["Mudkraft Studio", "mudkraft.com"],
       url: SITE_URL,
     },
   ],

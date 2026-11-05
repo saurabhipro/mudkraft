@@ -13,7 +13,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  openGraph: { title: TITLE, description: DESCRIPTION, type: "website", images: [OG_IMAGE] },
+  openGraph: { siteName: "Mudkraft", title: TITLE, description: DESCRIPTION, type: "website", images: [OG_IMAGE] },
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
 };
 

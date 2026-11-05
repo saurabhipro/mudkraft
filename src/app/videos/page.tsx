@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/videos` },
   openGraph: {
+    siteName: "Mudkraft",
     title: TITLE,
     description: DESCRIPTION,
     type: "website",

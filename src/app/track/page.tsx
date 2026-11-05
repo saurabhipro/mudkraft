@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description:
     "Check the status of your Mudkraft clay order. Enter your order number and email, or track directly with your courier AWB.",
   openGraph: {
+    siteName: "Mudkraft",
     title: TITLE,
     description:
       "Check the status of your Mudkraft clay order using your order number and email.",

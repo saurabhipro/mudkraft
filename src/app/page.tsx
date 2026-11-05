@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/` },
   openGraph: {
+    siteName: "Mudkraft",
     title: "Mudkraft — Soulful Handcrafted Clay",
     description: DESCRIPTION,
     type: "website",
