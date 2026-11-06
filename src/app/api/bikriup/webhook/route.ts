@@ -12,6 +12,7 @@ import { importMessenger, productTemplate, sendSocialRaw, syncProfiles } from "@
 import { getProductBySlug, type StoreProduct } from "@/server/store/products";
 import { chatStatus, sendRaw, sendWhatsApp } from "@/server/whatsapp";
 import { orderStepMessage } from "@/server/whatsapp/orders";
+import { TEMPLATE_LANGUAGE, TEMPLATES } from "@/server/whatsapp/templates";
 
 /**
  * Bikriup tells the site when something changed, so cached pages refresh at
@@ -123,6 +124,9 @@ interface ChatReply {
   text?: string;
   products?: Array<{ slug?: string; name: string; price: number }>;
   human_agent?: boolean;
+  /** WhatsApp, shop writes first: an approved template ("hello") with its {{n}} values. */
+  template?: string;
+  params?: string[];
 }
 
 /** A reply typed in Bikriup › People › Chats: text, product cards, or both. */
@@ -156,6 +160,30 @@ async function sendChatReply(r: ChatReply | undefined) {
   }
 
   if (!r.phone) return;
+  if (r.template === "hello") {
+    const def = TEMPLATES.hello;
+    const sent = await sendRaw(r.phone, {
+      type: "template",
+      template: {
+        name: def.name,
+        language: { code: TEMPLATE_LANGUAGE },
+        components: [
+          {
+            type: "body",
+            parameters: (r.params ?? [])
+              .slice(0, 2)
+              .map((text) => ({ type: "text", text: String(text).slice(0, 60) })),
+          },
+        ],
+      },
+    });
+    await chatStatus(
+      sent.ok
+        ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
+        : { message_id: r.message_id, status: "failed", error: sent.error },
+    );
+    return;
+  }
   // WhatsApp: products go as links under the text (the catalogue cards need Meta's catalogue ids).
   const lines = products.map(
     (p) =>

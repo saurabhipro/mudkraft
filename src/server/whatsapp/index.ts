@@ -2,7 +2,13 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { bikriup, bikriupEnabled } from "../bikriup";
 import { serverEnv } from "../env";
-import { GRAPH_URL, TEMPLATES, TEMPLATE_LANGUAGE, type TemplateKey } from "./templates";
+import {
+  GRAPH_URL,
+  TEMPLATES,
+  TEMPLATE_LANGUAGE,
+  type TemplateKey,
+  type TemplateDef,
+} from "./templates";
 
 /**
  * WhatsApp Cloud API, straight to Meta (no reseller, so no monthly fee or markup).
@@ -241,7 +247,7 @@ export interface WhatsAppMessage {
 }
 
 export async function sendWhatsApp(to: string, message: WhatsAppMessage): Promise<boolean> {
-  const def = TEMPLATES[message.template];
+  const def: TemplateDef = TEMPLATES[message.template];
   const body = message.body.map(clean);
 
   const components: unknown[] = [
