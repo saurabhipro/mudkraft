@@ -15,6 +15,7 @@ import { productSeo } from "@/lib/categories";
 import { POLICY } from "@/lib/policy";
 import { toItem, track } from "@/lib/analytics";
 import { ShareButton } from "@/components/ShareButton";
+import { DeliveryCheck } from "./delivery-check";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { SITE_URL } from "@/lib/seo";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
@@ -508,6 +509,7 @@ export function ProductDetail({
               Buy now · {formatPaise(p.pricePaise * qty)}
             </button>
           )}
+          {!soldOut && <DeliveryCheck slug={p.slug} />}
           {(soldOut || few) && (
             <p className="mt-3 text-sm text-clay-deep" role="status">
               {soldOut

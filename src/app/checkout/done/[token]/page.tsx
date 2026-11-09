@@ -196,7 +196,7 @@ export default async function OrderPlacedPage({
               {formatPaise(order.totalPaise)}
             </span>
           </div>
-          <p className="mt-1 text-right text-[11px] text-muted-foreground">Shipping included</p>
+          <p className="mt-1 text-right text-[11px] text-muted-foreground">{order.shippingPaise > 0 ? `Includes ${formatPaise(order.shippingPaise)} delivery` : "Shipping included"}</p>
 
           <div className="mt-8 grid gap-6 border-t-2 border-earth/25 pt-6 sm:grid-cols-2">
             <div>

@@ -10,6 +10,7 @@ import { formatPaise } from "@/lib/money";
 import { COD_EVERYWHERE, COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
 import { cartStock } from "@/server/actions/cart";
 import { placeOrder, type CheckoutMethod } from "@/server/actions/checkout";
+import { deliveryQuote, type DeliveryQuote } from "@/server/actions/delivery";
 import { checkCoupon } from "@/server/actions/welcome";
 import { readWelcome } from "@/lib/welcome";
 
@@ -21,12 +22,42 @@ const labelCls = "block text-xs tracking-widest uppercase text-earth/70";
 
 /** States and union territories, so the shipping address stays consistent. */
 const INDIAN_STATES = [
-  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
-  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa",
-  "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka",
-  "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
-  "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chandigarh",
+  "Chhattisgarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jammu and Kashmir",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Ladakh",
+  "Lakshadweep",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Puducherry",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
 ];
 
 function Field({
@@ -121,7 +152,12 @@ export function CheckoutForm({
     const w = readWelcome();
     if (!w) return;
     const t = window.setTimeout(() => {
-      setForm((f) => ({ ...f, name: f.name || w.name, phone: f.phone || w.phone, email: f.email || w.email }));
+      setForm((f) => ({
+        ...f,
+        name: f.name || w.name,
+        phone: f.phone || w.phone,
+        email: f.email || w.email,
+      }));
       if (w.code) setWelcomeCode(w.code);
     }, 0);
     return () => window.clearTimeout(t);
@@ -135,7 +171,12 @@ export function CheckoutForm({
   // A code is priced by Bikriup for this exact basket; a changed basket drops the figure.
   const basketKey = cart.map((item) => `${item.slug}:${item.qty}`).join(",");
   const [codeInput, setCodeInput] = useState("");
-  const [coupon, setCoupon] = useState<{ code: string; discountPaise: number; totalPaise: number; basket: string } | null>(null);
+  const [coupon, setCoupon] = useState<{
+    code: string;
+    discountPaise: number;
+    totalPaise: number;
+    basket: string;
+  } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const applied = coupon && coupon.basket === basketKey ? coupon : null;
@@ -158,7 +199,12 @@ export function CheckoutForm({
       return;
     }
     setCodeInput(result.code);
-    setCoupon({ code: result.code, discountPaise: result.discountPaise, totalPaise: result.totalPaise, basket });
+    setCoupon({
+      code: result.code,
+      discountPaise: result.discountPaise,
+      totalPaise: result.totalPaise,
+      basket,
+    });
   };
 
   // The popup's code goes in by itself once the basket is known (and again if it changes).
@@ -176,8 +222,56 @@ export function CheckoutForm({
   }, [hydrated, welcomeCode, basketKey, applied, couponError]);
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
 
+  // Shops on live courier rates: delivery is priced for this PIN code. Flat shops never see it.
+  const [delivery, setDelivery] = useState<DeliveryQuote>({ mode: "flat" });
+  const [moved, setMoved] = useState("");
+  const pricingKey = `${basketKey}|${form.postalCode.trim()}|${applied?.code ?? ""}`;
+  useEffect(() => {
+    if (!hydrated || !basketKey) return;
+    let stale = false;
+    const t = window.setTimeout(async () => {
+      const next = await deliveryQuote({
+        items: cart.map((item) => ({ slug: item.slug, qty: item.qty })),
+        pincode: form.postalCode.trim(),
+        coupon: applied?.code ?? "",
+        phone: form.phone,
+      }).catch((): DeliveryQuote => ({ mode: "flat" }));
+      if (stale) return;
+      setDelivery((was) => {
+        const before = was.mode === "live" && was.serviceable ? was : null;
+        const after = next.mode === "live" && next.serviceable ? next : null;
+        if (before && after && before.deliveryPaise !== after.deliveryPaise) {
+          setMoved(
+            `Delivery changed: ${formatPaise(before.deliveryPaise)} → ${formatPaise(after.deliveryPaise)}.` +
+              (before.from !== after.from
+                ? ` Your PIN code ships from ${after.from} instead of ${before.from}.`
+                : ""),
+          );
+        } else if (!before && after) {
+          setMoved(
+            `Delivery added: ${formatPaise(after.deliveryPaise)} for ${form.postalCode.trim()}.`,
+          );
+        } else if (!after) {
+          setMoved("");
+        }
+        return next;
+      });
+    }, 350);
+    return () => {
+      stale = true;
+      window.clearTimeout(t);
+    };
+    // The key holds everything priced; cart and form are read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, pricingKey]);
+  const live = delivery.mode === "live" ? delivery : null;
+  const canDeliver = !live || live.serviceable === true;
+  const liveTotalPaise = live && live.serviceable ? live.totalPaise : totalPaise;
+
   // Purely presentational — `placeOrder` re-checks the PIN before accepting COD.
-  const codAvailable = COD_EVERYWHERE || isCodEligible(form.postalCode);
+  const codAvailable = live
+    ? live.serviceable === true && live.cod.available
+    : COD_EVERYWHERE || isCodEligible(form.postalCode);
 
   const submit = async (method: CheckoutMethod) => {
     setError(null);
@@ -202,7 +296,9 @@ export function CheckoutForm({
     // The order now lives in the database; the browser copy has done its job.
     clearCart();
     router.push(
-      result.method === "gateway" ? `/checkout/pay/${result.token}` : `/checkout/done/${result.token}`,
+      result.method === "gateway"
+        ? `/checkout/pay/${result.token}`
+        : `/checkout/done/${result.token}`,
     );
   };
 
@@ -218,9 +314,7 @@ export function CheckoutForm({
     return (
       <div className="rounded-3xl border-2 border-earth/30 bg-cream p-10 text-center">
         <div className="font-hand text-3xl text-clay">the basket waits, quietly</div>
-        <p className="mt-3 text-sm text-muted-foreground">
-          There is nothing to check out yet.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">There is nothing to check out yet.</p>
         <Link
           href="/#collection"
           className="mt-6 inline-flex items-center justify-center bg-earth text-cream px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors"
@@ -376,9 +470,33 @@ export function CheckoutForm({
           </div>
         </div>
 
+        {live?.serviceable && (
+          <div className="mt-6 rounded-2xl bg-sand px-5 py-4">
+            <div className="font-display text-xl text-earth">
+              {live.eta ? `Arrives by ${live.eta}` : "We'll confirm the date when it ships"}
+            </div>
+            <p className="mt-0.5 text-sm text-earth/75">
+              {live.parcels.length > 1
+                ? `Comes in ${live.parcels.length} parcels: ${live.parcels.map((p) => `${p.from} ${formatPaise(p.deliveryPaise)}`).join(" + ")}`
+                : `Delivery ${formatPaise(live.deliveryPaise)} to ${form.postalCode.trim()}${live.from ? ` · ships from our ${live.from} studio` : ""}`}
+            </p>
+          </div>
+        )}
+        {live?.serviceable === false && (
+          <p role="alert" className="mt-6 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-800">
+            {live.error}
+          </p>
+        )}
+        {live?.pending && (
+          <p className="mt-6 text-xs text-muted-foreground">
+            Type your PIN code to see the delivery charge and date.
+          </p>
+        )}
+
         <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-          We deliver across India. Every price already includes shipping — there is nothing
-          added at the end.
+          {live
+            ? "We deliver across India. Delivery is the courier's own rate for your PIN code — we add nothing on top."
+            : "We deliver across India. Every price already includes shipping — there is nothing added at the end."}
         </p>
       </form>
 
@@ -405,7 +523,9 @@ export function CheckoutForm({
               <div className="min-w-0 flex-1">
                 <div className="font-display text-lg leading-tight text-earth">{item.name}</div>
                 {item.tag && <div className="mt-0.5 text-xs text-earth/75">{item.tag}</div>}
-                <div className="mt-1 text-sm font-medium text-earth/85">{formatPaise(item.pricePaise)} each</div>
+                <div className="mt-1 text-sm font-medium text-earth/85">
+                  {formatPaise(item.pricePaise)} each
+                </div>
                 {item.max !== 0 && (
                   <div className="mt-2 flex items-center gap-3">
                     <div className="inline-flex items-center rounded-full border-2 border-earth/50 bg-background text-earth">
@@ -417,7 +537,12 @@ export function CheckoutForm({
                       >
                         −
                       </button>
-                      <span className="min-w-8 text-center text-sm font-semibold" aria-live="polite">{item.qty}</span>
+                      <span
+                        className="min-w-8 text-center text-sm font-semibold"
+                        aria-live="polite"
+                      >
+                        {item.qty}
+                      </span>
                       <button
                         type="button"
                         aria-label={`More ${item.name}`}
@@ -450,7 +575,9 @@ export function CheckoutForm({
                   </div>
                 )}
               </div>
-              <div className="text-base font-semibold text-earth">{formatPaise(item.pricePaise * item.qty)}</div>
+              <div className="text-base font-semibold text-earth">
+                {formatPaise(item.pricePaise * item.qty)}
+              </div>
             </li>
           ))}
         </ul>
@@ -519,12 +646,43 @@ export function CheckoutForm({
           </div>
         )}
 
-        <div className={`flex items-baseline justify-between ${applied ? "mt-3" : "mt-5"} border-t-2 border-earth/25 pt-5`}>
+        {live && !live.pending && (
+          <div className={`${applied ? "mt-1.5" : "mt-4"} flex justify-between text-sm text-earth`}>
+            <span>Delivery{live.serviceable ? ` to ${form.postalCode.trim()}` : ""}</span>
+            <span className="font-medium">
+              {live.serviceable ? formatPaise(live.deliveryPaise) : "—"}
+            </span>
+          </div>
+        )}
+        {live && live.pending && (
+          <div
+            className={`${applied ? "mt-1.5" : "mt-4"} flex justify-between text-sm text-muted-foreground`}
+          >
+            <span>Delivery</span>
+            <span>Add PIN code</span>
+          </div>
+        )}
+        {live?.serviceable && moved && (
+          <p
+            aria-live="polite"
+            className="mt-3 rounded-2xl border-[1.5px] border-clay bg-sand/50 px-4 py-2.5 text-sm text-clay-deep"
+          >
+            {moved}
+          </p>
+        )}
+
+        <div
+          className={`flex items-baseline justify-between ${applied || live ? "mt-3" : "mt-5"} border-t-2 border-earth/25 pt-5`}
+        >
           <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
-          <span className="font-display text-3xl text-earth">{formatPaise(totalPaise)}</span>
+          <span className="font-display text-3xl text-earth">{formatPaise(liveTotalPaise)}</span>
         </div>
         <p className="mt-1 text-right text-[11px] text-muted-foreground">
-          Shipping included · confirmed again before payment
+          {live
+            ? live.serviceable
+              ? "Paying now · delivery included"
+              : "Delivery is added when we have your PIN code"
+            : "Shipping included · confirmed again before payment"}
         </p>
 
         {soldOut.length > 0 && (
@@ -544,27 +702,35 @@ export function CheckoutForm({
           <button
             type="button"
             onClick={() => submit("gateway")}
-            disabled={pending !== null || soldOut.length > 0}
+            disabled={pending !== null || soldOut.length > 0 || !canDeliver}
             className="w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors disabled:opacity-60"
           >
-            {pending === "gateway" ? "Placing order…" : "Pay now"}
+            {pending === "gateway"
+              ? "Placing order…"
+              : live?.serviceable
+                ? `Pay now · ${formatPaise(live.totalPaise)}`
+                : "Pay now"}
           </button>
 
           {codAvailable && (
             <button
               type="button"
               onClick={() => submit("cod")}
-              disabled={pending !== null || soldOut.length > 0}
+              disabled={pending !== null || soldOut.length > 0 || !canDeliver}
               className="w-full inline-flex items-center justify-center border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
             >
-              {pending === "cod" ? "Placing order…" : "Pay later · Cash on delivery"}
+              {pending === "cod"
+                ? "Placing order…"
+                : live?.serviceable
+                  ? `Pay later · Cash on delivery · ${formatPaise(live.cod.totalPaise)}`
+                  : "Pay later · Cash on delivery"}
             </button>
           )}
 
           <button
             type="button"
             onClick={() => submit("whatsapp")}
-            disabled={pending !== null || soldOut.length > 0}
+            disabled={pending !== null || soldOut.length > 0 || !canDeliver}
             className="w-full inline-flex items-center justify-center gap-2 border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
           >
             {pending === "whatsapp" ? "Placing order…" : "Confirm on WhatsApp"}
@@ -572,11 +738,17 @@ export function CheckoutForm({
         </div>
 
         <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-          {COD_EVERYWHERE
-            ? "Pay later: pay cash on delivery when your order arrives."
-            : codAvailable
-              ? `Cash on delivery is available for your PIN code (${COD_REGION_LABEL}).`
-              : `Cash on delivery is available in ${COD_REGION_LABEL} — enter a PIN code there to see it.`}
+          {live
+            ? live.serviceable
+              ? live.cod.available
+                ? `Cash on delivery costs ${formatPaise(live.cod.feePaise)} more — that's the courier's fee for collecting cash.`
+                : `Cash on delivery isn't offered at ${form.postalCode.trim()} — pay now or confirm on WhatsApp.`
+              : "Add a PIN code we deliver to, and your payment options open up."
+            : COD_EVERYWHERE
+              ? "Pay later: pay cash on delivery when your order arrives."
+              : codAvailable
+                ? `Cash on delivery is available for your PIN code (${COD_REGION_LABEL}).`
+                : `Cash on delivery is available in ${COD_REGION_LABEL} — enter a PIN code there to see it.`}
         </p>
 
         <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
