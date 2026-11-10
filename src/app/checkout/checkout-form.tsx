@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { clearCart, removeItem, syncStock, updateQty, useCart } from "@/lib/cart";
 import { toItem, track } from "@/lib/analytics";
@@ -98,6 +98,11 @@ function nextWorkingDay(): string {
   const d = new Date(Date.now() + 864e5);
   if (d.getDay() === 0) d.setDate(d.getDate() + 1);
   return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+}
+
+/** "Delhivery Surface 5kg" → "Delhivery Surface": the weight slab means nothing to a buyer. */
+function courierName(raw: string): string {
+  return raw.replace(/\s*\d+(\.\d+)?\s*kgs?$/i, "").trim();
 }
 
 const stepCls =
@@ -242,6 +247,7 @@ export function CheckoutForm({
   // shop is still on flat delivery (or testing), checkout keeps saying shipping is included.
   const [delivery, setDelivery] = useState<DeliveryQuote>({ mode: "flat" });
   const [priced, setPriced] = useState(false);
+  const autoFilled = useRef({ city: "", state: "" });
   const [moved, setMoved] = useState("");
   const pin = form.postalCode.trim();
   const pinReady = /^[1-9]\d{5}$/.test(pin);
@@ -258,13 +264,20 @@ export function CheckoutForm({
       }).catch((): DeliveryQuote => ({ mode: "flat" }));
       if (stale) return;
       setPriced(true);
-      // City and state come with the PIN code; only empty fields are filled.
+      // City and state come with the PIN code. Empty fields are filled, and so are fields we filled
+      // for an earlier PIN; anything the buyer typed stays.
       const place = next.place;
       if (place) {
-        const state = INDIAN_STATES.find(
-          (s) => s.toLowerCase() === place.state.toLowerCase().replace(/\s*&\s*/g, " and "),
-        );
-        setForm((f) => ({ ...f, city: f.city || place.city, state: f.state || state || "" }));
+        const state =
+          INDIAN_STATES.find(
+            (s) => s.toLowerCase() === place.state.toLowerCase().replace(/\s*&\s*/g, " and "),
+          ) ?? "";
+        setForm((f) => ({
+          ...f,
+          city: !f.city || f.city === autoFilled.current.city ? place.city : f.city,
+          state: !f.state || f.state === autoFilled.current.state ? state || f.state : f.state,
+        }));
+        autoFilled.current = { city: place.city, state };
       }
       setDelivery((was) => {
         const before = was.mode === "live" && was.serviceable ? was : null;
@@ -415,7 +428,7 @@ export function CheckoutForm({
                   <div className="text-xs text-earth/75">
                     {ready.parcels.length > 1
                       ? `${ready.parcels.length} parcels`
-                      : ready.parcels[0]?.courier || "Tracked courier"}
+                      : courierName(ready.parcels[0]?.courier ?? "") || "Tracked courier"}
                   </div>
                 </div>
               </div>
