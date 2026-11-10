@@ -782,7 +782,7 @@ export function CheckoutForm({
 
         <div className="mt-5 space-y-2 text-sm">
           <div className="flex justify-between text-muted-foreground">
-            <span>Pieces</span>
+            <span>Items total</span>
             <span>{formatPaise(subtotalPaise)}</span>
           </div>
           {applied && (
