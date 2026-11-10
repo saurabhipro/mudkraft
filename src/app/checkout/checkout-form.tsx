@@ -272,10 +272,12 @@ export function CheckoutForm({
           INDIAN_STATES.find(
             (s) => s.toLowerCase() === place.state.toLowerCase().replace(/\s*&\s*/g, " and "),
           ) ?? "";
+        // Compared with what we filled last time; read now, as the updater runs later.
+        const prev = autoFilled.current;
         setForm((f) => ({
           ...f,
-          city: !f.city || f.city === autoFilled.current.city ? place.city : f.city,
-          state: !f.state || f.state === autoFilled.current.state ? state || f.state : f.state,
+          city: !f.city || f.city === prev.city ? place.city : f.city,
+          state: !f.state || f.state === prev.state ? state || f.state : f.state,
         }));
         autoFilled.current = { city: place.city, state };
       }
