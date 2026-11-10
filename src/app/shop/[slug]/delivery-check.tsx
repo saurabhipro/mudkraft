@@ -17,7 +17,7 @@ export function DeliveryCheck({ slug }: { slug: string }) {
     const out = await checkDelivery(slug, pin).catch(() => ({ mode: "flat" as const }));
     setBusy(false);
     if (out.mode === "flat") {
-      setNote({ text: "We deliver across India. Shipping is included in the price.", bad: false });
+      setNote({ text: "We deliver to your doorstep across India.", bad: false });
     } else if (!out.serviceable) {
       setNote({ text: out.message, bad: true });
     } else {

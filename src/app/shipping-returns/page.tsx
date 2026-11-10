@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     siteName: "Mudkraft",
     title: TITLE,
     description:
-      "Free delivery across India, delivery timelines, breakage-in-transit cover, and returns for our hand-thrown clay pieces.",
+      "Doorstep delivery across India, delivery charges and timelines, breakage-in-transit cover, and returns for our hand-thrown clay pieces.",
     type: "website",
     images: [OG_IMAGE],
   },

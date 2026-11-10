@@ -64,7 +64,7 @@ export const FLOW_JSON = {
               { id: "online", title: "Pay online (UPI, card, net banking)" },
             ],
           },
-          { type: "TextCaption", text: "Delivery is free and included in the price." },
+          { type: "TextCaption", text: "Doorstep delivery. The charge for your PIN code is shown before you pay." },
           {
             type: "Footer",
             label: "Place order",

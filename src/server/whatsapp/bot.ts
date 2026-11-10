@@ -58,7 +58,7 @@ const MENU_ROWS = [
   {
     id: "delivery",
     title: "Delivery & payment",
-    description: "Free delivery, cash on delivery, online payment",
+    description: "Doorstep delivery, cash on delivery, online payment",
   },
   { id: "care", title: "Seasoning & care", description: "What to do before the first use" },
   { id: "track", title: "Track my order", description: "Where is my parcel?" },
@@ -152,7 +152,7 @@ async function sendMenu(to: string, first: string, mode?: "bot") {
         body: {
           text: `Namaste${first ? ` ${first}` : ""}! 🙏 Welcome to Mudkraft: handmade, wood-fired, unglazed clay cookware from Khurja.\n\nHow can we help you today?`,
         },
-        footer: { text: "Free delivery across India" },
+        footer: { text: "Doorstep delivery across India" },
         action: { button: "See options", sections: [{ title: "Choose one", rows: MENU_ROWS }] },
       },
     },
@@ -169,7 +169,7 @@ async function menuChoice(to: string, id: string, first: string) {
     case "delivery":
       await sendText(
         to,
-        `🚚 Delivery is free across India and already included in the price.\n💵 Pay cash on delivery, or online with UPI, card or net banking.\n📦 Every piece is packed by hand. Dispatch and delivery times: ${SITE_URL}/shipping-returns${DIVIDER}`,
+        `🚚 We deliver to your doorstep across India. The delivery charge depends on your PIN code and is shown before you pay.\n💵 Pay cash on delivery, or online with UPI, card or net banking.\n📦 Every piece is packed by hand. Dispatch and delivery times: ${SITE_URL}/shipping-returns${DIVIDER}`,
       );
       return;
     case "care":
@@ -215,7 +215,7 @@ async function sendCatalog(to: string) {
       body: {
         text: "Here is everything we make. Open a piece to see its photos and size, add what you like to your cart, and send the cart here to order.",
       },
-      footer: { text: "Free delivery across India" },
+      footer: { text: "Doorstep delivery across India" },
       action: { name: "catalog_message" },
     },
   });
@@ -240,7 +240,7 @@ async function sendBestsellers(to: string) {
       body: {
         text: "Handmade, wood-fired and unglazed. Tap a piece to see it, add it to your cart and send the cart here to order.",
       },
-      footer: { text: "Free delivery across India" },
+      footer: { text: "Doorstep delivery across India" },
       action: {
         catalog_id: catalogId,
         sections: [
@@ -339,7 +339,7 @@ async function checkout(to: string, cart: CartLine[], profileName: string) {
       type: "flow",
       header: { type: "text", text: "Your order" },
       body: {
-        text: `${quote.lines.map(itemLine).join("\n")}\n\nTotal: ${total} (free delivery included)\n\nTap below to add your delivery address and choose how to pay.`,
+        text: `${quote.lines.map(itemLine).join("\n")}\n\nTotal: ${total} + delivery (priced for your PIN code at checkout)\n\nTap below to add your delivery address and choose how to pay.`,
       },
       footer: { text: "Handmade in Khurja" },
       action: {
@@ -450,7 +450,7 @@ async function placeOrder(m: IncomingMessage, profileName: string) {
       : "";
   await sendText(
     m.from,
-    `✅ Order ${created.order_no} placed. Thank you, ${name.split(/\s+/)[0]}!\n\n${lines}\nTotal: ${amount} (free delivery included)\n\n${
+    `✅ Order ${created.order_no} placed. Thank you, ${name.split(/\s+/)[0]}!\n\n${lines}\nTotal: ${amount} (delivery included)\n\n${
       cod
         ? `Please keep ${amount} ready in cash at delivery.`
         : "Please complete the payment below to confirm it."

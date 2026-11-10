@@ -457,7 +457,7 @@ export function CheckoutForm({
             )}
             {!live && pinReady && priced && (
               <p className="mt-4 rounded-2xl bg-cream px-4 py-3 text-sm text-earth">
-                We deliver to {pin}. Shipping is included in our prices.
+                We deliver to {pin}, right to your doorstep.
               </p>
             )}
           </div>
@@ -806,7 +806,7 @@ export function CheckoutForm({
               ? "Paid in cash to the courier"
               : live
                 ? "Paying now · delivery included"
-                : "Shipping included"}
+                : "Doorstep delivery"}
         </p>
 
         {soldOut.length > 0 && (

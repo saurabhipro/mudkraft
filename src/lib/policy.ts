@@ -3,7 +3,8 @@
  * so the shipping page, FAQ, trust page and product pages cannot disagree.
  */
 export const POLICY = {
-  delivery: "Free delivery across India, included in the price",
+  delivery:
+    "Doorstep delivery across India, charged at the courier's rate for your PIN code and parcel weight — shown at checkout before you pay",
   dispatch: "2–3 working days",
   packing: "cushioned recycled paper and a double-walled carton",
   breakage:

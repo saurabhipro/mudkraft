@@ -314,7 +314,7 @@ async function sendProducts(
   await sendSocialText(
     channel,
     userId,
-    "Tap Buy on website to order. Free delivery, cash on delivery available.",
+    "Tap Buy on website to order. Doorstep delivery, cash on delivery available.",
     {
       quick: [
         ...categories

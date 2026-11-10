@@ -209,7 +209,7 @@ export function productTemplate(channel: SocialChannel, userId: string, products
         elements: list.map((p, i) => ({
           title: cards[i]!.name.slice(0, 80),
           subtitle:
-            `${formatPaise(p.pricePaise)} · free delivery${p.stockQty <= 0 ? " · out of stock" : ""}`.slice(
+            `${formatPaise(p.pricePaise)} · doorstep delivery${p.stockQty <= 0 ? " · out of stock" : ""}`.slice(
               0,
               80,
             ),
@@ -316,7 +316,7 @@ const FALLBACK: ChatConfig = {
     welcome:
       "Namaste {first name}! Welcome to Mudkraft: handmade clay cookware from Khurja. How can we help you today?",
     delivery:
-      "Delivery is free across India. Pay cash on delivery, or online with UPI, card or net banking.",
+      "We deliver to your doorstep across India; the charge depends on your PIN code and is shown before you pay. Pay cash on delivery, or online with UPI, card or net banking.",
     mention: "Thank you for the mention! It means a lot to us.",
   },
   changed_at: "",

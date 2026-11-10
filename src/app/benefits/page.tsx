@@ -106,7 +106,7 @@ const BENEFITS: Benefit[] = [
     points: [
       "Unglazed river clay, made by hand",
       "Breakage cover: free replacement if it arrives broken",
-      "Free delivery across India",
+      "Doorstep delivery across India",
     ],
     image: alkalineImg.src,
     alt: "Overhead view of clear water resting inside a terracotta matka in warm morning light",

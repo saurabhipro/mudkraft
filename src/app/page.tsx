@@ -10,7 +10,7 @@ import { getChannelVideos } from "@/server/youtube";
 import { HomePage } from "./home-page";
 
 const DESCRIPTION =
-  "Buy handmade unglazed clay handi, kadai, dahi handi and matka from Khurja. Wood-fired, lab-tested with no lead, cadmium or arsenic. Free delivery across India.";
+  "Buy handmade unglazed clay handi, kadai, dahi handi and matka from Khurja. Wood-fired, lab-tested with no lead, cadmium or arsenic. Doorstep delivery across India.";
 
 export const metadata: Metadata = {
   title: "Mudkraft – Handmade Clay Cookware & Mitti Ke Bartan Online | Unglazed",
