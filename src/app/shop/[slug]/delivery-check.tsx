@@ -22,7 +22,7 @@ export function DeliveryCheck({ slug }: { slug: string }) {
       setNote({ text: out.message, bad: true });
     } else {
       setNote({
-        text: `${out.eta ? `Arrives by ${out.eta} · ` : ""}delivery ${formatPaise(out.deliveryPaise)} · ${out.cod ? "cash on delivery available" : "pay online only"}`,
+        text: `${out.eta ? `Arrives by ${out.eta} · ` : ""}${out.onePrice ? "delivery included" : `delivery ${formatPaise(out.deliveryPaise)}`} · ${out.cod ? "cash on delivery available" : "pay online only"}`,
         bad: false,
       });
     }

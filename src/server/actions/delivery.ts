@@ -17,6 +17,8 @@ export type DeliveryQuote =
   | {
       mode: "live";
       place?: Place;
+      /** The shop shows one price: each piece already carries delivery and COD, so no lines for them. */
+      onePrice: boolean;
       /** No PIN code yet. */
       pending: boolean;
       serviceable: boolean | null;
@@ -60,6 +62,7 @@ interface BkQuote {
   };
   place?: { city: string; state: string } | null;
   cod?: { available: boolean; fee: number; delivery: number; total: number };
+  price_display?: "one" | "breakup";
 }
 
 export async function deliveryQuote(input: unknown): Promise<DeliveryQuote> {
@@ -81,6 +84,7 @@ export async function deliveryQuote(input: unknown): Promise<DeliveryQuote> {
     return {
       mode: "live",
       place,
+      onePrice: q.price_display === "one",
       pending: Boolean(q.delivery_pending),
       serviceable: q.serviceable ?? null,
       error: q.delivery_error ?? "",
@@ -118,6 +122,7 @@ export type DeliveryCheck =
       deliveryPaise: number;
       eta: string;
       cod: boolean;
+      onePrice: boolean;
     };
 
 /** The product page's PIN check, for one piece. */
@@ -131,6 +136,7 @@ export async function checkDelivery(slug: string, pincode: string): Promise<Deli
       deliveryPaise: 0,
       eta: "",
       cod: false,
+      onePrice: false,
     };
   }
   try {
@@ -141,6 +147,7 @@ export async function checkDelivery(slug: string, pincode: string): Promise<Deli
       delivery?: number;
       etd?: string;
       cod?: boolean;
+      price_display?: "one" | "breakup";
     }>("/delivery-check", {
       method: "POST",
       body: { slug: String(slug).slice(0, 80), pincode: String(pincode).trim() },
@@ -153,6 +160,7 @@ export async function checkDelivery(slug: string, pincode: string): Promise<Deli
       deliveryPaise: paise(out.delivery),
       eta: out.etd ?? "",
       cod: Boolean(out.cod),
+      onePrice: out.price_display === "one",
     };
   } catch (error) {
     if (error instanceof BikriupError && error.status < 500) {
@@ -163,6 +171,7 @@ export async function checkDelivery(slug: string, pincode: string): Promise<Deli
         deliveryPaise: 0,
         eta: "",
         cod: false,
+        onePrice: false,
       };
     }
     console.error("[bikriup] delivery check failed:", error);

@@ -306,6 +306,8 @@ export function CheckoutForm({
   const live = delivery.mode === "live" ? delivery : null;
   const ready = live?.serviceable ? live : null;
   const canDeliver = !live || live.serviceable === true;
+  // One price: delivery and cash on delivery ride on each piece's price, so neither gets a line.
+  const one = Boolean(live?.onePrice);
 
   // Purely presentational — `placeOrder` re-checks the PIN before accepting COD.
   const codAvailable = live
@@ -383,9 +385,11 @@ export function CheckoutForm({
             <h2 className="font-display text-2xl text-earth">Check delivery to your door</h2>
           </div>
           <p className="mt-2 text-sm text-earth/80 md:pl-11">
-            {live
-              ? "Delivery is charged at the courier's own rate for your PIN code and the parcel's weight. See it here, before anything else."
-              : "Tell us where it's going. We deliver across India."}
+            {live && one
+              ? "Delivery is included in the price. Add your PIN code to see that we reach you, and when."
+              : live
+                ? "Delivery is charged at the courier's own rate for your PIN code and the parcel's weight. See it here, before anything else."
+                : "Tell us where it's going. We deliver across India."}
           </p>
           <div className="mt-4 md:pl-11">
             <Field id="postalCode" label="PIN code" error={fieldErrors.postalCode}>
@@ -414,11 +418,13 @@ export function CheckoutForm({
                 <div className="rounded-2xl bg-cream px-4 py-3">
                   <div className={labelCls}>Delivery</div>
                   <div className="mt-1 font-display text-2xl text-earth">
-                    {formatPaise(ready.deliveryPaise)}
+                    {one ? "Included" : formatPaise(ready.deliveryPaise)}
                   </div>
                   <div className="text-xs text-earth/75">
                     {ready.cod.available
-                      ? `${formatPaise(ready.cod.deliveryPaise)} with cash on delivery`
+                      ? one
+                        ? "Cash on delivery too, same price"
+                        : `${formatPaise(ready.cod.deliveryPaise)} with cash on delivery`
                       : "Pay online for this PIN code"}
                   </div>
                 </div>
@@ -437,9 +443,11 @@ export function CheckoutForm({
             )}
             {ready && ready.parcels.length > 1 && (
               <p className="mt-3 text-sm text-earth/80">
-                Your pieces are in different studios, so they come in {ready.parcels.length}{" "}
-                parcels:{" "}
-                {ready.parcels.map((p) => `${p.from} ${formatPaise(p.deliveryPaise)}`).join(" + ")}.
+                Your pieces are in different studios, so they come in {ready.parcels.length} parcels
+                {one ? ` from ${ready.parcels.map((p) => p.from).join(" and ")}` : ""}
+                {one
+                  ? "."
+                  : `: ${ready.parcels.map((p) => `${p.from} ${formatPaise(p.deliveryPaise)}`).join(" + ")}.`}
               </p>
             )}
             {moved && (
@@ -776,16 +784,18 @@ export function CheckoutForm({
           <div className="flex justify-between text-earth">
             <span>Delivery{ready ? ` to ${pin}` : ""}</span>
             <span className="font-medium">
-              {ready
-                ? formatPaise(ready.deliveryPaise)
-                : live
-                  ? live.serviceable === false
-                    ? "—"
-                    : "Check your PIN code"
-                  : "Included"}
+              {one && live?.serviceable !== false
+                ? "Included"
+                : ready
+                  ? formatPaise(ready.deliveryPaise)
+                  : live
+                    ? live.serviceable === false
+                      ? "—"
+                      : "Check your PIN code"
+                    : "Included"}
             </span>
           </div>
-          {ready && cod && (
+          {ready && cod && !one && (
             <div className="flex justify-between text-earth">
               <span>Cash on delivery fee</span>
               <span className="font-medium">{formatPaise(ready.cod.feePaise)}</span>
@@ -796,17 +806,23 @@ export function CheckoutForm({
         <div className="mt-4 flex items-baseline justify-between border-t-2 border-earth/25 pt-5">
           <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
           <span className="font-display text-3xl text-earth">
-            {live && !ready ? `${formatPaise(totalPaise)} + delivery` : formatPaise(grandPaise)}
+            {live && !ready && !one
+              ? `${formatPaise(totalPaise)} + delivery`
+              : formatPaise(grandPaise)}
           </span>
         </div>
         <p className="mt-1 text-right text-[11px] text-muted-foreground">
-          {live && !ready
-            ? "Delivery is added once we have your PIN code"
-            : cod
-              ? "Paid in cash to the courier"
-              : live
-                ? "Paying now · delivery included"
-                : "Doorstep delivery"}
+          {one
+            ? cod
+              ? "Paid in cash to the courier · delivery included"
+              : "Doorstep delivery included"
+            : live && !ready
+              ? "Delivery is added once we have your PIN code"
+              : cod
+                ? "Paid in cash to the courier"
+                : live
+                  ? "Paying now · delivery included"
+                  : "Doorstep delivery"}
         </p>
 
         {soldOut.length > 0 && (
@@ -852,7 +868,9 @@ export function CheckoutForm({
           {live
             ? ready
               ? ready.cod.available
-                ? `Cash on delivery costs ${formatPaise(ready.cod.feePaise)} more — the courier's fee for collecting cash. Delivery is their own rate, rounded up to the rupee; we add nothing on top.`
+                ? one
+                  ? "Pay now or in cash when it arrives — the price is the same either way."
+                  : `Cash on delivery costs ${formatPaise(ready.cod.feePaise)} more — the courier's fee for collecting cash. Delivery is their own rate, rounded up to the rupee; we add nothing on top.`
                 : `Cash on delivery isn't offered at ${pin} — pay now or confirm on WhatsApp.`
               : "Add a PIN code we deliver to, and your payment options open up."
             : COD_EVERYWHERE
