@@ -163,6 +163,13 @@ export const TEMPLATES = {
     example: ["Asha", "₹1,200", "MK-1024"],
     button: ORDER_PAGE,
   },
+  // Bikriup › Customers › WhatsApp: the shop writes first. Bikriup shows the same words (chats.js HELLO).
+  hello: {
+    name: "mk_hello",
+    category: "MARKETING",
+    body: "Namaste {{1}}, this is {{2}}. We'd love to help you with anything you need from our handmade collection. Reply to this message to chat with us.",
+    example: ["Asha", "Mudkraft"],
+  },
   welcome: {
     name: "mk_welcome_offer",
     category: "MARKETING",

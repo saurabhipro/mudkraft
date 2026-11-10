@@ -13,9 +13,10 @@ export const metadata: Metadata = {
   description:
     "How Mudkraft packs, ships, and stands behind every hand-thrown clay piece — timelines, charges, breakage policy, and returns.",
   openGraph: {
+    siteName: "Mudkraft",
     title: TITLE,
     description:
-      "Free delivery across India, delivery timelines, breakage-in-transit cover, and returns for our hand-thrown clay pieces.",
+      "Doorstep delivery across India, delivery charges and timelines, breakage-in-transit cover, and returns for our hand-thrown clay pieces.",
     type: "website",
     images: [OG_IMAGE],
   },

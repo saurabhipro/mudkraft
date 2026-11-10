@@ -599,3 +599,45 @@ export function newProductEmail(data: NewProductEmailData): RenderedEmail {
     ),
   };
 }
+
+// --- Newsletter ------------------------------------------------------------------
+
+/** The thank-you for "Letters from the kiln", sent once when an address subscribes. */
+export function newsletterWelcomeEmail(unsubscribeUrl: string): RenderedEmail {
+  const base = appBaseUrl();
+  return {
+    subject: "You're on the list: letters from the kiln",
+    html: layout(
+      "Letters from the kiln",
+      `${intro(
+        "Letters from the kiln",
+        "Thank you for <i>subscribing.</i>",
+        "Once a month we'll write to you about new pieces fresh from the kiln, small essays on clay and cooking, and the occasional invitation to the studio in Khurja. No more than that.",
+      )}
+       ${section(
+         `<p style="margin:0;font-size:16px;line-height:1.65;color:${BODY};">While you wait for the first letter, every piece in the collection is hand-thrown from lab-tested river clay and left unglazed.</p>`,
+         "18px 32px 0",
+       )}
+       ${ctaRow(button(`${base}/shop`, "Browse the collection"))}
+       ${section(
+         `<p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.6;color:${MUTED};">Changed your mind? <a href="${unsubscribeUrl}" style="color:${CLAY};">Unsubscribe</a> in one click.</p>`,
+         "28px 32px 0",
+       )}
+       <tr><td style="height:28px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
+      "You are receiving this because you subscribed at mudkraft.com.",
+    ),
+  };
+}
+
+/** A short note to the studio inbox for every new subscriber. */
+export function newsletterStudioNoteEmail(email: string): RenderedEmail {
+  return {
+    subject: `New subscriber: ${email}`,
+    html: layout(
+      "New subscriber",
+      `${intro("Letters from the kiln", "A new subscriber", `${escapeHtml(email)} joined the newsletter from the home page.`)}
+       <tr><td style="height:28px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
+      "Sent to the studio for every new subscriber.",
+    ),
+  };
+}

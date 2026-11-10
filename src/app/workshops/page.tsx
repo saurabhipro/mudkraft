@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "Book a Mudkraft pottery workshop for schools, birthdays and private parties. Read the full soil report of our river clay from the banks of the Ganges.",
   alternates: { canonical: URL },
   openGraph: {
+    siteName: "Mudkraft",
     title: TITLE,
     description:
       "Pottery workshops for schools, birthdays and parties — plus the full soil report of our river clay.",

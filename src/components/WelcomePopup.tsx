@@ -17,16 +17,10 @@ const SKIP = ["/checkout", "/admin", "/account", "/login", "/signup", "/order", 
 const DELAY_MS = 8000;
 const SCROLL_SHARE = 0.4;
 
-// Where the plinth's pieces stand, for one, two or three of them: the middle one leads.
-const SLOTS = [
-  ["left-[28%] h-[62%] w-[44%] md:left-[18%] md:h-[30%] md:w-[64%]"],
-  ["left-[10%] h-[54%] w-[38%] md:left-[6%] md:h-[26%] md:w-[48%]", "right-[10%] h-[50%] w-[36%] md:right-[6%] md:h-[24%] md:w-[44%]"],
-  [
-    "left-[6%] h-[48%] w-[34%] md:h-[22%] md:w-[44%]",
-    "left-[30%] z-10 h-[64%] w-[40%] md:left-[25%] md:h-[30%] md:w-[50%]",
-    "right-[6%] h-[50%] w-[34%] md:h-[23%] md:w-[42%]",
-  ],
-];
+// The plinth's pieces stand side by side, never overlapping: a photo that is not a cutout
+// is blended with multiply, and over another piece it would show through as a ghost.
+// The middle one of three leads.
+const GROW = [["flex-1"], ["flex-1", "flex-1"], ["flex-[0.9]", "flex-[1.2]", "flex-[0.9]"]];
 
 type Done = { code: string | null; percent: number; alreadyUsed: boolean; name: string };
 
@@ -161,17 +155,19 @@ export function WelcomePopup() {
         <div className="relative h-[150px] shrink-0 overflow-hidden bg-sand md:h-auto md:w-[380px]">
           <span aria-hidden="true" className="absolute left-1/2 top-2.5 h-[5px] w-11 -translate-x-1/2 rounded-full bg-earth/20 md:hidden" />
           <span aria-hidden="true" className="absolute inset-x-[10%] bottom-[8%] h-[24%] rounded-[50%] bg-[oklch(0.84_0.042_70)] md:bottom-[13%] md:h-[15%]" />
-          {pieces.map((piece, i) => (
-            <img
-              key={piece.src}
-              src={piece.src}
-              alt={i === 1 ? "Mudkraft clay pieces" : ""}
-              className={`absolute bottom-[14%] object-contain object-bottom animate-in fade-in slide-in-from-bottom-4 duration-700 md:bottom-[18%] ${
-                piece.cutout ? "" : "mix-blend-multiply brightness-[1.06] contrast-[1.06]"
-              } ${SLOTS[pieces.length - 1][i]}`}
-              style={{ animationDelay: `${150 + i * 100}ms` }}
-            />
-          ))}
+          <div className="absolute bottom-[14%] left-[16%] right-[24%] flex h-[60%] items-end justify-center gap-2 md:inset-x-[6%] md:bottom-[18%] md:h-[30%] md:gap-3">
+            {pieces.map((piece, i) => (
+              <img
+                key={piece.src}
+                src={piece.src}
+                alt={i === 1 || pieces.length === 1 ? "Mudkraft clay pieces" : ""}
+                className={`h-full min-w-0 object-contain object-bottom animate-in fade-in slide-in-from-bottom-4 duration-700 ${
+                  piece.cutout ? "" : "mix-blend-multiply brightness-[1.06] contrast-[1.06]"
+                } ${GROW[pieces.length - 1][i]} ${pieces.length === 3 && i !== 1 ? "max-h-[82%]" : ""}`}
+                style={{ animationDelay: `${150 + i * 100}ms` }}
+              />
+            ))}
+          </div>
           <div className="absolute left-7 right-7 top-7 hidden md:block">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Mudkraft · Khurja</p>
             <p className="mt-2.5 font-hand text-[26px] leading-tight text-clay-deep">Seven generations of clay, one kiln.</p>

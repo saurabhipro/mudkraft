@@ -11,7 +11,7 @@ const days = (min: number, max: number) => ({ "@type": "QuantitativeValue", minV
 
 export const shippingDetails = {
   "@type": "OfferShippingDetails",
-  shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "INR" },
+  // No shippingRate: delivery is priced per PIN code and weight at checkout, so no single figure is true.
   shippingDestination: { "@type": "DefinedRegion", addressCountry: "IN" },
   deliveryTime: {
     "@type": "ShippingDeliveryTime",

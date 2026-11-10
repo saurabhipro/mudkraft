@@ -15,6 +15,7 @@ import {
 } from "@/components/HomeMedia";
 import { ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
 import { ShareButton } from "@/components/ShareButton";
+import { NewsletterForm } from "@/components/NewsletterForm";
 import { SITE_URL } from "@/lib/seo";
 import handsClay from "@/assets/hands-clay.jpg";
 import potsDrying from "@/assets/pots-drying.jpg";
@@ -751,24 +752,7 @@ export function HomePage({
               A quiet note once a month — new pieces, small essays on craft, and the occasional
               invitation to the studio.
             </p>
-            <form
-              className="mt-10 mx-auto max-w-lg flex flex-col sm:flex-row gap-2 p-2 rounded-[2rem] sm:rounded-full bg-cream/10 border border-cream/30"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <label htmlFor="newsletter-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="newsletter-email"
-                name="email"
-                type="email"
-                placeholder="your@email"
-                className="flex-1 min-w-0 min-h-[52px] px-5 bg-transparent text-cream placeholder:text-cream/70 focus:outline-none"
-              />
-              <button className="mk-btn-fill min-h-[52px] px-7 rounded-full bg-cream text-ink text-xs tracking-[0.16em] uppercase font-medium">
-                Subscribe
-              </button>
-            </form>
+            <NewsletterForm />
           </div>
         </div>
       </section>

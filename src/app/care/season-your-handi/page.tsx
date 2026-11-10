@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     "A step-by-step ritual to cure your new clay handi before cooking — soak, dry, first rice, and daily care. Follow it once and your handi will last for years without cracking.",
   alternates: { canonical: `${SITE_URL}/care/season-your-handi` },
   openGraph: {
+    siteName: "Mudkraft",
     title: "How to Season a Clay Handi — Mudkraft",
     description:
       "Soak, dry, first rice, daily care — the full ritual to cure a new clay handi before you cook in it.",

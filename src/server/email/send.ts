@@ -1,9 +1,11 @@
 import { cloudinaryThumb } from "@/lib/cloudinary";
 
-import { sendEmail } from "./client";
+import { fromAddress, sendEmail } from "./client";
 import {
   appBaseUrl,
   orderConfirmationEmail,
+  newsletterStudioNoteEmail,
+  newsletterWelcomeEmail,
   orderUpdateEmail,
   signInAlertEmail,
   signInCodeEmail,
@@ -93,4 +95,16 @@ export async function sendSignInCodeEmail(to: string, code: string): Promise<boo
 export async function sendSignInAlertEmail(to: string, data: SignInAlertData): Promise<boolean> {
   const { subject, html } = signInAlertEmail(data);
   return sendEmail({ to, subject, html });
+}
+
+export async function sendNewsletterWelcomeEmail(to: string, unsubscribeToken: string): Promise<boolean> {
+  const url = `${appBaseUrl()}/newsletter/unsubscribe?t=${encodeURIComponent(unsubscribeToken)}`;
+  const { subject, html } = newsletterWelcomeEmail(url);
+  return sendEmail({ to, subject, html });
+}
+
+/** Lets the studio see each signup arrive; best-effort like every other send. */
+export async function sendNewsletterStudioNote(email: string): Promise<boolean> {
+  const { subject, html } = newsletterStudioNoteEmail(email);
+  return sendEmail({ to: fromAddress(), subject, html });
 }

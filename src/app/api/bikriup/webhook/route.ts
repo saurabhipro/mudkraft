@@ -8,8 +8,11 @@ import { sendOrderUpdateEmail } from "@/server/email/send";
 import { pingIndexNow } from "@/server/indexnow";
 import { appBaseUrl } from "@/server/email/templates";
 import { CACHE_TAGS } from "@/server/store/tags";
+import { importMessenger, productTemplate, sendSocialRaw, syncProfiles } from "@/server/social";
+import { getProductBySlug, type StoreProduct } from "@/server/store/products";
 import { chatStatus, sendRaw, sendWhatsApp } from "@/server/whatsapp";
 import { orderStepMessage } from "@/server/whatsapp/orders";
+import { TEMPLATE_LANGUAGE, TEMPLATES } from "@/server/whatsapp/templates";
 
 /**
  * Bikriup tells the site when something changed, so cached pages refresh at
@@ -20,8 +23,11 @@ import { orderStepMessage } from "@/server/whatsapp/orders";
  *   order.updated   — the studio moved an order on: the buyer gets an email and
  *                     a WhatsApp message (confirmed with the invoice, shipped
  *                     with tracking, …; server/whatsapp/orders.ts lists them)
- *   chat.reply      — the studio answered a WhatsApp chat in Bikriup › WhatsApp:
- *                     send it from the studio's number and report back
+ *   chat.reply      — the studio answered a chat in Bikriup › People › Chats
+ *                     (WhatsApp, Instagram or Messenger; text and/or product
+ *                     cards): send it and report back
+ *   chat.config     — Your shops › Chats changed: push the first questions to Meta
+ *   chat.import     — bring in the Page's earlier Messenger chats
  */
 
 const IMMEDIATELY = { expire: 0 } as const;
@@ -110,6 +116,92 @@ function orderMessage(
   }
 }
 
+interface ChatReply {
+  message_id?: number;
+  channel?: "whatsapp" | "instagram" | "messenger";
+  phone?: string;
+  user_id?: string;
+  text?: string;
+  products?: Array<{ slug?: string; name: string; price: number }>;
+  human_agent?: boolean;
+  /** WhatsApp, shop writes first: an approved template ("hello") with its {{n}} values. */
+  template?: string;
+  params?: string[];
+}
+
+/** A reply typed in Bikriup › People › Chats: text, product cards, or both. */
+async function sendChatReply(r: ChatReply | undefined) {
+  if (!r) return;
+  const text = (r.text ?? "").trim();
+  const found = await Promise.all(
+    (r.products ?? []).map((p) => (p.slug ? getProductBySlug(p.slug) : null)),
+  );
+  const products = found.filter((p): p is StoreProduct => Boolean(p));
+
+  if ((r.channel === "instagram" || r.channel === "messenger") && r.user_id) {
+    const opts = { humanAgent: r.human_agent };
+    let sent: Awaited<ReturnType<typeof sendSocialRaw>> | null = null;
+    if (text) sent = await sendSocialRaw(r.channel, r.user_id, { text: text.slice(0, 1000) }, opts);
+    if (products.length && (!sent || sent.ok)) {
+      sent = await sendSocialRaw(
+        r.channel,
+        r.user_id,
+        productTemplate(r.channel, r.user_id, products).message,
+        opts,
+      );
+    }
+    if (!sent) sent = { ok: false, error: "Those products are not on the website" };
+    await chatStatus(
+      sent.ok
+        ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
+        : { message_id: r.message_id, status: "failed", error: sent.error },
+    );
+    return;
+  }
+
+  if (!r.phone) return;
+  if (r.template === "hello") {
+    const def = TEMPLATES.hello;
+    const sent = await sendRaw(r.phone, {
+      type: "template",
+      template: {
+        name: def.name,
+        language: { code: TEMPLATE_LANGUAGE },
+        components: [
+          {
+            type: "body",
+            parameters: (r.params ?? [])
+              .slice(0, 2)
+              .map((text) => ({ type: "text", text: String(text).slice(0, 60) })),
+          },
+        ],
+      },
+    });
+    await chatStatus(
+      sent.ok
+        ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
+        : { message_id: r.message_id, status: "failed", error: sent.error },
+    );
+    return;
+  }
+  // WhatsApp: products go as links under the text (the catalogue cards need Meta's catalogue ids).
+  const lines = products.map(
+    (p) =>
+      `• ${[p.name, p.sizeLabel].filter(Boolean).join(" ")}, ${formatPaise(p.pricePaise)}\n  ${SITE_URL}/shop/${p.slug}`,
+  );
+  const bodyText = [text, lines.join("\n")].filter(Boolean).join("\n\n");
+  if (!bodyText) return;
+  const sent = await sendRaw(r.phone, {
+    type: "text",
+    text: { body: bodyText, preview_url: /https?:\/\//.test(bodyText) },
+  });
+  await chatStatus(
+    sent.ok
+      ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
+      : { message_id: r.message_id, status: "failed", error: sent.error },
+  );
+}
+
 export async function POST(request: Request) {
   const raw = await request.text();
   if (!verifyBikriupSignature(raw, request.headers.get("x-bikriup-signature"))) {
@@ -150,7 +242,10 @@ export async function POST(request: Request) {
             trackingNo: o.tracking_no,
             invoiceUrl: o.invoice_url ?? "",
             trackingUrl: o.tracking_url ?? "",
-            clickHereUrl: o.status === "shipped" ? `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}` : undefined,
+            clickHereUrl:
+              o.status === "shipped"
+                ? `${appBaseUrl()}/checkout/done/${orderToken(o.order_no!, o.phone!)}`
+                : undefined,
           })
         : null,
       whatsapp ? sendWhatsApp(o.phone!, whatsapp) : null,
@@ -158,15 +253,20 @@ export async function POST(request: Request) {
   }
 
   if (body.event === "chat.reply") {
-    const r = body.data as { message_id?: number; phone?: string; text?: string } | undefined;
-    if (r?.phone && r.text) {
-      const sent = await sendRaw(r.phone, { type: "text", text: { body: r.text, preview_url: /https?:\/\//.test(r.text) } });
-      await chatStatus(
-        sent.ok
-          ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
-          : { message_id: r.message_id, status: "failed", error: sent.error },
-      );
-    }
+    await sendChatReply(body.data as ChatReply | undefined);
+  }
+
+  if (body.event === "chat.config") {
+    await syncProfiles();
+  }
+
+  if (body.event === "chat.import") {
+    // A Page's history takes a while; Bikriup only waits 8 s for this answer.
+    void importMessenger(Number((body.data as { days?: number } | undefined)?.days) || 30).catch(
+      (error) => {
+        console.error("[messenger] import failed:", error);
+      },
+    );
   }
 
   return NextResponse.json({ received: true });

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { clearCart, removeItem, syncStock, updateQty, useCart } from "@/lib/cart";
+import { clearCart, removeItem, syncPrices, syncStock, updateQty, useCart } from "@/lib/cart";
 import { toItem, track } from "@/lib/analytics";
 import { formatPaise } from "@/lib/money";
 import { COD_EVERYWHERE, COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
-import { cartStock } from "@/server/actions/cart";
+import { cartPrices, cartStock } from "@/server/actions/cart";
 import { placeOrder, type CheckoutMethod } from "@/server/actions/checkout";
+import { deliveryQuote, type DeliveryQuote } from "@/server/actions/delivery";
 import { checkCoupon } from "@/server/actions/welcome";
 import { readWelcome } from "@/lib/welcome";
 
@@ -21,12 +22,42 @@ const labelCls = "block text-xs tracking-widest uppercase text-earth/70";
 
 /** States and union territories, so the shipping address stays consistent. */
 const INDIAN_STATES = [
-  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
-  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa",
-  "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka",
-  "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
-  "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chandigarh",
+  "Chhattisgarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jammu and Kashmir",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Ladakh",
+  "Lakshadweep",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Puducherry",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
 ];
 
 function Field({
@@ -54,6 +85,28 @@ function Field({
     </div>
   );
 }
+
+/** "Nov 12, 2026" → "Thu, 12 Nov"; anything unreadable stays as it came. */
+function niceDate(raw: string): string {
+  const d = new Date(raw);
+  if (!raw || Number.isNaN(d.getTime())) return raw;
+  return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+}
+
+/** Parcels leave the studio the next working day (Sundays off). */
+function nextWorkingDay(): string {
+  const d = new Date(Date.now() + 864e5);
+  if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+}
+
+/** "Delhivery Surface 5kg" → "Delhivery Surface": the weight slab means nothing to a buyer. */
+function courierName(raw: string): string {
+  return raw.replace(/\s*\d+(\.\d+)?\s*kgs?$/i, "").trim();
+}
+
+const stepCls =
+  "inline-grid h-8 w-8 shrink-0 place-items-center rounded-full bg-earth text-sm font-semibold text-cream";
 
 export interface CheckoutDefaults {
   name: string;
@@ -94,6 +147,10 @@ export function CheckoutForm({
     cartStock(slugs.split(","))
       .then(syncStock)
       .catch(() => {});
+    // ...and its price: a piece added before a price change shows today's price.
+    cartPrices(slugs.split(","))
+      .then(syncPrices)
+      .catch(() => {});
   }, [hydrated, slugs]);
   const soldOut = cart.filter((item) => item.max === 0);
 
@@ -121,7 +178,12 @@ export function CheckoutForm({
     const w = readWelcome();
     if (!w) return;
     const t = window.setTimeout(() => {
-      setForm((f) => ({ ...f, name: f.name || w.name, phone: f.phone || w.phone, email: f.email || w.email }));
+      setForm((f) => ({
+        ...f,
+        name: f.name || w.name,
+        phone: f.phone || w.phone,
+        email: f.email || w.email,
+      }));
       if (w.code) setWelcomeCode(w.code);
     }, 0);
     return () => window.clearTimeout(t);
@@ -135,7 +197,12 @@ export function CheckoutForm({
   // A code is priced by Bikriup for this exact basket; a changed basket drops the figure.
   const basketKey = cart.map((item) => `${item.slug}:${item.qty}`).join(",");
   const [codeInput, setCodeInput] = useState("");
-  const [coupon, setCoupon] = useState<{ code: string; discountPaise: number; totalPaise: number; basket: string } | null>(null);
+  const [coupon, setCoupon] = useState<{
+    code: string;
+    discountPaise: number;
+    totalPaise: number;
+    basket: string;
+  } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const applied = coupon && coupon.basket === basketKey ? coupon : null;
@@ -158,7 +225,12 @@ export function CheckoutForm({
       return;
     }
     setCodeInput(result.code);
-    setCoupon({ code: result.code, discountPaise: result.discountPaise, totalPaise: result.totalPaise, basket });
+    setCoupon({
+      code: result.code,
+      discountPaise: result.discountPaise,
+      totalPaise: result.totalPaise,
+      basket,
+    });
   };
 
   // The popup's code goes in by itself once the basket is known (and again if it changes).
@@ -174,10 +246,88 @@ export function CheckoutForm({
     // applyCode reads the latest basket and phone itself
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, welcomeCode, basketKey, applied, couponError]);
-  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+
+  // Step 1 asks for the PIN code first. Shops on live courier rates price delivery for it; while a
+  // shop is still on flat delivery (or testing), checkout keeps saying shipping is included.
+  const [delivery, setDelivery] = useState<DeliveryQuote>({ mode: "flat" });
+  const [priced, setPriced] = useState(false);
+  const autoFilled = useRef({ city: "", state: "" });
+  const [moved, setMoved] = useState("");
+  const pin = form.postalCode.trim();
+  const pinReady = /^[1-9]\d{5}$/.test(pin);
+  const pricingKey = `${basketKey}|${pin}|${applied?.code ?? ""}`;
+  useEffect(() => {
+    if (!hydrated || !basketKey) return;
+    let stale = false;
+    const t = window.setTimeout(async () => {
+      const next = await deliveryQuote({
+        items: cart.map((item) => ({ slug: item.slug, qty: item.qty })),
+        pincode: pin,
+        coupon: applied?.code ?? "",
+        phone: form.phone,
+      }).catch((): DeliveryQuote => ({ mode: "flat" }));
+      if (stale) return;
+      setPriced(true);
+      // City and state come with the PIN code. Empty fields are filled, and so are fields we filled
+      // for an earlier PIN; anything the buyer typed stays.
+      const place = next.place;
+      if (place) {
+        const state =
+          INDIAN_STATES.find(
+            (s) => s.toLowerCase() === place.state.toLowerCase().replace(/\s*&\s*/g, " and "),
+          ) ?? "";
+        // Compared with what we filled last time; read now, as the updater runs later.
+        const prev = autoFilled.current;
+        setForm((f) => ({
+          ...f,
+          city: !f.city || f.city === prev.city ? place.city : f.city,
+          state: !f.state || f.state === prev.state ? state || f.state : f.state,
+        }));
+        autoFilled.current = { city: place.city, state };
+      }
+      setDelivery((was) => {
+        const before = was.mode === "live" && was.serviceable ? was : null;
+        const after = next.mode === "live" && next.serviceable ? next : null;
+        // Only a real change is called out; the first price simply appears in step 1.
+        setMoved(
+          before && after && before.deliveryPaise !== after.deliveryPaise
+            ? `Delivery changed: ${formatPaise(before.deliveryPaise)} → ${formatPaise(after.deliveryPaise)}` +
+                (before.from !== after.from
+                  ? ` — your PIN code ships from ${after.from} instead.`
+                  : ".")
+            : "",
+        );
+        return next;
+      });
+    }, 350);
+    return () => {
+      stale = true;
+      window.clearTimeout(t);
+    };
+    // The key holds everything priced; cart and form are read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, pricingKey]);
+  const live = delivery.mode === "live" ? delivery : null;
+  const ready = live?.serviceable ? live : null;
+  const canDeliver = !live || live.serviceable === true;
+  // One price: delivery and cash on delivery ride on each piece's price, so neither gets a line.
+  const one = live ? live.onePrice : delivery.mode === "flat" && Boolean(delivery.onePrice);
+  // Not on live courier prices: the shop's own charge (0 while a Shiprocket shop is testing).
+  const flatPaise = delivery.mode === "flat" ? (delivery.deliveryPaise ?? 0) : 0;
 
   // Purely presentational — `placeOrder` re-checks the PIN before accepting COD.
-  const codAvailable = COD_EVERYWHERE || isCodEligible(form.postalCode);
+  const codAvailable = live
+    ? live.serviceable === true && live.cod.available
+    : COD_EVERYWHERE || isCodEligible(form.postalCode);
+  const [payBy, setPayBy] = useState<"gateway" | "cod">("gateway");
+  const cod = payBy === "cod" && codAvailable;
+  const grandPaise = ready
+    ? cod
+      ? ready.cod.totalPaise
+      : ready.totalPaise
+    : totalPaise + flatPaise;
+  const arrives = ready ? niceDate(ready.eta) : "";
+  const leaves = ready && arrives ? nextWorkingDay() : "";
 
   const submit = async (method: CheckoutMethod) => {
     setError(null);
@@ -202,7 +352,9 @@ export function CheckoutForm({
     // The order now lives in the database; the browser copy has done its job.
     clearCart();
     router.push(
-      result.method === "gateway" ? `/checkout/pay/${result.token}` : `/checkout/done/${result.token}`,
+      result.method === "gateway"
+        ? `/checkout/pay/${result.token}`
+        : `/checkout/done/${result.token}`,
     );
   };
 
@@ -218,9 +370,7 @@ export function CheckoutForm({
     return (
       <div className="rounded-3xl border-2 border-earth/30 bg-cream p-10 text-center">
         <div className="font-hand text-3xl text-clay">the basket waits, quietly</div>
-        <p className="mt-3 text-sm text-muted-foreground">
-          There is nothing to check out yet.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">There is nothing to check out yet.</p>
         <Link
           href="/#collection"
           className="mt-6 inline-flex items-center justify-center bg-earth text-cream px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors"
@@ -233,117 +383,190 @@ export function CheckoutForm({
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
-      {/* ---- details ---- */}
+      {/* ---- step 1: delivery to this PIN code, then step 2: details ---- */}
       <form
-        className="lg:col-span-3 rounded-3xl border-2 border-earth/30 bg-cream p-6 md:p-8"
+        className="lg:col-span-3 flex flex-col gap-6"
         onSubmit={(event) => event.preventDefault()}
         noValidate
       >
-        <h2 className="font-display text-2xl text-earth">Your details</h2>
-        {signedIn && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            {fromLastOrder ? "Pre-filled from your last order." : "Pre-filled from your account."}
+        <section className="rounded-3xl border-2 border-earth/30 bg-sand/60 p-6 md:p-8">
+          <div className="flex items-center gap-3">
+            <span className={stepCls}>1</span>
+            <h2 className="font-display text-2xl text-earth">Check delivery to your door</h2>
+          </div>
+          <p className="mt-2 text-sm text-earth/80 md:pl-11">
+            {live && one
+              ? "Delivery is included in the price. Add your PIN code to see that we reach you, and when."
+              : live
+                ? "Delivery is charged at the courier's own rate for your PIN code and the parcel's weight. See it here, before anything else."
+                : "Tell us where it's going. We deliver across India."}
           </p>
-        )}
-
-        <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <Field id="name" label="Full name" error={fieldErrors.name}>
-            <input
-              id="name"
-              autoComplete="name"
-              value={form.name}
-              onChange={(e) => set("name")(e.target.value)}
-              placeholder="Aarushi Sharma"
-              className={inputCls}
-            />
-          </Field>
-
-          <Field id="phone" label="Phone (WhatsApp)" error={fieldErrors.phone}>
-            <input
-              id="phone"
-              type="tel"
-              autoComplete="tel"
-              value={form.phone}
-              onChange={(e) => set("phone")(e.target.value)}
-              placeholder="98xxx xxxxx"
-              className={inputCls}
-            />
-          </Field>
-
-          <div className="sm:col-span-2">
-            <Field id="email" label="Email" error={fieldErrors.email}>
+          <div className="mt-4 md:pl-11">
+            <Field id="postalCode" label="PIN code" error={fieldErrors.postalCode}>
               <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={form.email}
-                onChange={(e) => set("email")(e.target.value)}
-                placeholder="you@example.com"
+                id="postalCode"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                maxLength={6}
+                value={form.postalCode}
+                onChange={(e) => set("postalCode")(e.target.value.replace(/\D/g, ""))}
+                placeholder="110001"
+                className={`${inputCls} max-w-xs text-lg tracking-[0.15em]`}
+              />
+            </Field>
+
+            {pinReady && !priced && <p className="mt-3 text-sm text-muted-foreground">Checking…</p>}
+
+            {ready && (
+              <div className="mt-5 grid gap-3 sm:grid-cols-3" aria-live="polite">
+                <div className="rounded-2xl bg-cream px-4 py-3">
+                  <div className={labelCls}>Arrives by</div>
+                  <div className="mt-1 font-display text-2xl text-earth">
+                    {arrives || "Confirmed on dispatch"}
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-cream px-4 py-3">
+                  <div className={labelCls}>Delivery</div>
+                  <div className="mt-1 font-display text-2xl text-earth">
+                    {one ? "Included" : formatPaise(ready.deliveryPaise)}
+                  </div>
+                  <div className="text-xs text-earth/75">
+                    {ready.cod.available
+                      ? one
+                        ? "Cash on delivery too, same price"
+                        : `${formatPaise(ready.cod.deliveryPaise)} with cash on delivery`
+                      : "Pay online for this PIN code"}
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-cream px-4 py-3">
+                  <div className={labelCls}>Ships from</div>
+                  <div className="mt-1 font-display text-2xl text-earth">
+                    {ready.from || "Our studio"}
+                  </div>
+                  <div className="text-xs text-earth/75">
+                    {ready.parcels.length > 1
+                      ? `${ready.parcels.length} parcels`
+                      : courierName(ready.parcels[0]?.courier ?? "") || "Tracked courier"}
+                  </div>
+                </div>
+              </div>
+            )}
+            {ready && ready.parcels.length > 1 && (
+              <p className="mt-3 text-sm text-earth/80">
+                Your pieces are in different studios, so they come in {ready.parcels.length} parcels
+                {one ? ` from ${ready.parcels.map((p) => p.from).join(" and ")}` : ""}
+                {one
+                  ? "."
+                  : `: ${ready.parcels.map((p) => `${p.from} ${formatPaise(p.deliveryPaise)}`).join(" + ")}.`}
+              </p>
+            )}
+            {moved && (
+              <p
+                aria-live="polite"
+                className="mt-3 rounded-2xl border-[1.5px] border-clay bg-cream px-4 py-2.5 text-sm text-clay-deep"
+              >
+                {moved}
+              </p>
+            )}
+            {live?.serviceable === false && (
+              <p role="alert" className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">
+                {live.error}
+              </p>
+            )}
+            {!live && pinReady && priced && (
+              <p className="mt-4 rounded-2xl bg-cream px-4 py-3 text-sm text-earth">
+                We deliver to {pin}, right to your doorstep.
+              </p>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-3xl border-2 border-earth/30 bg-cream p-6 md:p-8">
+          <div className="flex items-center gap-3">
+            <span className={`${stepCls} ${live && !ready ? "bg-earth/45" : ""}`}>2</span>
+            <h2 className="font-display text-2xl text-earth">Your details &amp; address</h2>
+          </div>
+          {signedIn && (
+            <p className="mt-1 text-xs text-muted-foreground md:pl-11">
+              {fromLastOrder ? "Pre-filled from your last order." : "Pre-filled from your account."}
+            </p>
+          )}
+
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            <Field id="name" label="Full name" error={fieldErrors.name}>
+              <input
+                id="name"
+                autoComplete="name"
+                value={form.name}
+                onChange={(e) => set("name")(e.target.value)}
+                placeholder="Aarushi Sharma"
                 className={inputCls}
               />
             </Field>
-          </div>
-        </div>
 
-        <h2 className="mt-9 font-display text-2xl text-earth">Delivery address</h2>
-        {fromLastOrder && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            Where your last order went. Sending this one somewhere else? Just type over it.
-          </p>
-        )}
-
-        <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Field id="line1" label="Address" error={fieldErrors.line1}>
+            <Field id="phone" label="Phone (WhatsApp)" error={fieldErrors.phone}>
               <input
-                id="line1"
-                autoComplete="address-line1"
-                value={form.line1}
-                onChange={(e) => set("line1")(e.target.value)}
-                placeholder="House / flat, street"
+                id="phone"
+                type="tel"
+                autoComplete="tel"
+                value={form.phone}
+                onChange={(e) => set("phone")(e.target.value)}
+                placeholder="98xxx xxxxx"
                 className={inputCls}
               />
             </Field>
-          </div>
 
-          <div className="sm:col-span-2">
-            <Field id="line2" label="Landmark, area (optional)" error={fieldErrors.line2}>
+            <div className="sm:col-span-2">
+              <Field id="email" label="Email" error={fieldErrors.email}>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={(e) => set("email")(e.target.value)}
+                  placeholder="you@example.com"
+                  className={inputCls}
+                />
+              </Field>
+            </div>
+
+            <div className="sm:col-span-2">
+              <Field id="line1" label="Address" error={fieldErrors.line1}>
+                <input
+                  id="line1"
+                  autoComplete="address-line1"
+                  value={form.line1}
+                  onChange={(e) => set("line1")(e.target.value)}
+                  placeholder="House / flat, street"
+                  className={inputCls}
+                />
+              </Field>
+            </div>
+
+            <div className="sm:col-span-2">
+              <Field id="line2" label="Landmark, area (optional)" error={fieldErrors.line2}>
+                <input
+                  id="line2"
+                  autoComplete="address-line2"
+                  value={form.line2}
+                  onChange={(e) => set("line2")(e.target.value)}
+                  placeholder="Near…"
+                  className={inputCls}
+                />
+              </Field>
+            </div>
+
+            <Field id="city" label="City" error={fieldErrors.city}>
               <input
-                id="line2"
-                autoComplete="address-line2"
-                value={form.line2}
-                onChange={(e) => set("line2")(e.target.value)}
-                placeholder="Near…"
+                id="city"
+                autoComplete="address-level2"
+                value={form.city}
+                onChange={(e) => set("city")(e.target.value)}
+                placeholder="New Delhi"
                 className={inputCls}
               />
             </Field>
-          </div>
 
-          <Field id="city" label="City" error={fieldErrors.city}>
-            <input
-              id="city"
-              autoComplete="address-level2"
-              value={form.city}
-              onChange={(e) => set("city")(e.target.value)}
-              placeholder="New Delhi"
-              className={inputCls}
-            />
-          </Field>
-
-          <Field id="postalCode" label="PIN code" error={fieldErrors.postalCode}>
-            <input
-              id="postalCode"
-              inputMode="numeric"
-              autoComplete="postal-code"
-              maxLength={6}
-              value={form.postalCode}
-              onChange={(e) => set("postalCode")(e.target.value)}
-              placeholder="110001"
-              className={inputCls}
-            />
-          </Field>
-
-          <div className="sm:col-span-2">
             <Field id="state" label="State" error={fieldErrors.state}>
               <select
                 id="state"
@@ -360,39 +583,35 @@ export function CheckoutForm({
                 ))}
               </select>
             </Field>
-          </div>
 
-          <div className="sm:col-span-2">
-            <Field id="note" label="Anything we should know? (optional)" error={fieldErrors.note}>
-              <textarea
-                id="note"
-                rows={3}
-                value={form.note}
-                onChange={(e) => set("note")(e.target.value)}
-                placeholder="Gift wrap, delivery timing, a message to the potter…"
-                className={`${inputCls} rounded-2xl`}
-              />
-            </Field>
+            <div className="sm:col-span-2">
+              <Field id="note" label="Anything we should know? (optional)" error={fieldErrors.note}>
+                <textarea
+                  id="note"
+                  rows={3}
+                  value={form.note}
+                  onChange={(e) => set("note")(e.target.value)}
+                  placeholder="Gift wrap, delivery timing, a message to the potter…"
+                  className={`${inputCls} rounded-2xl`}
+                />
+              </Field>
+            </div>
           </div>
-        </div>
-
-        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-          We deliver across India. Every price already includes shipping — there is nothing
-          added at the end.
-        </p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {delivery.place ? "City and state were filled in from your PIN code." : "\u00a0"}
+          </p>
+        </section>
       </form>
 
-      {/* ---- summary and payment ---- */}
+      {/* ---- the order, how to pay, and the total ---- */}
       <aside className="lg:col-span-2 h-fit rounded-3xl border-2 border-earth/45 bg-cream p-6 md:p-8 shadow-[0_18px_40px_-24px_rgba(59,42,34,0.55)] lg:sticky lg:top-24">
-        <h2 className="font-display text-2xl text-earth">
-          {count} {count === 1 ? "piece" : "pieces"}
-        </h2>
+        <h2 className="font-display text-2xl text-earth">Your order</h2>
 
         <ul className="mt-5 divide-y divide-earth/25 rounded-2xl border border-earth/30 bg-sand/60">
           {cart.map((item) => (
             <li key={item.slug} className="flex gap-4 p-4">
               {item.img ? (
-                <div className="grid h-24 w-24 shrink-0 place-items-center rounded-2xl bg-[radial-gradient(circle_at_50%_40%,oklch(0.97_0.02_75),oklch(0.86_0.05_65))]">
+                <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-[radial-gradient(circle_at_50%_40%,oklch(0.97_0.02_75),oklch(0.86_0.05_65))]">
                   <img
                     src={item.img}
                     alt={item.name}
@@ -400,12 +619,14 @@ export function CheckoutForm({
                   />
                 </div>
               ) : (
-                <div className="h-24 w-24 shrink-0 rounded-2xl bg-earth/10" aria-hidden="true" />
+                <div className="h-20 w-20 shrink-0 rounded-2xl bg-earth/10" aria-hidden="true" />
               )}
               <div className="min-w-0 flex-1">
                 <div className="font-display text-lg leading-tight text-earth">{item.name}</div>
                 {item.tag && <div className="mt-0.5 text-xs text-earth/75">{item.tag}</div>}
-                <div className="mt-1 text-sm font-medium text-earth/85">{formatPaise(item.pricePaise)} each</div>
+                <div className="mt-1 text-sm font-medium text-earth/85">
+                  {formatPaise(item.pricePaise)} each
+                </div>
                 {item.max !== 0 && (
                   <div className="mt-2 flex items-center gap-3">
                     <div className="inline-flex items-center rounded-full border-2 border-earth/50 bg-background text-earth">
@@ -417,7 +638,12 @@ export function CheckoutForm({
                       >
                         −
                       </button>
-                      <span className="min-w-8 text-center text-sm font-semibold" aria-live="polite">{item.qty}</span>
+                      <span
+                        className="min-w-8 text-center text-sm font-semibold"
+                        aria-live="polite"
+                      >
+                        {item.qty}
+                      </span>
                       <button
                         type="button"
                         aria-label={`More ${item.name}`}
@@ -450,10 +676,29 @@ export function CheckoutForm({
                   </div>
                 )}
               </div>
-              <div className="text-base font-semibold text-earth">{formatPaise(item.pricePaise * item.qty)}</div>
+              <div className="text-base font-semibold text-earth">
+                {formatPaise(item.pricePaise * item.qty)}
+              </div>
             </li>
           ))}
         </ul>
+
+        {ready && arrives && (
+          <ol
+            className="mt-5 grid grid-cols-3 gap-1 text-center text-xs text-earth/75"
+            aria-label="When it arrives"
+          >
+            <li className="border-t-[3px] border-clay pt-2">
+              <b className="block text-earth">Today</b>Order placed
+            </li>
+            <li className="border-t-[3px] border-clay/40 pt-2">
+              <b className="block text-earth">{leaves}</b>Leaves the studio
+            </li>
+            <li className="border-t-[3px] border-clay/40 pt-2">
+              <b className="block text-earth">{arrives}</b>At your door
+            </li>
+          </ol>
+        )}
 
         <form
           className="mt-6 border-t-2 border-earth/25 pt-5"
@@ -506,25 +751,92 @@ export function CheckoutForm({
           )}
         </form>
 
-        {applied && (
-          <div className="mt-4 space-y-1.5 text-sm">
-            <div className="flex justify-between text-muted-foreground">
-              <span>Pieces</span>
-              <span>{formatPaise(subtotalPaise)}</span>
-            </div>
+        <div
+          className="mt-5 flex rounded-full bg-sand p-1"
+          role="radiogroup"
+          aria-label="How you pay"
+        >
+          {(
+            [
+              ["gateway", "Pay now"],
+              ["cod", "Cash on delivery"],
+            ] as const
+          ).map(([id, label]) => {
+            const on = (id === "cod") === cod;
+            const off = id === "cod" && !codAvailable;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                disabled={off}
+                onClick={() => setPayBy(id)}
+                className={`flex-1 rounded-full px-3 py-2.5 text-xs tracking-widest uppercase transition-colors disabled:opacity-40 ${on ? "bg-earth text-cream" : "text-earth"}`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 space-y-2 text-sm">
+          <div className="flex justify-between text-muted-foreground">
+            <span>Pieces</span>
+            <span>{formatPaise(subtotalPaise)}</span>
+          </div>
+          {applied && (
             <div className="flex justify-between text-clay-deep">
               <span>Code {applied.code}</span>
               <span>−{formatPaise(applied.discountPaise)}</span>
             </div>
+          )}
+          <div className="flex justify-between text-earth">
+            <span>Delivery{ready ? ` to ${pin}` : ""}</span>
+            <span className="font-medium">
+              {one && live?.serviceable !== false
+                ? "Included"
+                : ready
+                  ? formatPaise(ready.deliveryPaise)
+                  : live
+                    ? live.serviceable === false
+                      ? "—"
+                      : "Check your PIN code"
+                    : !pinReady || !priced
+                      ? "Add your PIN code"
+                      : flatPaise > 0
+                        ? formatPaise(flatPaise)
+                        : "Free"}
+            </span>
           </div>
-        )}
+          {ready && cod && !one && (
+            <div className="flex justify-between text-earth">
+              <span>Cash on delivery fee</span>
+              <span className="font-medium">{formatPaise(ready.cod.feePaise)}</span>
+            </div>
+          )}
+        </div>
 
-        <div className={`flex items-baseline justify-between ${applied ? "mt-3" : "mt-5"} border-t-2 border-earth/25 pt-5`}>
+        <div className="mt-4 flex items-baseline justify-between border-t-2 border-earth/25 pt-5">
           <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Total</span>
-          <span className="font-display text-3xl text-earth">{formatPaise(totalPaise)}</span>
+          <span className="font-display text-3xl text-earth">
+            {live && !ready && !one
+              ? `${formatPaise(totalPaise)} + delivery`
+              : formatPaise(grandPaise)}
+          </span>
         </div>
         <p className="mt-1 text-right text-[11px] text-muted-foreground">
-          Shipping included · confirmed again before payment
+          {one
+            ? cod
+              ? "Paid in cash to the courier · delivery included"
+              : "Doorstep delivery included"
+            : live && !ready
+              ? "Delivery is added once we have your PIN code"
+              : cod
+                ? "Paid in cash to the courier"
+                : live
+                  ? "Paying now · delivery included"
+                  : "Doorstep delivery"}
         </p>
 
         {soldOut.length > 0 && (
@@ -543,28 +855,23 @@ export function CheckoutForm({
         <div className="mt-6 space-y-3">
           <button
             type="button"
-            onClick={() => submit("gateway")}
-            disabled={pending !== null || soldOut.length > 0}
+            onClick={() => submit(cod ? "cod" : "gateway")}
+            disabled={pending !== null || soldOut.length > 0 || !canDeliver}
             className="w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors disabled:opacity-60"
           >
-            {pending === "gateway" ? "Placing order…" : "Pay now"}
+            {pending === "gateway" || pending === "cod"
+              ? "Placing order…"
+              : live && !ready
+                ? "Check delivery first"
+                : cod
+                  ? `Place order · pay ${formatPaise(grandPaise)} on delivery`
+                  : `Pay now · ${formatPaise(grandPaise)}`}
           </button>
-
-          {codAvailable && (
-            <button
-              type="button"
-              onClick={() => submit("cod")}
-              disabled={pending !== null || soldOut.length > 0}
-              className="w-full inline-flex items-center justify-center border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
-            >
-              {pending === "cod" ? "Placing order…" : "Pay later · Cash on delivery"}
-            </button>
-          )}
 
           <button
             type="button"
             onClick={() => submit("whatsapp")}
-            disabled={pending !== null || soldOut.length > 0}
+            disabled={pending !== null || soldOut.length > 0 || !canDeliver}
             className="w-full inline-flex items-center justify-center gap-2 border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
           >
             {pending === "whatsapp" ? "Placing order…" : "Confirm on WhatsApp"}
@@ -572,16 +879,19 @@ export function CheckoutForm({
         </div>
 
         <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-          {COD_EVERYWHERE
-            ? "Pay later: pay cash on delivery when your order arrives."
-            : codAvailable
-              ? `Cash on delivery is available for your PIN code (${COD_REGION_LABEL}).`
-              : `Cash on delivery is available in ${COD_REGION_LABEL} — enter a PIN code there to see it.`}
-        </p>
-
-        <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-          Prices are re-checked against the catalogue when you place the order, so what you pay is
-          always what the piece costs today.
+          {live
+            ? ready
+              ? ready.cod.available
+                ? one
+                  ? "Pay now or in cash when it arrives — the price is the same either way."
+                  : `Cash on delivery costs ${formatPaise(ready.cod.feePaise)} more — the courier's fee for collecting cash. Delivery is their own rate, rounded up to the rupee; we add nothing on top.`
+                : `Cash on delivery isn't offered at ${pin} — pay now or confirm on WhatsApp.`
+              : "Add a PIN code we deliver to, and your payment options open up."
+            : COD_EVERYWHERE
+              ? "Pay later: pay cash on delivery when your order arrives."
+              : codAvailable
+                ? `Cash on delivery is available for your PIN code (${COD_REGION_LABEL}).`
+                : `Cash on delivery is available in ${COD_REGION_LABEL} — enter a PIN code there to see it.`}
         </p>
       </aside>
     </div>

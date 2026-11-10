@@ -2,6 +2,7 @@
 
 import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { z } from "zod";
 
 import { COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
@@ -29,6 +30,7 @@ import {
   razorpayKeyId,
   verifyPaymentSignature,
 } from "../razorpay";
+import { CHAT_REF_COOKIE, readChatRef } from "../social";
 import { sendWhatsApp } from "../whatsapp";
 import { orderReceived } from "../whatsapp/orders";
 
@@ -294,7 +296,11 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
       postalCode: d.postalCode,
     },
   });
-  if (created) await sendWhatsApp(d.phone, orderReceived(d.name, created.orderNumber, totalPaise, lookupToken));
+  if (created)
+    await sendWhatsApp(
+      d.phone,
+      orderReceived(d.name, created.orderNumber, totalPaise, lookupToken),
+    );
 
   return { ok: true, token: lookupToken, method: d.method };
 }
@@ -308,6 +314,9 @@ async function placeBikriupOrder(
   d: z.infer<typeof checkoutSchema>,
   requested: Map<string, number>,
 ): Promise<CheckoutResult> {
+  // Came from a product card in an Instagram / Messenger chat (/api/chat-ref): the order says so,
+  // and the chat in Bikriup is linked to this buyer.
+  const chatRef = readChatRef((await cookies()).get(CHAT_REF_COOKIE)?.value ?? "");
   let created: BkOrder;
   try {
     created = await bikriup<BkOrder>("/orders", {
@@ -317,20 +326,27 @@ async function placeBikriupOrder(
         name: d.name,
         phone: d.phone,
         email: d.email,
-        address: [d.line1, [d.line2, d.state].filter(Boolean).join(", ")].filter(Boolean).join("\n"),
+        address: [d.line1, [d.line2, d.state].filter(Boolean).join(", ")]
+          .filter(Boolean)
+          .join("\n"),
         city: d.city,
         pincode: d.postalCode,
         note: d.note,
         payment_method: d.method === "gateway" ? "online" : d.method,
         coupon: d.coupon || undefined,
         payment_provider: d.method === "gateway" ? "razorpay" : d.method,
+        ...(chatRef ? { source: chatRef.channel } : {}),
         items: [...requested].map(([slug, qty]) => ({ slug, qty })),
       },
     });
   } catch (error) {
-    if (error instanceof BikriupError && error.status < 500) return { ok: false, error: error.message };
+    if (error instanceof BikriupError && error.status < 500)
+      return { ok: false, error: error.message };
     console.error("[bikriup] order failed:", error);
-    return { ok: false, error: "We could not place the order just now. Please try again in a minute." };
+    return {
+      ok: false,
+      error: "We could not place the order just now. Please try again in a minute.",
+    };
   }
 
   const token = orderToken(created.order_no, created.phone);
@@ -350,9 +366,29 @@ async function placeBikriupOrder(
     subtotalPaise: Math.round(created.subtotal * 100),
     shippingPaise: Math.round(created.delivery * 100),
     totalPaise: Math.round(created.total * 100),
-    address: { line1: d.line1, line2: d.line2 || null, city: d.city, state: d.state, postalCode: d.postalCode },
+    address: {
+      line1: d.line1,
+      line2: d.line2 || null,
+      city: d.city,
+      state: d.state,
+      postalCode: d.postalCode,
+    },
   });
-  await sendWhatsApp(d.phone, orderReceived(d.name, created.order_no, Math.round(created.total * 100), token));
+  await sendWhatsApp(
+    d.phone,
+    orderReceived(d.name, created.order_no, Math.round(created.total * 100), token),
+  );
+  if (chatRef) {
+    await bikriup("/chats/link", {
+      method: "POST",
+      body: {
+        channel: chatRef.channel,
+        user_id: chatRef.userId,
+        phone: created.phone,
+        name: d.name,
+      },
+    }).catch((error) => console.error("[bikriup] chat link failed:", error));
+  }
 
   return { ok: true, token, method: d.method };
 }
@@ -396,13 +432,19 @@ export async function initiateRazorpayPayment(token: string): Promise<InitiatePa
   if (bikriupEnabled()) {
     const o = await getBikriupOrder(token);
     if (!o) return { ok: false, error: "Unknown order." };
-    if (o.payment_method !== "online") return { ok: false, error: "This order is not paid online." };
-    if (o.payment_status === "paid") return { ok: false, error: "This order has already been paid." };
+    if (o.payment_method !== "online")
+      return { ok: false, error: "This order is not paid online." };
+    if (o.payment_status === "paid")
+      return { ok: false, error: "This order has already been paid." };
     if (o.status === "cancelled") return { ok: false, error: "This order was cancelled." };
     const amountPaise = Math.round(o.total * 100);
     try {
       // The receipt is the order number: confirmation checks it before anything is marked paid.
-      const created = await createGatewayOrder({ amountPaise, receipt: o.order_no, notes: { order_number: o.order_no } });
+      const created = await createGatewayOrder({
+        amountPaise,
+        receipt: o.order_no,
+        notes: { order_number: o.order_no },
+      });
       return {
         ok: true,
         keyId: razorpayKeyId(),
@@ -611,7 +653,10 @@ export async function confirmRazorpayPayment(token: string, input: unknown): Pro
   return { ok: true, paid: true };
 }
 
-async function confirmBikriupPayment(token: string, p: z.infer<typeof confirmSchema>): Promise<SettleResult> {
+async function confirmBikriupPayment(
+  token: string,
+  p: z.infer<typeof confirmSchema>,
+): Promise<SettleResult> {
   const ref = readOrderToken(token);
   if (!ref) return { ok: false, error: "Unknown order." };
   if (
@@ -630,7 +675,8 @@ async function confirmBikriupPayment(token: string, p: z.infer<typeof confirmSch
     console.error("[razorpay] payment settle failed:", error);
     return {
       ok: false,
-      error: "Could not verify the payment right now. If you were charged, it will be confirmed shortly.",
+      error:
+        "Could not verify the payment right now. If you were charged, it will be confirmed shortly.",
     };
   }
 }
@@ -651,7 +697,10 @@ export async function reportRazorpayFailure(
   // With Bikriup the order simply stays unpaid and payable; the failure shows in its log.
   if (bikriupEnabled()) {
     const ref = readOrderToken(token);
-    if (ref) console.warn(`[razorpay] payment failed for ${ref.orderNo}: ${reason.code ?? ""} ${reason.description ?? ""}`);
+    if (ref)
+      console.warn(
+        `[razorpay] payment failed for ${ref.orderNo}: ${reason.code ?? ""} ${reason.description ?? ""}`,
+      );
     return;
   }
 

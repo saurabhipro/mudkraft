@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description:
     "How Mudkraft handles your data, orders, payments, and privacy. Maintained by the Mudkraft studio team.",
   openGraph: {
+    siteName: "Mudkraft",
     title: TITLE,
     description: "How Mudkraft handles your data, orders, payments, and privacy.",
     type: "website",

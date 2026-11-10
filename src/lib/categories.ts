@@ -54,7 +54,7 @@ export const CATEGORY_PAGES: CategoryPage[] = [
     h1: "Clay Cookware: Handmade Unglazed Mitti Ke Bartan",
     title: "Clay Cookware Online – Unglazed Mitti Ke Bartan | Mudkraft",
     description: (from) =>
-      `Buy handmade unglazed clay cookware online: handi, kadai, bhagona and more.${from ? ` From ${from}.` : ""} Lab-tested, wood-fired in Khurja. Free delivery across India.`,
+      `Buy handmade unglazed clay cookware online: handi, kadai, bhagona and more.${from ? ` From ${from}.` : ""} Lab-tested, wood-fired in Khurja. Doorstep delivery across India.`,
     intro: [
       "Mudkraft makes clay cookware the old way. Every handi, kadai and pot is thrown by hand from river clay in Khurja, dried in the sun and fired in a wood kiln for 48 hours. There is no glaze and no paint, so the only thing your food touches is fired clay.",
       "Clay holds heat gently and evenly, which suits slow dals, biryani and curries. Our clay was lab-tested for lead, cadmium and arsenic, and none was found. Choose a piece below, or read how to season and care for it.",
@@ -73,7 +73,7 @@ export const CATEGORY_PAGES: CategoryPage[] = [
     h1: "Clay Handi for Cooking: Unglazed Mitti Ki Handi",
     title: "Clay Handi for Cooking – Mitti Ki Handi Online | Mudkraft",
     description: (from) =>
-      `Buy a handmade unglazed clay handi (mitti ki handi) for dal, biryani and curries.${from ? ` From ${from}.` : ""} Wood-fired in Khurja, lab-tested. Free delivery across India.`,
+      `Buy a handmade unglazed clay handi (mitti ki handi) for dal, biryani and curries.${from ? ` From ${from}.` : ""} Wood-fired in Khurja, lab-tested. Doorstep delivery across India.`,
     intro: [
       "A mitti ki handi is the pot your grandmother cooked dal in. Ours is thrown by hand from river clay and fired for 48 hours in a wood kiln, with no glaze. It holds heat gently, so dal, rice, biryani and slow curries simmer evenly.",
       "Pick a size below. The bigger handi suits a family meal; the smaller one is good for two people or for serving at the table.",
@@ -94,7 +94,7 @@ export const CATEGORY_PAGES: CategoryPage[] = [
     h1: "Clay Kadai: Mitti Ki Kadai for Cooking",
     title: "Clay Kadai for Cooking – Mitti Ki Kadai Online | Mudkraft",
     description: (from) =>
-      `Buy a handmade unglazed clay kadai (mitti ki kadai) for sabzi, paneer and curries.${from ? ` From ${from}.` : ""} Wood-fired in Khurja, lab-tested. Free delivery across India.`,
+      `Buy a handmade unglazed clay kadai (mitti ki kadai) for sabzi, paneer and curries.${from ? ` From ${from}.` : ""} Wood-fired in Khurja, lab-tested. Doorstep delivery across India.`,
     intro: [
       "A clay kadai gives slow, even heat for sabzi, paneer and thick curries. Ours is thrown by hand from river clay, wood-fired for 48 hours and left unglazed.",
       "Season it once before the first cook, start on a low flame, and it will serve you for years.",
@@ -108,7 +108,7 @@ export const CATEGORY_PAGES: CategoryPage[] = [
     h1: "Clay Dahi Handi: Set Curd in Mitti",
     title: "Clay Dahi Handi – Set Curd in a Mitti Pot | Mudkraft",
     description: (from) =>
-      `Buy a handmade unglazed clay dahi handi for setting and serving curd.${from ? ` From ${from}.` : ""} Wood-fired in Khurja, lab-tested. Free delivery across India.`,
+      `Buy a handmade unglazed clay dahi handi for setting and serving curd.${from ? ` From ${from}.` : ""} Wood-fired in Khurja, lab-tested. Doorstep delivery across India.`,
     intro: [
       "A dahi handi is a clay pot for setting and serving curd. The porous walls breathe, and many people like the thick set curd and the earthy finish that clay gives.",
       "Ours are thrown by hand from river clay, wood-fired and left unglazed. Choose the size that fits your household.",
@@ -127,7 +127,7 @@ export const CATEGORY_PAGES: CategoryPage[] = [
     h1: "Clay Matka & Water Pot: Cool Water Without a Fridge",
     title: "Clay Matka & Water Pot – Earthen Water Pots | Mudkraft",
     description: (from) =>
-      `Buy handmade unglazed clay matkas, jugs and water pots.${from ? ` From ${from}.` : ""} Water stays cooler by natural evaporation. Wood-fired in Khurja. Free delivery across India.`,
+      `Buy handmade unglazed clay matkas, jugs and water pots.${from ? ` From ${from}.` : ""} Water stays cooler by natural evaporation. Wood-fired in Khurja. Doorstep delivery across India.`,
     intro: [
       "An earthen water pot cools water without electricity. Thousands of tiny pores let a little water evaporate through the clay, and that evaporation keeps the water cooler than the room.",
       "Our matkas and jugs are thrown by hand from river clay, wood-fired and left unglazed, with no plastic anywhere. Season a new pot once, and it is ready for daily use.",
@@ -166,6 +166,6 @@ export function productSeo(p: ProductView): { title: string; description: string
   return {
     label,
     title: `${label} – Unglazed${hindiPart} | Mudkraft`,
-    description: `Hand-thrown unglazed ${base.replace(/^clay /i, "clay ")}${size ? ` (${size}${dims})` : ""} from Khurja, wood-fired 48 hours and lab-tested. ${p.price}. Free delivery across India.`.slice(0, 158),
+    description: `Hand-thrown unglazed ${base.replace(/^clay /i, "clay ")}${size ? ` (${size}${dims})` : ""} from Khurja, wood-fired 48 hours and lab-tested. ${p.price}. Doorstep delivery across India.`.slice(0, 158),
   };
 }

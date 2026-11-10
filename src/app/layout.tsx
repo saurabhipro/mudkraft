@@ -32,11 +32,12 @@ const caveat = Caveat({
 
 const TITLE = "Mudkraft — Soulful Handcrafted Clay";
 const DESCRIPTION =
-  "Buy handmade unglazed clay handi, kadai, dahi handi and matka from Khurja. Wood-fired, lab-tested with no lead, cadmium or arsenic. Free delivery across India.";
+  "Buy handmade unglazed clay handi, kadai, dahi handi and matka from Khurja. Wood-fired, lab-tested with no lead, cadmium or arsenic. Doorstep delivery across India.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
+  applicationName: "Mudkraft",
   // Search Console's "HTML tag" ownership check; omitted until the token is set.
   ...(process.env.GOOGLE_SITE_VERIFICATION
     ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
@@ -89,6 +90,7 @@ const organizationJsonLd = {
     {
       "@type": "WebSite",
       name: "Mudkraft",
+      alternateName: ["Mudkraft Studio", "mudkraft.com"],
       url: SITE_URL,
     },
   ],

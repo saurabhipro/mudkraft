@@ -8,7 +8,7 @@ import { BikriupError, bikriup, orderToken, type BkOrder } from "../bikriup";
 import { sendOrderConfirmationEmail } from "../email/send";
 import { serverEnv } from "../env";
 import { getActiveProducts } from "../store/products";
-import { logChat, sendChat, sendText, type ChatKind } from ".";
+import { fetchMedia, logChat, sendChat, sendText, type ChatKind } from ".";
 import { FLOW_SCREEN } from "./flow";
 
 /**
@@ -36,6 +36,11 @@ export interface IncomingMessage {
     button_reply?: { id: string; title: string };
     nfm_reply?: { response_json?: string };
   };
+  image?: { id: string; caption?: string; mime_type?: string };
+  sticker?: { id: string; mime_type?: string };
+  audio?: { id: string; mime_type?: string; voice?: boolean };
+  video?: { id: string; caption?: string; mime_type?: string };
+  document?: { id: string; caption?: string; filename?: string; mime_type?: string };
   order?: { product_items?: Array<{ product_retailer_id: string; quantity: number }> };
 }
 
@@ -53,7 +58,7 @@ const MENU_ROWS = [
   {
     id: "delivery",
     title: "Delivery & payment",
-    description: "Free delivery, cash on delivery, online payment",
+    description: "Doorstep delivery, cash on delivery, online payment",
   },
   { id: "care", title: "Seasoning & care", description: "What to do before the first use" },
   { id: "track", title: "Track my order", description: "Where is my parcel?" },
@@ -76,6 +81,18 @@ function describe(m: IncomingMessage): { kind: ChatKind; text: string } {
       return { kind: "form", text: "Filled in the delivery form" };
   }
   if (m.type === "button") return { kind: "text", text: m.button?.text ?? "" };
+  // A caption, when there is one, is what they said; Bikriup shows the file above it.
+  if (m.type === "image")
+    return { kind: "media", text: m.image?.caption?.trim() || "Sent a photo" };
+  if (m.type === "video")
+    return { kind: "media", text: m.video?.caption?.trim() || "Sent a video" };
+  if (m.type === "audio") return { kind: "media", text: "Sent a voice note" };
+  if (m.type === "document") {
+    // Bikriup reads the first line as the file name and the rest as the caption.
+    const name = m.document?.filename?.trim() || "Sent a document";
+    const caption = m.document?.caption?.trim();
+    return { kind: "media", text: caption && caption !== name ? `${name}\n${caption}` : name };
+  }
   return {
     kind: "media",
     text: `Sent ${m.type === "image" ? "a photo" : m.type === "audio" ? "a voice note" : `a ${m.type}`}`,
@@ -84,6 +101,8 @@ function describe(m: IncomingMessage): { kind: ChatKind; text: string } {
 
 export async function handleIncoming(m: IncomingMessage, profileName: string): Promise<void> {
   const { kind, text } = describe(m);
+  const mediaId = (m.image ?? m.sticker ?? m.audio ?? m.video ?? m.document)?.id;
+  const media = mediaId ? await fetchMedia(mediaId) : null;
   const chat = await logChat({
     phone: m.from,
     dir: "in",
@@ -91,6 +110,7 @@ export async function handleIncoming(m: IncomingMessage, profileName: string): P
     body: text,
     name: profileName,
     wa_id: m.id,
+    ...(media ? { media } : {}),
   });
   const first = profileName.trim().split(/\s+/)[0] || "";
 
@@ -132,7 +152,7 @@ async function sendMenu(to: string, first: string, mode?: "bot") {
         body: {
           text: `Namaste${first ? ` ${first}` : ""}! 🙏 Welcome to Mudkraft: handmade, wood-fired, unglazed clay cookware from Khurja.\n\nHow can we help you today?`,
         },
-        footer: { text: "Free delivery across India" },
+        footer: { text: "Doorstep delivery across India" },
         action: { button: "See options", sections: [{ title: "Choose one", rows: MENU_ROWS }] },
       },
     },
@@ -149,7 +169,7 @@ async function menuChoice(to: string, id: string, first: string) {
     case "delivery":
       await sendText(
         to,
-        `🚚 Delivery is free across India and already included in the price.\n💵 Pay cash on delivery, or online with UPI, card or net banking.\n📦 Every piece is packed by hand. Dispatch and delivery times: ${SITE_URL}/shipping-returns${DIVIDER}`,
+        `🚚 We deliver to your doorstep across India. The delivery charge depends on your PIN code and is shown before you pay.\n💵 Pay cash on delivery, or online with UPI, card or net banking.\n📦 Every piece is packed by hand. Dispatch and delivery times: ${SITE_URL}/shipping-returns${DIVIDER}`,
       );
       return;
     case "care":
@@ -195,7 +215,7 @@ async function sendCatalog(to: string) {
       body: {
         text: "Here is everything we make. Open a piece to see its photos and size, add what you like to your cart, and send the cart here to order.",
       },
-      footer: { text: "Free delivery across India" },
+      footer: { text: "Doorstep delivery across India" },
       action: { name: "catalog_message" },
     },
   });
@@ -220,7 +240,7 @@ async function sendBestsellers(to: string) {
       body: {
         text: "Handmade, wood-fired and unglazed. Tap a piece to see it, add it to your cart and send the cart here to order.",
       },
-      footer: { text: "Free delivery across India" },
+      footer: { text: "Doorstep delivery across India" },
       action: {
         catalog_id: catalogId,
         sections: [
@@ -319,7 +339,7 @@ async function checkout(to: string, cart: CartLine[], profileName: string) {
       type: "flow",
       header: { type: "text", text: "Your order" },
       body: {
-        text: `${quote.lines.map(itemLine).join("\n")}\n\nTotal: ${total} (free delivery included)\n\nTap below to add your delivery address and choose how to pay.`,
+        text: `${quote.lines.map(itemLine).join("\n")}\n\nTotal: ${total} + delivery (priced for your PIN code at checkout)\n\nTap below to add your delivery address and choose how to pay.`,
       },
       footer: { text: "Handmade in Khurja" },
       action: {
@@ -430,7 +450,7 @@ async function placeOrder(m: IncomingMessage, profileName: string) {
       : "";
   await sendText(
     m.from,
-    `✅ Order ${created.order_no} placed. Thank you, ${name.split(/\s+/)[0]}!\n\n${lines}\nTotal: ${amount} (free delivery included)\n\n${
+    `✅ Order ${created.order_no} placed. Thank you, ${name.split(/\s+/)[0]}!\n\n${lines}\nTotal: ${amount} (delivery included)\n\n${
       cod
         ? `Please keep ${amount} ready in cash at delivery.`
         : "Please complete the payment below to confirm it."
