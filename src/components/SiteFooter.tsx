@@ -64,18 +64,69 @@ export function SiteFooter() {
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Explore</div>
           <ul className="space-y-2.5 text-cream/80">
-            {SUPPORT.map(({ label, href, Icon, external }) => (
-              <li key={label}>
-                <a
-                  href={href}
-                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className="inline-flex items-center gap-2.5 hover:text-gold transition-colors"
-                >
-                  <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  {label}
-                </a>
-              </li>
-            ))}
+            <li>
+              <Link href="/clay-cookware" className="hover:text-gold transition-colors mk-link">
+                Clay cookware
+              </Link>
+            </li>
+            <li>
+              <Link href="/clay-handi" className="hover:text-gold transition-colors mk-link">
+                Clay handi
+              </Link>
+            </li>
+            <li>
+              <Link href="/clay-kadai" className="hover:text-gold transition-colors mk-link">
+                Clay kadai
+              </Link>
+            </li>
+            <li>
+              <Link href="/dahi-handi" className="hover:text-gold transition-colors mk-link">
+                Dahi handi
+              </Link>
+            </li>
+            <li>
+              <Link href="/clay-water-pot" className="hover:text-gold transition-colors mk-link">
+                Clay matka
+              </Link>
+            </li>
+            <li>
+              <Link href="/journal" className="hover:text-gold transition-colors mk-link">
+                Journal
+              </Link>
+            </li>
+            <li>
+              <Link href="/benefits" className="hover:text-gold transition-colors mk-link">
+                Benefits of Clay
+              </Link>
+            </li>
+            <li>
+              <Link href="/workshops" className="hover:text-gold transition-colors mk-link">
+                Workshops
+              </Link>
+            </li>
+            <li>
+              <Link href="/soil-report" className="hover:text-gold transition-colors mk-link">
+                Soil Report
+              </Link>
+            </li>
+            <li>
+              <Link href="/#story" className="hover:text-gold transition-colors mk-link">
+                Story
+              </Link>
+            </li>
+            <li>
+              <Link href="/videos" className="hover:text-gold transition-colors mk-link">
+                Videos
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/care/season-your-handi"
+                className="hover:text-gold transition-colors mk-link"
+              >
+                Care Guide
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -95,56 +146,18 @@ export function SiteFooter() {
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Support</div>
           <ul className="space-y-2.5 text-cream/80">
-            <li>
-              <a
-                href={whatsappEnquiry()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 hover:text-gold transition-colors"
-              >
-                <WhatsAppIcon className="w-4 h-4" /> WhatsApp
-              </a>
-            </li>
-            <li>
-              <a
-                href={`mailto:${ENQUIRY_EMAIL}`}
-                className="hover:text-gold transition-colors mk-link"
-              >
-                {ENQUIRY_EMAIL}
-              </a>
-            </li>
-            <li>
-              <a
-                href={FACEBOOK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gold transition-colors mk-link"
-              >
-                Facebook
-              </a>
-            </li>
-            <li>
-              <a
-                href={YOUTUBE_CHANNEL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gold transition-colors mk-link"
-              >
-                YouTube
-              </a>
-            </li>
-            {INSTAGRAM_URL && (
-              <li>
+            {SUPPORT.map(({ label, href, Icon, external }) => (
+              <li key={label}>
                 <a
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-gold transition-colors mk-link"
+                  href={href}
+                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="inline-flex items-center gap-2.5 hover:text-gold transition-colors"
                 >
-                  Instagram
+                  <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  {label}
                 </a>
               </li>
-            )}
+            ))}
           </ul>
         </div>
       </div>
