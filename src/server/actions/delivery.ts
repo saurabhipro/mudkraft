@@ -9,10 +9,14 @@ import { BikriupError, bikriup, bikriupEnabled } from "../bikriup";
  * nearest warehouse that has every piece. `mode: "flat"` means the shop isn't on live rates and
  * the checkout keeps its "shipping included" wording.
  */
+/** City and state for the PIN code, when Bikriup knows them (to fill the address in). */
+export type Place = { city: string; state: string } | null;
+
 export type DeliveryQuote =
-  | { mode: "flat" }
+  | { mode: "flat"; place?: Place }
   | {
       mode: "live";
+      place?: Place;
       /** No PIN code yet. */
       pending: boolean;
       serviceable: boolean | null;
@@ -23,7 +27,7 @@ export type DeliveryQuote =
       fallback: boolean;
       eta: string;
       from: string;
-      parcels: { from: string; deliveryPaise: number }[];
+      parcels: { from: string; deliveryPaise: number; courier: string }[];
       cod: { available: boolean; feePaise: number; deliveryPaise: number; totalPaise: number };
     };
 
@@ -49,7 +53,12 @@ interface BkQuote {
   serviceable?: boolean | null;
   delivery_error?: string;
   fallback?: boolean;
-  delivery_note?: { etd: string; from: string; parcels: { from: string; delivery: number }[] };
+  delivery_note?: {
+    etd: string;
+    from: string;
+    parcels: { from: string; delivery: number; courier?: string }[];
+  };
+  place?: { city: string; state: string } | null;
   cod?: { available: boolean; fee: number; delivery: number; total: number };
 }
 
@@ -67,9 +76,11 @@ export async function deliveryQuote(input: unknown): Promise<DeliveryQuote> {
         ...(d.coupon ? { coupon: d.coupon, phone: d.phone.replace(/\D/g, "").slice(-10) } : {}),
       },
     });
-    if (q.delivery_mode !== "live") return { mode: "flat" };
+    const place = q.place?.state ? { city: q.place.city, state: q.place.state } : null;
+    if (q.delivery_mode !== "live") return { mode: "flat", place };
     return {
       mode: "live",
+      place,
       pending: Boolean(q.delivery_pending),
       serviceable: q.serviceable ?? null,
       error: q.delivery_error ?? "",
@@ -81,6 +92,7 @@ export async function deliveryQuote(input: unknown): Promise<DeliveryQuote> {
       parcels: (q.delivery_note?.parcels ?? []).map((p) => ({
         from: p.from,
         deliveryPaise: paise(p.delivery),
+        courier: p.courier ?? "",
       })),
       cod: {
         available: Boolean(q.cod?.available),
