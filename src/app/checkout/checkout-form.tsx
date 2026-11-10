@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { clearCart, removeItem, syncStock, updateQty, useCart } from "@/lib/cart";
+import { clearCart, removeItem, syncPrices, syncStock, updateQty, useCart } from "@/lib/cart";
 import { toItem, track } from "@/lib/analytics";
 import { formatPaise } from "@/lib/money";
 import { COD_EVERYWHERE, COD_REGION_LABEL, isCodEligible } from "@/lib/serviceability";
-import { cartStock } from "@/server/actions/cart";
+import { cartPrices, cartStock } from "@/server/actions/cart";
 import { placeOrder, type CheckoutMethod } from "@/server/actions/checkout";
 import { deliveryQuote, type DeliveryQuote } from "@/server/actions/delivery";
 import { checkCoupon } from "@/server/actions/welcome";
@@ -146,6 +146,10 @@ export function CheckoutForm({
     if (!hydrated || !slugs) return;
     cartStock(slugs.split(","))
       .then(syncStock)
+      .catch(() => {});
+    // ...and its price: a piece added before a price change shows today's price.
+    cartPrices(slugs.split(","))
+      .then(syncPrices)
       .catch(() => {});
   }, [hydrated, slugs]);
   const soldOut = cart.filter((item) => item.max === 0);
@@ -307,7 +311,9 @@ export function CheckoutForm({
   const ready = live?.serviceable ? live : null;
   const canDeliver = !live || live.serviceable === true;
   // One price: delivery and cash on delivery ride on each piece's price, so neither gets a line.
-  const one = Boolean(live?.onePrice);
+  const one = live ? live.onePrice : delivery.mode === "flat" && Boolean(delivery.onePrice);
+  // Not on live courier prices: the shop's own charge (0 while a Shiprocket shop is testing).
+  const flatPaise = delivery.mode === "flat" ? (delivery.deliveryPaise ?? 0) : 0;
 
   // Purely presentational — `placeOrder` re-checks the PIN before accepting COD.
   const codAvailable = live
@@ -315,7 +321,11 @@ export function CheckoutForm({
     : COD_EVERYWHERE || isCodEligible(form.postalCode);
   const [payBy, setPayBy] = useState<"gateway" | "cod">("gateway");
   const cod = payBy === "cod" && codAvailable;
-  const grandPaise = ready ? (cod ? ready.cod.totalPaise : ready.totalPaise) : totalPaise;
+  const grandPaise = ready
+    ? cod
+      ? ready.cod.totalPaise
+      : ready.totalPaise
+    : totalPaise + flatPaise;
   const arrives = ready ? niceDate(ready.eta) : "";
   const leaves = ready && arrives ? nextWorkingDay() : "";
 
@@ -792,7 +802,11 @@ export function CheckoutForm({
                     ? live.serviceable === false
                       ? "—"
                       : "Check your PIN code"
-                    : "Included"}
+                    : !pinReady || !priced
+                      ? "Add your PIN code"
+                      : flatPaise > 0
+                        ? formatPaise(flatPaise)
+                        : "Free"}
             </span>
           </div>
           {ready && cod && !one && (

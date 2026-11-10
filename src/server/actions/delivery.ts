@@ -13,7 +13,14 @@ import { BikriupError, bikriup, bikriupEnabled } from "../bikriup";
 export type Place = { city: string; state: string } | null;
 
 export type DeliveryQuote =
-  | { mode: "flat"; place?: Place }
+  | {
+      mode: "flat";
+      place?: Place;
+      /** One price: delivery rides on each piece's price. Off: delivery is its own line. */
+      onePrice?: boolean;
+      /** What the shop charges for delivery when not on live courier prices (0 = nothing). */
+      deliveryPaise?: number;
+    }
   | {
       mode: "live";
       place?: Place;
@@ -80,7 +87,13 @@ export async function deliveryQuote(input: unknown): Promise<DeliveryQuote> {
       },
     });
     const place = q.place?.state ? { city: q.place.city, state: q.place.state } : null;
-    if (q.delivery_mode !== "live") return { mode: "flat", place };
+    if (q.delivery_mode !== "live")
+      return {
+        mode: "flat",
+        place,
+        onePrice: q.price_display === "one",
+        deliveryPaise: paise(q.delivery),
+      };
     return {
       mode: "live",
       place,

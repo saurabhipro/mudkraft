@@ -147,6 +147,18 @@ export function syncStock(stock: Record<string, number>) {
   if (changed) emit();
 }
 
+/** Fresh prices from the server: a line added at an older price shows (and totals) today's. */
+export function syncPrices(prices: Record<string, number>) {
+  let changed = false;
+  state = state.map((x) => {
+    const price = prices[x.slug];
+    if (!(typeof price === "number" && price > 0) || price === x.pricePaise) return x;
+    changed = true;
+    return { ...x, pricePaise: price };
+  });
+  if (changed) emit();
+}
+
 export function removeItem(slug: string) {
   state = state.filter((x) => x.slug !== slug);
   emit();

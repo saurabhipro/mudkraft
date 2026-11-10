@@ -16,3 +16,11 @@ export async function cartStock(slugs: string[]): Promise<Record<string, number>
   }
   return out;
 }
+
+/** Today's price of each basket line (the shop may have changed it, or how prices are shown). */
+export async function cartPrices(slugs: string[]): Promise<Record<string, number>> {
+  const wanted = new Set(slugs.slice(0, 100));
+  const out: Record<string, number> = {};
+  for (const p of await getActiveProducts()) if (wanted.has(p.slug)) out[p.slug] = p.pricePaise;
+  return out;
+}
