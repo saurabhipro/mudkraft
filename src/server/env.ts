@@ -11,7 +11,7 @@ function emptyAsUndefined<T extends z.ZodTypeAny>(schema: T) {
   return z.preprocess((value) => (value === "" ? undefined : value), schema.optional());
 }
 
-const serverEnvSchema = z.object({
+const baseEnvSchema = z.object({
   DATABASE_URL: z
     .string()
     .min(1, "DATABASE_URL is required — copy the pooled connection string from Neon"),
@@ -43,10 +43,21 @@ const serverEnvSchema = z.object({
   // and the gateway payment option reports itself unavailable instead of
   // crashing. Test keys (rzp_test_...) and live keys (rzp_live_...) use the
   // exact same code path.
-  RAZORPAY_KEY_ID: emptyAsUndefined(z.string()),
+  RAZORPAY_KEY_ID: emptyAsUndefined(
+    z
+      .string()
+      .regex(
+        /^rzp_(test|live)_[A-Za-z0-9]+$/,
+        "RAZORPAY_KEY_ID looks like rzp_test_… or rzp_live_…",
+      ),
+  ),
   RAZORPAY_KEY_SECRET: emptyAsUndefined(z.string()),
-  // Set only once the webhook is registered in the Razorpay dashboard.
+  // The webhook's own secret (not the API key secret), typed into the dashboard
+  // when the webhook is registered. Required with live keys — see the refinement below.
   RAZORPAY_WEBHOOK_SECRET: emptyAsUndefined(z.string()),
+  // Who hears about payments that need a person: an amount mismatch, a refund
+  // Razorpay could not make. Defaults to the SMTP from address.
+  ALERT_EMAIL: emptyAsUndefined(z.string().email("ALERT_EMAIL must be an email address")),
 
   // Bikriup runs the shop's back office: catalogue, stock, orders, reviews and
   // enquiries. Set BIKRIUP_API_URL (e.g. https://mudkraft.bikriup.com/api/v1) and
@@ -60,6 +71,8 @@ const serverEnvSchema = z.object({
   BIKRIUP_ADMIN_URL: emptyAsUndefined(z.string().url()),
   // Public address that serves Bikriup's /uploads photos (defaults to the admin address's host).
   BIKRIUP_MEDIA_URL: emptyAsUndefined(z.string().url()),
+  // Where udhaar pay pages live (the reminder's button opens mudkraft.com/pay/…, which forwards here).
+  BIKRIUP_PAY_URL: emptyAsUndefined(z.string().url()),
 
   // SMS (MSG91) is optional: without it OTPs are printed to the server console
   // — the whole delivery-verification flow stays demoable with zero setup.
@@ -93,16 +106,63 @@ const serverEnvSchema = z.object({
   INSTAGRAM_ACCOUNT_ID: emptyAsUndefined(z.string()),
 });
 
-const parsed = serverEnvSchema.safeParse(process.env);
+const serverEnvSchema = baseEnvSchema.superRefine((env, ctx) => {
+  // Half a Razorpay setup is a broken checkout, not a disabled one.
+  if (env.RAZORPAY_KEY_ID && !env.RAZORPAY_KEY_SECRET) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["RAZORPAY_KEY_SECRET"],
+      message: "RAZORPAY_KEY_SECRET is required when RAZORPAY_KEY_ID is set",
+    });
+  }
+  // With real money the webhook is what settles orders whose browser never came
+  // back from the payment, so live keys without it are refused outright.
+  if (
+    env.RAZORPAY_KEY_ID?.startsWith("rzp_live_") &&
+    (env.RAZORPAY_WEBHOOK_SECRET?.length ?? 0) < 32
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["RAZORPAY_WEBHOOK_SECRET"],
+      message:
+        "RAZORPAY_WEBHOOK_SECRET (at least 32 characters, `openssl rand -hex 32`) is required with live Razorpay keys",
+    });
+  }
+});
 
-if (!parsed.success) {
-  const details = parsed.error.issues
-    .map((issue) => `  • ${issue.path.join(".")}: ${issue.message}`)
-    .join("\n");
-  throw new Error(`Invalid server environment:\n${details}\n\nSee .env.example for the full list.`);
+export type ServerEnv = z.infer<typeof serverEnvSchema>;
+
+/** Validates an environment; exported so the rules can be tested without a real one. */
+export function parseServerEnv(raw: Record<string, string | undefined>): ServerEnv {
+  const parsed = serverEnvSchema.safeParse(raw);
+  if (!parsed.success) {
+    const details = parsed.error.issues
+      .map((issue) => `  • ${issue.path.join(".")}: ${issue.message}`)
+      .join("\n");
+    throw new Error(
+      `Invalid server environment:\n${details}\n\nSee .env.example for the full list.`,
+    );
+  }
+  return parsed.data;
 }
 
-export const serverEnv = parsed.data;
+/** True when a production build serving a real site is holding Razorpay test keys. */
+export function testKeysOnLiveSite(env: ServerEnv, nodeEnv: string | undefined): boolean {
+  if (nodeEnv !== "production" || !env.RAZORPAY_KEY_ID?.startsWith("rzp_test_")) return false;
+  const host = new URL(env.BETTER_AUTH_URL).hostname;
+  return host !== "localhost" && host !== "127.0.0.1";
+}
+
+export const serverEnv = parseServerEnv(process.env);
+
+if (testKeysOnLiveSite(serverEnv, process.env.NODE_ENV)) {
+  // Loud on purpose: checkout looks normal, but no customer is actually charged.
+  for (let i = 0; i < 3; i++) {
+    console.warn(
+      "[env] !!! Razorpay TEST keys on the live site — payments are simulated, no real money moves !!!",
+    );
+  }
+}
 
 /**
  * The Cloudinary cloud name is deliberately public — it appears in every

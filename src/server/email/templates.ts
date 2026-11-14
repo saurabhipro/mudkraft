@@ -449,7 +449,9 @@ export function orderUpdateEmail(data: OrderUpdateEmailData): RenderedEmail {
     data.trackingUrl ? button(data.trackingUrl, "Track the parcel") : "",
     data.invoiceUrl ? outlineButton(data.invoiceUrl, "Download invoice (PDF)") : "",
     // Opens the order page, which lists each piece with a link to its review form.
-    data.status === "delivered" && data.statusUrl ? outlineButton(data.statusUrl, "Review your pieces") : "",
+    data.status === "delivered" && data.statusUrl
+      ? outlineButton(data.statusUrl, "Review your pieces")
+      : "",
   ].filter(Boolean);
 
   return {
@@ -638,6 +640,101 @@ export function newsletterStudioNoteEmail(email: string): RenderedEmail {
       `${intro("Letters from the kiln", "A new subscriber", `${escapeHtml(email)} joined the newsletter from the home page.`)}
        <tr><td style="height:28px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
       "Sent to the studio for every new subscriber.",
+    ),
+  };
+}
+
+// --- Broadcasts and udhaar reminders (sent for Bikriup › Grow / People › Udhaar) -------------
+
+export interface BroadcastEmailItem {
+  name: string;
+  pricePaise: number;
+  url: string;
+  imageUrl: string | null;
+}
+
+export interface BroadcastEmailData {
+  subject: string;
+  kind: "new_stock" | "offer" | "note";
+  /** The line typed in Bikriup (what fills the WhatsApp template too). */
+  line: string;
+  /** A note's own text (kind "note"). */
+  note: string;
+  firstName: string;
+  items: BroadcastEmailItem[];
+  unsubscribeUrl: string;
+}
+
+const sentence = (s: string) => {
+  const t = s.trim();
+  return t ? `${t.charAt(0).toUpperCase()}${t.slice(1)}${/[.!?]$/.test(t) ? "" : "."}` : "";
+};
+
+export function broadcastEmail(data: BroadcastEmailData): RenderedEmail {
+  const base = appBaseUrl();
+  const eyebrow =
+    data.kind === "offer"
+      ? "An offer for you"
+      : data.kind === "note"
+        ? "From the studio"
+        : "Fresh from the kiln";
+  const lead = data.kind === "note" ? "" : sentence(data.line);
+  const noteHtml =
+    data.kind === "note"
+      ? data.note
+          .split(/\n{2,}/)
+          .map(
+            (p) =>
+              `<p style="margin:0 0 14px;font-size:16px;line-height:1.65;color:${BODY};">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`,
+          )
+          .join("")
+      : "";
+  const items = data.items
+    .slice(0, 6)
+    .map(
+      (p) => `
+    <tr><td style="padding:16px 0;border-bottom:1px solid ${RULE};">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        ${p.imageUrl ? `<td width="112" style="vertical-align:top;"><a href="${p.url}"><img src="${p.imageUrl}" width="96" height="96" alt="${escapeHtml(p.name)}" style="display:block;width:96px;height:96px;object-fit:cover;border-radius:8px;"></a></td>` : ""}
+        <td style="vertical-align:top;">
+          <a href="${p.url}" style="font-size:18px;color:${TEXT};text-decoration:none;">${escapeHtml(p.name)}</a>
+          <div style="margin-top:6px;font-size:16px;color:${TEXT};">${formatPaiseExact(p.pricePaise)}</div>
+          <div style="margin-top:10px;">${outlineButton(p.url, "See it")}</div>
+        </td>
+      </tr></table>
+    </td></tr>`,
+    )
+    .join("");
+  return {
+    subject: data.subject,
+    html: layout(
+      data.subject,
+      `${intro(eyebrow, `Namaste ${escapeHtml(data.firstName)},`, lead ? escapeHtml(lead) : "")}
+       ${noteHtml ? section(noteHtml, "18px 32px 0") : ""}
+       ${items ? section(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${items}</table>`, "18px 32px 0") : ""}
+       ${data.kind === "note" ? "" : ctaRow(button(`${base}/shop`, data.kind === "offer" ? "Shop the offer" : "See everything new"))}
+       ${section(`<p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.6;color:${MUTED};">Don't want offers? <a href="${data.unsubscribeUrl}" style="color:${CLAY};">Unsubscribe</a> in one click. Order updates still reach you.</p>`, "28px 32px 0")}
+       <tr><td style="height:28px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
+      "You are receiving this because you have an account or an order at mudkraft.com.",
+    ),
+  };
+}
+
+export interface PaymentReminderEmailData {
+  firstName: string;
+  amountText: string;
+  payUrl: string;
+}
+
+export function paymentReminderEmail(data: PaymentReminderEmailData): RenderedEmail {
+  return {
+    subject: `A reminder: ${data.amountText} due at Mudkraft`,
+    html: layout(
+      "Payment reminder",
+      `${intro("A gentle reminder", `Namaste ${escapeHtml(data.firstName)},`, `${escapeHtml(data.amountText)} is due on your account with Mudkraft. You can see your bills and pay by UPI from the button below. If you have already paid, please ignore this email.`)}
+       ${ctaRow(button(data.payUrl, "See bills and pay"))}
+       <tr><td style="height:36px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
+      "You are receiving this because you have an account with Mudkraft.",
     ),
   };
 }

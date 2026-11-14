@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { bikriup, bikriupEnabled } from "../bikriup";
 import { serverEnv } from "../env";
+import { describeError, maskPhone } from "../redact";
 import {
   GRAPH_URL,
   TEMPLATES,
@@ -180,12 +181,14 @@ export async function sendRaw(to: string, payload: Record<string, unknown>): Pro
     };
     if (!res.ok) {
       const error = json.error?.error_data?.details || json.error?.message || `HTTP ${res.status}`;
-      console.error(`[whatsapp] ${String(payload.type)} to ${number} failed: ${error}`);
+      console.error(`[whatsapp] ${String(payload.type)} to ${maskPhone(number)} failed: ${error}`);
       return { ok: false, error };
     }
     return { ok: true, id: json.messages?.[0]?.id ?? "" };
   } catch (error) {
-    console.error(`[whatsapp] ${String(payload.type)} to ${number} failed:`, error);
+    console.error(
+      `[whatsapp] ${String(payload.type)} to ${maskPhone(number)} failed: ${describeError(error)}`,
+    );
     return { ok: false, error: "Could not reach WhatsApp" };
   }
 }

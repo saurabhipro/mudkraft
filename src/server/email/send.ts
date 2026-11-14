@@ -1,5 +1,7 @@
 import { cloudinaryThumb } from "@/lib/cloudinary";
 
+import { serverEnv } from "../env";
+
 import { fromAddress, sendEmail } from "./client";
 import {
   appBaseUrl,
@@ -107,4 +109,22 @@ export async function sendNewsletterWelcomeEmail(to: string, unsubscribeToken: s
 export async function sendNewsletterStudioNote(email: string): Promise<boolean> {
   const { subject, html } = newsletterStudioNoteEmail(email);
   return sendEmail({ to: fromAddress(), subject, html });
+}
+
+/**
+ * A short plain email to the studio about a payment that needs a person: an
+ * amount that does not match, a refund Razorpay could not make. Lines carry
+ * order numbers and gateway ids only — never customer details.
+ */
+export async function sendAdminAlert(subject: string, lines: string[]): Promise<boolean> {
+  const escape = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  const html = `<div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.5">${lines
+    .map((l) => `<p style="margin:0 0 8px">${escape(l)}</p>`)
+    .join("")}</div>`;
+  return sendEmail({
+    to: serverEnv.ALERT_EMAIL ?? fromAddress(),
+    subject: `[Mudkraft payments] ${subject}`,
+    html,
+  });
 }

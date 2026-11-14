@@ -3,12 +3,12 @@
 import { randomBytes } from "node:crypto";
 
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { z } from "zod";
 
 import { db } from "../db";
 import { newsletterSubscriber } from "../db/schema";
 import { sendNewsletterStudioNote, sendNewsletterWelcomeEmail } from "../email/send";
+import { clientIp, createLimiter } from "../rate-limit";
 
 /**
  * "Letters from the kiln" on the home page. The address is saved in the
@@ -25,22 +25,8 @@ const schema = z.object({
 
 export type SubscribeResult = { ok: true; already: boolean } | { ok: false; error: string };
 
-// A few tries per address per hour is plenty; the site runs as one process.
-const WINDOW_MS = 60 * 60 * 1000;
-const MAX_TRIES = 8;
-const tries = new Map<string, { n: number; until: number }>();
-
-function tooMany(key: string): boolean {
-  const now = Date.now();
-  const hit = tries.get(key);
-  if (!hit || hit.until < now) {
-    tries.set(key, { n: 1, until: now + WINDOW_MS });
-    if (tries.size > 5000) for (const [k, v] of tries) if (v.until < now) tries.delete(k);
-    return false;
-  }
-  hit.n += 1;
-  return hit.n > MAX_TRIES;
-}
+// A few tries per address per hour is plenty.
+const tooMany = createLimiter({ windowMs: 60 * 60 * 1000, max: 8 });
 
 export async function subscribeNewsletter(input: unknown): Promise<SubscribeResult> {
   const parsed = schema.safeParse(input);
@@ -48,8 +34,8 @@ export async function subscribeNewsletter(input: unknown): Promise<SubscribeResu
   const { email, website } = parsed.data;
   if (website) return { ok: true, already: false };
 
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  if (tooMany(ip)) return { ok: false, error: "Too many tries from here. Please try again later." };
+  if (tooMany(await clientIp()))
+    return { ok: false, error: "Too many tries from here. Please try again later." };
 
   try {
     const [existing] = await db

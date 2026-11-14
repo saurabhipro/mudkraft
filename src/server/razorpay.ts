@@ -57,9 +57,22 @@ export async function createGatewayOrder(params: {
  * The gateway order a payment belongs to. Its `receipt` is the shop's order
  * number, which ties a payment to exactly one order when Bikriup holds them.
  */
-export async function fetchGatewayOrder(gatewayOrderId: string): Promise<{ id: string; amount: number; receipt: string | null }> {
+export interface GatewayOrder {
+  id: string;
+  amount: number;
+  receipt: string | null;
+  /** `created` (no attempt yet), `attempted` (tried, not paid) or `paid`. */
+  status: string;
+}
+
+export async function fetchGatewayOrder(gatewayOrderId: string): Promise<GatewayOrder> {
   const o = await getClient().orders.fetch(gatewayOrderId);
-  return { id: o.id, amount: Number(o.amount), receipt: o.receipt ?? null };
+  return {
+    id: o.id,
+    amount: Number(o.amount),
+    receipt: o.receipt ?? null,
+    status: String(o.status),
+  };
 }
 
 /** The subset of Razorpay's payment entity the app actually reads. */
@@ -76,13 +89,94 @@ export interface GatewayPayment {
   wallet?: string | null;
   error_code?: string | null;
   error_description?: string | null;
+  /** Paise refunded so far against this payment. */
+  amount_refunded?: number;
   [key: string]: unknown;
 }
 
+/** The subset of Razorpay's refund entity the app reads (webhook `refund.*` events). */
+export interface RefundEntity {
+  id: string;
+  payment_id: string;
+  amount: number;
+  status: string;
+  notes?: Record<string, string> | unknown[];
+}
+
+/** Error shape the Razorpay SDK rejects with. */
+export interface RazorpayApiError {
+  statusCode: string | number;
+  error: { code: string; description: string; reason?: string };
+}
+
+export function isRazorpayError(err: unknown): err is RazorpayApiError {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "statusCode" in err &&
+    typeof (err as { error?: unknown }).error === "object" &&
+    (err as { error?: unknown }).error !== null
+  );
+}
+
+function normalisePayment(payment: unknown): GatewayPayment {
+  const p = payment as GatewayPayment;
+  // The SDK types amounts as number | string; normalise once here.
+  return { ...p, amount: Number(p.amount), amount_refunded: Number(p.amount_refunded ?? 0) };
+}
+
 export async function fetchGatewayPayment(paymentId: string): Promise<GatewayPayment> {
-  const payment = await getClient().payments.fetch(paymentId);
-  // The SDK types `amount` as number | string; normalise once here.
-  return { ...payment, amount: Number(payment.amount) } as GatewayPayment;
+  return normalisePayment(await getClient().payments.fetch(paymentId));
+}
+
+/**
+ * Captures an authorized payment. Only a captured payment has reached the
+ * shop; an authorized one is a hold that the bank releases if nobody captures
+ * it. Dashboard auto-capture normally does this first, so "already captured"
+ * is an expected answer and returns the payment as it now stands.
+ */
+export async function capturePayment(
+  paymentId: string,
+  amountPaise: number,
+): Promise<GatewayPayment> {
+  try {
+    return normalisePayment(await getClient().payments.capture(paymentId, amountPaise, "INR"));
+  } catch (error) {
+    if (
+      isRazorpayError(error) &&
+      /already\s+(been\s+)?captured/i.test(error.error.description ?? "")
+    ) {
+      return fetchGatewayPayment(paymentId);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Refunds a payment in full or in part (normal speed: 5–7 working days, no
+ * extra fee). The notes travel with the refund and show in the dashboard.
+ */
+export async function refundPayment(
+  paymentId: string,
+  params: { amountPaise: number; notes: Record<string, string> },
+): Promise<{ id: string; status: string }> {
+  const refund = await getClient().payments.refund(paymentId, {
+    amount: params.amountPaise,
+    speed: "normal",
+    notes: params.notes,
+  });
+  return { id: refund.id, status: String(refund.status) };
+}
+
+/** True when Razorpay refused a refund because the payment has none left to give back. */
+export function isFullyRefundedError(err: unknown): boolean {
+  return (
+    isRazorpayError(err) &&
+    err.error.code === "BAD_REQUEST_ERROR" &&
+    /fully refunded|already been refunded|refund amount.*(greater|exceed)/i.test(
+      err.error.description ?? "",
+    )
+  );
 }
 
 /** Masked, support-friendly description of how a payment was made. */

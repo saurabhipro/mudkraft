@@ -1,4 +1,5 @@
 import { serverEnv } from "./env";
+import { describeError, maskPhone } from "./redact";
 
 /**
  * OTP delivery over SMS, mirroring the email module's contract: never throws,
@@ -17,7 +18,13 @@ function smsConfigured(): boolean {
 /** `phone` is the stored E.164 number, e.g. +919876543210. */
 export async function sendOtpSms(phone: string, otp: string): Promise<boolean> {
   if (!smsConfigured()) {
-    console.warn(`[sms] demo mode — OTP for ${phone}: ${otp}`);
+    // The code itself is printed only on a developer machine; a production log
+    // must never hold a working OTP next to the number it unlocks.
+    if (process.env.NODE_ENV === "production") {
+      console.warn(`[sms] SMS not configured — OTP for ${maskPhone(phone)} was not sent`);
+    } else {
+      console.warn(`[sms] demo mode — OTP for ${maskPhone(phone)}: ${otp}`);
+    }
     return true;
   }
 
@@ -38,7 +45,7 @@ export async function sendOtpSms(phone: string, otp: string): Promise<boolean> {
     }
     return true;
   } catch (error) {
-    console.error("[sms] send failed:", error);
+    console.error(`[sms] send failed: ${describeError(error)}`);
     return false;
   }
 }

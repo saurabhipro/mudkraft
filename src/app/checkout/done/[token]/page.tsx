@@ -19,10 +19,15 @@ export const metadata: Metadata = {
 
 export default async function OrderPlacedPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ dup?: string }>;
 }) {
   const { token } = await params;
+  // Set by the payment page when this order had already been paid and the
+  // payment just made was refunded. Display only: it changes nothing.
+  const duplicateRefunded = (await searchParams).dup === "1";
   const order = await getOrderByToken(token);
 
   if (!order) notFound();
@@ -82,6 +87,16 @@ export default async function OrderPlacedPage({
                 ? "Your order is saved. Send us a message and we will confirm the pieces, share payment details and dispatch."
                 : "Your order is saved but not yet paid. You can pay whenever you are ready — nothing is dispatched until then."}
         </p>
+
+        {duplicateRefunded && paid && (
+          <p
+            role="status"
+            className="mt-5 max-w-xl rounded-2xl bg-clay/10 px-4 py-3 text-sm text-earth"
+          >
+            This order was already paid, so your second payment has been refunded to the same
+            account. It can take 5–7 working days to show.
+          </p>
+        )}
 
         <div className="mt-6 inline-flex items-center gap-3 rounded-full border-2 border-earth/40 bg-cream px-5 py-2.5">
           <span className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Order</span>
