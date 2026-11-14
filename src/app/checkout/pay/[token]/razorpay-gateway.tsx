@@ -107,7 +107,7 @@ export function RazorpayGateway({ token }: { token: string }) {
           });
 
           if (result.ok && result.paid) {
-            router.push(`/checkout/done/${token}`);
+            router.push(`/checkout/done/${token}${result.duplicateRefunded ? "?dup=1" : ""}`);
             return;
           }
 

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { ShareButton } from "@/components/ShareButton";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
-import { FACEBOOK_URL, INSTAGRAM_URL, SALES_EMAIL } from "@/lib/catalogue";
+import { Facebook, Instagram, Mail, Phone, Youtube } from "lucide-react";
+import { FACEBOOK_URL, INSTAGRAM_URL, SALES_EMAIL, SALES_PHONE_DISPLAY } from "@/lib/catalogue";
 import { YOUTUBE_CHANNEL_URL } from "@/lib/youtube";
 import { whatsappLink } from "@/lib/whatsapp";
 
@@ -18,6 +19,21 @@ const QUICK_LINKS = [
 ];
 
 const whatsappEnquiry = () => whatsappLink(["Namaste Mudkraft! I have an enquiry."]);
+
+/** Every way to reach the studio, each with its icon. Empty links (an account not set up) are left out. */
+const SUPPORT = [
+  { label: "WhatsApp", href: whatsappEnquiry(), Icon: WhatsAppIcon, external: true },
+  {
+    label: SALES_PHONE_DISPLAY,
+    href: `tel:${SALES_PHONE_DISPLAY.replace(/[^\d+]/g, "")}`,
+    Icon: Phone,
+    external: false,
+  },
+  { label: ENQUIRY_EMAIL, href: `mailto:${ENQUIRY_EMAIL}`, Icon: Mail, external: false },
+  { label: "Instagram", href: INSTAGRAM_URL, Icon: Instagram, external: true },
+  { label: "Facebook", href: FACEBOOK_URL, Icon: Facebook, external: true },
+  { label: "YouTube", href: YOUTUBE_CHANNEL_URL, Icon: Youtube, external: true },
+].filter((item) => item.href);
 
 export function SiteFooter() {
   return (
@@ -130,56 +146,18 @@ export function SiteFooter() {
         <div>
           <div className="text-xs tracking-[0.3em] uppercase text-gold mb-5">Support</div>
           <ul className="space-y-2.5 text-cream/80">
-            <li>
-              <a
-                href={whatsappEnquiry()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 hover:text-gold transition-colors"
-              >
-                <WhatsAppIcon className="w-4 h-4" /> WhatsApp
-              </a>
-            </li>
-            <li>
-              <a
-                href={`mailto:${ENQUIRY_EMAIL}`}
-                className="hover:text-gold transition-colors mk-link"
-              >
-                {ENQUIRY_EMAIL}
-              </a>
-            </li>
-            <li>
-              <a
-                href={FACEBOOK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gold transition-colors mk-link"
-              >
-                Facebook
-              </a>
-            </li>
-            <li>
-              <a
-                href={YOUTUBE_CHANNEL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gold transition-colors mk-link"
-              >
-                YouTube
-              </a>
-            </li>
-            {INSTAGRAM_URL && (
-              <li>
+            {SUPPORT.map(({ label, href, Icon, external }) => (
+              <li key={label}>
                 <a
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-gold transition-colors mk-link"
+                  href={href}
+                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="inline-flex items-center gap-2.5 hover:text-gold transition-colors"
                 >
-                  Instagram
+                  <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  {label}
                 </a>
               </li>
-            )}
+            ))}
           </ul>
         </div>
       </div>

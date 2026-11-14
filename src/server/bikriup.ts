@@ -20,8 +20,16 @@ export class BikriupError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    /** The whole JSON error body: Bikriup adds machine-readable details such as `code`. */
+    readonly body: Record<string, unknown> = {},
   ) {
     super(message);
+    this.name = "BikriupError";
+  }
+
+  /** e.g. "already_paid", "amount_mismatch", "awaiting_payment". */
+  get code(): string | undefined {
+    return typeof this.body.code === "string" ? this.body.code : undefined;
   }
 }
 
@@ -44,8 +52,9 @@ export async function bikriup<T>(
     // webhook can invalidate it; the raw fetch must always be fresh.
     cache: "no-store",
   });
-  const data = (await res.json().catch(() => ({}))) as { error?: string };
-  if (!res.ok) throw new BikriupError(data.error ?? `Bikriup answered ${res.status}`, res.status);
+  const data = (await res.json().catch(() => ({}))) as { error?: string } & Record<string, unknown>;
+  if (!res.ok)
+    throw new BikriupError(data.error ?? `Bikriup answered ${res.status}`, res.status, data);
   return data as T;
 }
 
@@ -169,7 +178,10 @@ export interface BkOrder {
   total: number;
   created_at: string;
   external_ref: string;
+  payment_provider?: string;
   payment_ref: string;
+  /** The Razorpay order (order_…) the site opened for this order; "" until the first Pay click. */
+  gateway_order_id?: string;
   courier?: string;
   tracking_no?: string;
   tracking_url?: string;

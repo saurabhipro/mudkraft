@@ -4,7 +4,15 @@ import { NextResponse } from "next/server";
 import { formatPaise } from "@/lib/money";
 import { SITE_URL } from "@/lib/seo";
 import { orderToken, verifyBikriupSignature } from "@/server/bikriup";
+import {
+  sendBroadcast,
+  sendPaymentReminder,
+  type BroadcastEvent,
+  type ReminderEvent,
+} from "@/server/bikriup-messages";
 import { sendOrderUpdateEmail } from "@/server/email/send";
+import { describeError } from "@/server/redact";
+import { claimWebhookEvent } from "@/server/webhook-events";
 import { pingIndexNow } from "@/server/indexnow";
 import { appBaseUrl } from "@/server/email/templates";
 import { CACHE_TAGS } from "@/server/store/tags";
@@ -28,6 +36,8 @@ import { TEMPLATE_LANGUAGE, TEMPLATES } from "@/server/whatsapp/templates";
  *                     cards): send it and report back
  *   chat.config     — Your shops › Chats changed: push the first questions to Meta
  *   chat.import     — bring in the Page's earlier Messenger chats
+ *   broadcast.send  — Grow › Broadcasts: a batch of people for WhatsApp / email
+ *   reminder.send   — People › Udhaar: one payment reminder with the pay link
  */
 
 const IMMEDIATELY = { expire: 0 } as const;
@@ -50,7 +60,29 @@ interface OrderEventData {
 
 interface BikriupEvent {
   event?: string;
+  created_at?: string;
   data?: { slugs?: string[] } & OrderEventData;
+}
+
+/**
+ * Bikriup retries a delivery it did not see answered in time, so the buyer
+ * could get the same message twice. Each delivery has an id, and the payload's
+ * created_at is fixed across retries; together they key the dedupe row. When
+ * the table cannot be reached the message is sent anyway — a rare duplicate
+ * beats a missing confirmation.
+ */
+async function firstDelivery(request: Request, body: BikriupEvent): Promise<boolean> {
+  const delivery = request.headers.get("x-bikriup-delivery");
+  if (!delivery) return true;
+  try {
+    return await claimWebhookEvent(
+      `bikriup:${delivery.slice(0, 40)}:${String(body.created_at ?? "").slice(0, 40)}`,
+      body.event ?? "",
+    );
+  } catch (error) {
+    console.warn(`[bikriup] webhook dedupe unavailable: ${describeError(error)}`);
+    return true;
+  }
 }
 
 /** What the buyer is told for each step; steps not listed send nothing. */
@@ -61,6 +93,15 @@ function orderMessage(
   const cod = o.payment_method === "cod";
   const amount = typeof o.total === "number" ? formatPaise(Math.round(o.total * 100)) : "";
   if (o.change === "payment") {
+    // An online payment that has just arrived. Cash collected on delivery also
+    // turns "paid", but that buyer has already had the delivered message.
+    if (o.payment_status === "paid" && !cod) {
+      return {
+        subject: `Payment received for order ${no}`,
+        headline: "Thank you — payment received",
+        message: `We have received ${amount} for order ${no}. Our potters will start wrapping your pieces, and we will write again when they leave the studio.`,
+      };
+    }
     if (o.payment_status !== "refunded") return null;
     return {
       subject: `Refund sent for order ${no}`,
@@ -226,7 +267,12 @@ export async function POST(request: Request) {
     void pingIndexNow([`${SITE_URL}/`, ...slugs.map((slug) => `${SITE_URL}/shop/${slug}`)]);
   }
 
-  if (body.event === "order.updated" && body.data?.order_no && body.data.phone) {
+  if (
+    body.event === "order.updated" &&
+    body.data?.order_no &&
+    body.data.phone &&
+    (await firstDelivery(request, body))
+  ) {
     const o = body.data;
     const text = orderMessage(o);
     const whatsapp = orderStepMessage(o);
@@ -267,6 +313,19 @@ export async function POST(request: Request) {
         console.error("[messenger] import failed:", error);
       },
     );
+  }
+
+  // Up to 50 sends: answered now, sent after (Bikriup would retry a slow answer and send twice).
+  if (body.event === "broadcast.send") {
+    void sendBroadcast(body.data as unknown as BroadcastEvent).catch((error) => {
+      console.error("[broadcast] send failed:", error);
+    });
+  }
+
+  if (body.event === "reminder.send") {
+    void sendPaymentReminder(body.data as unknown as ReminderEvent).catch((error) => {
+      console.error("[remind] send failed:", error);
+    });
   }
 
   return NextResponse.json({ received: true });

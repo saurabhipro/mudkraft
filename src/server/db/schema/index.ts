@@ -10,3 +10,4 @@ export * from "./reviews";
 export * from "./orders";
 export * from "./workshops";
 export * from "./newsletter";
+export * from "./webhooks";

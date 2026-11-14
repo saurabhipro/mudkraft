@@ -17,19 +17,22 @@ import {
   readOrderToken,
   type BkOrder,
 } from "../bikriup";
-import { settleBikriupPayment } from "../bikriup-payments";
+import { setBikriupGatewayOrder, settleBikriupPayment } from "../bikriup-payments";
 import { db } from "../db";
 import { product } from "../db/schema/catalog";
 import { order, orderEvent, orderItem, paymentTransaction } from "../db/schema/orders";
 import { sendOrderConfirmationEmail } from "../email/send";
+import { clientIp, createLimiter } from "../rate-limit";
 import {
   createGatewayOrder,
   describePaymentMethod,
+  fetchGatewayOrder,
   fetchGatewayPayment,
   razorpayConfigured,
   razorpayKeyId,
   verifyPaymentSignature,
 } from "../razorpay";
+import { describeError } from "../redact";
 import { CHAT_REF_COOKIE, readChatRef } from "../social";
 import { sendWhatsApp } from "../whatsapp";
 import { orderReceived } from "../whatsapp/orders";
@@ -342,7 +345,7 @@ async function placeBikriupOrder(
   } catch (error) {
     if (error instanceof BikriupError && error.status < 500)
       return { ok: false, error: error.message };
-    console.error("[bikriup] order failed:", error);
+    console.error(`[bikriup] order failed: ${describeError(error)}`);
     return {
       ok: false,
       error: "We could not place the order just now. Please try again in a minute.",
@@ -387,7 +390,7 @@ async function placeBikriupOrder(
         phone: created.phone,
         name: d.name,
       },
-    }).catch((error) => console.error("[bikriup] chat link failed:", error));
+    }).catch((error) => console.error(`[bikriup] chat link failed: ${describeError(error)}`));
   }
 
   return { ok: true, token, method: d.method };
@@ -411,6 +414,42 @@ export type InitiatePaymentResult =
     }
   | { ok: false; error: string };
 
+/** Bikriup payment states an online order can still be paid from. */
+const PAYABLE = new Set(["unpaid", "failed", "pending"]);
+
+const tooManyPayStarts = createLimiter({ windowMs: 10 * 60 * 1000, max: 8 });
+const tooManyPayStartsPerIp = createLimiter({ windowMs: 10 * 60 * 1000, max: 40 });
+
+/**
+ * One Razorpay order per Bikriup order: the one already opened is reused while
+ * it is unpaid and still for the order total, so two tabs or a refresh can only
+ * ever pay the same gateway order — which Razorpay accepts payment on once.
+ * Returns null when that gateway order is already paid (the webhook or the
+ * handler is about to settle it), so no second one is opened.
+ */
+async function gatewayOrderFor(o: BkOrder, amountPaise: number): Promise<string | null> {
+  if (o.gateway_order_id) {
+    const existing = await fetchGatewayOrder(o.gateway_order_id);
+    if (existing.status === "paid") return null;
+    if (existing.amount === amountPaise && existing.receipt === o.order_no) return existing.id;
+  }
+  // The receipt is the order number: settlement checks it before anything is marked paid.
+  const created = await createGatewayOrder({
+    amountPaise,
+    receipt: o.order_no,
+    notes: { order_number: o.order_no },
+  });
+  try {
+    await setBikriupGatewayOrder(o.order_no, { id: created.id, amountRupees: o.total });
+  } catch (error) {
+    // Not fatal: this click still pays the right order; the next one opens another.
+    console.warn(
+      `[razorpay] could not store ${created.id} on ${o.order_no}: ${describeError(error)}`,
+    );
+  }
+  return created.id;
+}
+
 /**
  * Mints (or reuses) the Razorpay order the checkout modal is opened against,
  * and records the attempt as a `payment_transaction` row.
@@ -430,25 +469,37 @@ export async function initiateRazorpayPayment(token: string): Promise<InitiatePa
   }
 
   if (bikriupEnabled()) {
+    // Each attempt can open a gateway order; cap them per order and per shopper.
+    const ip = await clientIp();
+    if (tooManyPayStarts(`${ip}:${token.slice(-24)}`) || tooManyPayStartsPerIp(ip)) {
+      return {
+        ok: false,
+        error: "Too many payment attempts. Please wait a few minutes and try again.",
+      };
+    }
+
     const o = await getBikriupOrder(token);
     if (!o) return { ok: false, error: "Unknown order." };
     if (o.payment_method !== "online")
       return { ok: false, error: "This order is not paid online." };
-    if (o.payment_status === "paid")
-      return { ok: false, error: "This order has already been paid." };
     if (o.status === "cancelled") return { ok: false, error: "This order was cancelled." };
+    if (!PAYABLE.has(o.payment_status))
+      return { ok: false, error: "This order has already been paid." };
     const amountPaise = Math.round(o.total * 100);
+
     try {
-      // The receipt is the order number: confirmation checks it before anything is marked paid.
-      const created = await createGatewayOrder({
-        amountPaise,
-        receipt: o.order_no,
-        notes: { order_number: o.order_no },
-      });
+      const gatewayOrderId = await gatewayOrderFor(o, amountPaise);
+      if (!gatewayOrderId) {
+        return {
+          ok: false,
+          error:
+            "Your payment is being confirmed — this page will update in a moment. There is no need to pay again.",
+        };
+      }
       return {
         ok: true,
         keyId: razorpayKeyId(),
-        gatewayOrderId: created.id,
+        gatewayOrderId,
         amountPaise,
         currency: "INR",
         orderNumber: o.order_no,
@@ -457,7 +508,7 @@ export async function initiateRazorpayPayment(token: string): Promise<InitiatePa
         customerPhone: `+91${o.phone}`,
       };
     } catch (error) {
-      console.error("[razorpay] order create failed:", error);
+      console.error(`[razorpay] order create failed for ${o.order_no}: ${describeError(error)}`);
       return { ok: false, error: "Could not reach the payment gateway. Please try again." };
     }
   }
@@ -507,7 +558,7 @@ export async function initiateRazorpayPayment(token: string): Promise<InitiatePa
         notes: { order_number: row.orderNumber },
       });
     } catch (error) {
-      console.error("[razorpay] order create failed:", error);
+      console.error(`[razorpay] order create failed: ${describeError(error)}`);
       return { ok: false, error: "Could not reach the payment gateway. Please try again." };
     }
     gatewayOrderId = created.id;
@@ -535,7 +586,14 @@ export async function initiateRazorpayPayment(token: string): Promise<InitiatePa
   };
 }
 
-export type SettleResult = { ok: true; paid: boolean } | { ok: false; error: string };
+export type SettleResult =
+  | {
+      ok: true;
+      paid: boolean;
+      /** The order had already been paid; this payment was refunded in full. */
+      duplicateRefunded?: boolean;
+    }
+  | { ok: false; error: string };
 
 const confirmSchema = z.object({
   gatewayOrderId: z.string().min(1).max(100),
@@ -599,7 +657,7 @@ export async function confirmRazorpayPayment(token: string, input: unknown): Pro
   try {
     payment = await fetchGatewayPayment(p.gatewayPaymentId);
   } catch (error) {
-    console.error("[razorpay] payment fetch failed:", error);
+    console.error(`[razorpay] payment fetch failed: ${describeError(error)}`);
     return {
       ok: false,
       error:
@@ -670,9 +728,17 @@ async function confirmBikriupPayment(
   }
   try {
     const out = await settleBikriupPayment({ ...p, orderNo: ref.orderNo });
-    return out.ok ? { ok: true, paid: true } : out;
+    if (!out.ok) {
+      if (out.reason === "amount_mismatch" || out.reason === "verification") {
+        console.error(
+          `[razorpay] handler could not settle ${p.gatewayPaymentId} for ${ref.orderNo}: ${out.reason}`,
+        );
+      }
+      return { ok: false, error: out.error };
+    }
+    return { ok: true, paid: true, ...(out.duplicateRefunded ? { duplicateRefunded: true } : {}) };
   } catch (error) {
-    console.error("[razorpay] payment settle failed:", error);
+    console.error(`[razorpay] payment settle failed for ${ref.orderNo}: ${describeError(error)}`);
     return {
       ok: false,
       error:
@@ -696,10 +762,14 @@ export async function reportRazorpayFailure(
 
   // With Bikriup the order simply stays unpaid and payable; the failure shows in its log.
   if (bikriupEnabled()) {
+    // The browser's word only goes in the log (trimmed, one line); Razorpay's
+    // payment.failed webhook is what records the failure on the order.
     const ref = readOrderToken(token);
+    const oneLine = (v: string | undefined, n: number) =>
+      (v ?? "").replace(/\s+/g, " ").slice(0, n);
     if (ref)
       console.warn(
-        `[razorpay] payment failed for ${ref.orderNo}: ${reason.code ?? ""} ${reason.description ?? ""}`,
+        `[razorpay] payment failed for ${ref.orderNo}: ${oneLine(reason.code, 60)} ${oneLine(reason.description, 200)}`,
       );
     return;
   }

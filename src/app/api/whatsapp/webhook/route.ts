@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { serverEnv } from "@/server/env";
+import { maskPhone } from "@/server/redact";
 import { chatStatus, verifyWhatsAppSignature } from "@/server/whatsapp";
 import { handleIncoming, type IncomingMessage } from "@/server/whatsapp/bot";
 
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
           : "";
         if (s.status === "failed")
           console.error(
-            `[whatsapp] message to ${s.recipient_id} failed: ${e?.code ?? ""} ${error}`,
+            `[whatsapp] message to ${maskPhone(s.recipient_id)} failed: ${e?.code ?? ""} ${error}`,
           );
         work.push(chatStatus({ wa_id: s.id, status: s.status, error }));
       }

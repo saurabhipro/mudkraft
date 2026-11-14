@@ -177,6 +177,36 @@ export const TEMPLATES = {
     example: ["Asha", "10", "WELCOME10"],
     button: { type: "copy_code", example: "WELCOME10" },
   },
+  // Bikriup › Grow › Broadcasts. Same words as Bikriup's server/src/reach.js KINDS; {{3}} is the
+  // line the studio types. The button opens one product or the shop.
+  new_stock: {
+    name: "mk_new_stock",
+    category: "MARKETING",
+    body: "Namaste {{1}}, new arrivals at {{2}}: {{3}}. Tap below to see them before they sell out. Reply STOP to stop these messages.",
+    example: ["Asha", "Mudkraft", "the new Handi, Kadai and a 1 L water bottle"],
+    button: { type: "url", text: "See the new pieces", path: "/{{1}}", example: "shop" },
+  },
+  offer: {
+    name: "mk_offer",
+    category: "MARKETING",
+    body: "Namaste {{1}}, {{2}} has an offer for you: {{3}}. Tap below to shop before it ends. Reply STOP to stop these messages.",
+    example: ["Asha", "Mudkraft", "15% off every handi this weekend with code HANDI15"],
+    button: { type: "url", text: "Shop now", path: "/{{1}}", example: "shop" },
+  },
+  // Bikriup › People › Udhaar. Same words as Bikriup's server/src/reminders.js REMIND. The button
+  // opens /pay/<shop>/<id>/<sig> here, which forwards to Bikriup's pay page (UPI, QR, "I have paid").
+  payment_reminder: {
+    name: "mk_payment_reminder",
+    category: "UTILITY",
+    body: "Namaste {{1}}, a reminder from {{2}}: {{3}} is due on your account. Tap below to see your bills and pay by UPI. If you have already paid, please ignore this message.",
+    example: ["Asha", "Mudkraft", "₹1,200"],
+    button: {
+      type: "url",
+      text: "See bills and pay",
+      path: "/pay/{{1}}",
+      example: "mudkraft/12/0123456789abcdef",
+    },
+  },
 } as const satisfies Record<string, TemplateDef>;
 
 export type TemplateKey = keyof typeof TEMPLATES;

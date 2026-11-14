@@ -99,7 +99,8 @@ paste on the box.
 2. Page greets the customer by first name and shows the **masked** phone the
    order was placed with (`+91 9•••••••43`).
 3. **Text me the code** → in demo mode the OTP appears in the dev-server
-   terminal: `[sms] demo mode — OTP for +91...: 123456`.
+   terminal: `[sms] demo mode — OTP for +91••••••3344: 123456` (the phone is
+   masked; a production build never prints the code).
 4. Enter the code → **Verified**. Order status jumps to `delivered`, an order
    event records "Delivery verified by the customer", admin badge flips to
    *verified* with a timestamp.
@@ -126,17 +127,29 @@ programmatic messages later.
 
 ### Razorpay
 
+Deploy order: **Bikriup first, then Mudkraft.** Bikriup adds the gateway-order
+endpoint and the duplicate-payment check that the site's new code calls; the
+Mudkraft deploy then applies its `webhook_event` migration automatically
+(`deploy/mudkraft/mudkraft-deploy.sh` in the Bikriup repo runs `npm run db:migrate`
+before switching — reinstall it on the VM as `/usr/local/bin/mudkraft-deploy`).
+
 | # | Change | Where |
 |---|---|---|
 | 1 | Complete KYC: business type (individual/proprietor is fine), PAN, bank account (penny-drop verified), address proof | Razorpay dashboard → Account activation |
-| 2 | **Add policy pages first** — Contact, Terms, Privacy, Refund/Cancellation. Razorpay's website review requires them and the site does not have them yet | This repo (new pages) |
-| 3 | Swap `rzp_test_` → `rzp_live_` keys. **No code changes** | `.env` on the server |
-| 4 | Register the webhook: URL `https://<domain>/api/razorpay/webhook`, events `payment.captured` + `payment.failed`, and set the secret | Dashboard → Webhooks, then `RAZORPAY_WEBHOOK_SECRET` in `.env` |
-| 5 | Place one real ₹1 order end-to-end before announcing | — |
+| 2 | Give Razorpay the policy page links: `/terms`, `/privacy`, `/shipping-returns` (refunds and cancellation), `/trust`, plus the footer contact details | Activation form |
+| 3 | Turn on **automatic capture**. The code also captures an authorized payment itself; only captured payments ever mark an order paid | Dashboard → Account & Settings → Payment Capture |
+| 4 | Swap `rzp_test_` → `rzp_live_` keys. **No code changes.** The app refuses to start with live keys and no webhook secret | `/etc/mudkraft.env` on the VM, then restart |
+| 5 | Register the **live** webhook: URL `https://www.mudkraft.com/api/razorpay/webhook`, events `payment.captured`, `payment.failed`, `refund.processed`, `refund.failed`; secret from `openssl rand -hex 32` (32+ characters) | Dashboard (Live mode) → Webhooks, then `RAZORPAY_WEBHOOK_SECRET` |
+| 6 | Set `ALERT_EMAIL` to the inbox that should hear about amount mismatches and failed refunds (defaults to `SMTP_FROM`) | `/etc/mudkraft.env` |
+| 7 | Place one real ₹1 order end-to-end. Then open **Pay** in two tabs on a second ₹1 order and pay in both: the second payment must come back as an automatic refund (`notes.reason = duplicate` in the dashboard) | — |
+| 8 | Refund the first ₹1 order from the dashboard; the order must turn **Refunded** in Bikriup within a minute | — |
+| 9 | Watch the server log for `[csp]` lines for a week; add any legitimate source to the policy in `next.config.ts`, then switch `Content-Security-Policy-Report-Only` to `Content-Security-Policy` | `journalctl -u mudkraft \| grep "\[csp\]"` |
 
 The webhook matters in production: it settles orders when the customer's
-browser dies between paying and confirming. On localhost the in-browser
-handler alone is fine.
+browser dies between paying and confirming, records failed attempts, and
+closes refunds. On localhost the in-browser handler alone is fine. Day-to-day
+operations (key rotation, refunds, reconciliation, alerts) are in
+[razorpay-runbook.md](./razorpay-runbook.md).
 
 ### SMS OTP (delivery verification)
 

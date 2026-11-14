@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
     "indexnow": "node scripts/indexnow.mjs",
     "format": "prettier --write .",
     "db:generate": "drizzle-kit generate",
@@ -101,6 +102,7 @@
     "tailwindcss": "^4.2.1",
     "tsx": "^4.23.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.56.1"
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^3.2.4"
   }
 }
