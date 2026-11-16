@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter, Caveat } from "next/font/google";
+import { Cormorant_Garamond, Inter, Caveat, Tiro_Devanagari_Hindi } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { FACEBOOK_URL, INSTAGRAM_URL, SALES_EMAIL, SALES_PHONE_DISPLAY } from "@/lib/catalogue";
@@ -28,6 +28,15 @@ const caveat = Caveat({
   weight: ["400", "600"],
   variable: "--font-caveat",
   display: "swap",
+});
+
+// Hindi lines on the product stories. Only some pages use it, so it is not preloaded.
+const hindi = Tiro_Devanagari_Hindi({
+  subsets: ["devanagari", "latin"],
+  weight: "400",
+  variable: "--font-tiro-hindi",
+  display: "swap",
+  preload: false,
 });
 
 const TITLE = "Mudkraft — Soulful Handcrafted Clay";
@@ -104,7 +113,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       // attribute Next cannot tell an intentional smooth scroll from one it
       // should suppress, so route changes animate the scroll restoration.
       data-scroll-behavior="smooth"
-      className={`${cormorant.variable} ${inter.variable} ${caveat.variable}`}
+      className={`${cormorant.variable} ${inter.variable} ${caveat.variable} ${hindi.variable}`}
     >
       <body>
         <Providers>{children}</Providers>

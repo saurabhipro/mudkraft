@@ -17,6 +17,8 @@ import { toItem, track } from "@/lib/analytics";
 import { ShareButton } from "@/components/ShareButton";
 import { DeliveryCheck } from "./delivery-check";
 import { ReviewsSection } from "@/components/ReviewsSection";
+import { NeedHelpBand, ProductStorySections } from "@/components/ProductStory";
+import { storyFor } from "@/lib/product-stories";
 import { SITE_URL } from "@/lib/seo";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -26,7 +28,7 @@ import stepOil from "@/assets/step-oil.jpg";
 
 // Delivery promises from /shipping-returns, shown beside the photographs.
 const PERKS = [
-  { text: "Ships in 2–3 days, tracking on WhatsApp", icon: "M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a1.5 1.5 0 1 0 0-.01M17 19a1.5 1.5 0 1 0 0-.01" },
+  { text: "24-hour delivery in Delhi NCR, tracking on WhatsApp", icon:"M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a1.5 1.5 0 1 0 0-.01M17 19a1.5 1.5 0 1 0 0-.01" },
   { text: "Breakage cover, free replacement or refund", icon: "M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" },
   { text: "Hand packed in a double-walled carton", icon: "M4 8l8-4 8 4-8 4zM4 8v8l8 4 8-4V8" },
 ];
@@ -126,14 +128,17 @@ export function ProductDetail({
   const oneName = sizes.every((s) => s.name === p.name);
   const isCookware = p.category?.toLowerCase() === "cookware";
   const quickFacts = p.specs.slice(0, 3);
+  // The story adds the rows Bikriup does not hold (what it cooks on, what is in the box).
+  const shopLabels = new Set(p.specs.map((s) => s.label.toLowerCase()));
+  const specs = [...p.specs, ...(storyFor(p)?.details ?? []).filter((d) => !shopLabels.has(d.label.toLowerCase()))];
   const panels: Array<{ id: string; title: string; body: ReactNode }> = [];
-  if (p.specs.length > 0)
+  if (specs.length > 0)
     panels.push({
       id: "specs",
       title: "Specifications",
       body: (
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
-          {p.specs.map((s) => (
+          {specs.map((s) => (
             <div
               key={s.label}
               className="flex justify-between gap-4 border-b border-border/60 pb-2"
@@ -590,6 +595,8 @@ export function ProductDetail({
         </div>
       </section>
 
+      <ProductStorySections product={p} sizes={sizes} />
+
       {isCookware && (
         <section className="bg-earth text-cream px-6 md:px-10 py-20 md:py-28 grain">
           <div className="max-w-7xl mx-auto">
@@ -629,6 +636,8 @@ export function ProductDetail({
           </div>
         </section>
       )}
+
+      <NeedHelpBand product={p} />
 
       <ReviewsSection slug={p.slug} name={p.name} reviews={reviews} summary={reviewSummary} />
 

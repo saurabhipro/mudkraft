@@ -24,6 +24,7 @@
   --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-hand: var(--font-caveat), cursive;
+  --font-hindi: var(--font-tiro-hindi), "Noto Sans Devanagari", serif;
   --ease-clay: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-kiln: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
