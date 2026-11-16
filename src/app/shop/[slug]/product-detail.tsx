@@ -543,6 +543,13 @@ export function ProductDetail({
               Lab-tested, lead-free
             </Link>
           </p>
+          <Link
+            href={`/bulk-orders?product=${encodeURIComponent(p.slug)}`}
+            className="mt-2 inline-flex items-center gap-2 text-[13px] text-clay-deep underline underline-offset-2 decoration-clay/40 hover:decoration-clay"
+          >
+            Buying for a café, hotel or gifting? Bulk &amp; custom orders
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" className="w-3.5 h-3.5"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </Link>
 
           {added && (
             <Link

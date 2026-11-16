@@ -105,6 +105,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/bulk-orders" className="hover:text-gold transition-colors mk-link">
+                Bulk &amp; custom orders
+              </Link>
+            </li>
+            <li>
               <Link href="/soil-report" className="hover:text-gold transition-colors mk-link">
                 Soil Report
               </Link>

@@ -43,6 +43,8 @@ export interface SendEmailInput {
   bcc?: string[];
   subject: string;
   html: string;
+  /** Where a reply goes, e.g. the customer who sent an enquiry. */
+  replyTo?: string;
 }
 
 /** Returns true when the message was accepted by the SMTP server. */
@@ -59,6 +61,7 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
       // BCC-only sends still need a To header; the studio addresses itself.
       to: input.to ?? fromAddress(),
       bcc: input.bcc,
+      replyTo: input.replyTo,
       subject: input.subject,
       html: input.html,
     });

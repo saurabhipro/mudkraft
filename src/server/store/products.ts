@@ -38,6 +38,8 @@ export interface StoreProduct {
   description: string;
   story: string;
   sizeLabel: string;
+  /** Catalogue item code from Bikriup ("MK-BP-101"); empty when the shop sends none. */
+  code?: string;
   /** Only Bikriup knows these; the old Neon catalogue leaves them out. */
   widthMm?: number | null;
   heightMm?: number | null;

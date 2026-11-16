@@ -128,3 +128,16 @@ export async function sendAdminAlert(subject: string, lines: string[]): Promise<
     html,
   });
 }
+
+/**
+ * A bulk or custom order enquiry, to the studio's own inbox. Replying answers the customer when
+ * they left an email. The full enquiry, with item lines and pictures, is in Bikriup › Enquiries.
+ */
+export async function sendEnquiryAlert(subject: string, lines: string[], replyTo?: string): Promise<boolean> {
+  const escape = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  const html = `<div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.5">${lines
+    .map((l) => `<p style="margin:0 0 8px">${escape(l)}</p>`)
+    .join("")}</div>`;
+  return sendEmail({ to: fromAddress(), subject: `[Mudkraft enquiry] ${subject}`, html, replyTo });
+}

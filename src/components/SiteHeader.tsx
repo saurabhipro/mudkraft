@@ -18,6 +18,7 @@ const NAV: NavItem[] = [
   { label: "Benefits", href: "/benefits", match: (p) => p.startsWith("/benefits") },
   { label: "Soil report", href: "/soil-report", match: (p) => p.startsWith("/soil-report") },
   { label: "Workshops", href: "/workshops", match: (p) => p.startsWith("/workshops") },
+  { label: "Bulk orders", href: "/bulk-orders", match: (p) => p.startsWith("/bulk-orders") },
   { label: "Story", href: "/#story", match: (p, h) => p === "/" && h === "story" },
   {
     label: "Videos",

@@ -43,7 +43,7 @@ export function OrdersEnquiries() {
             </dd>
           </dl>
         </div>
-        <div className="basis-full grid sm:grid-cols-2 gap-4">
+        <div className="basis-full grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link
             href="/#collection"
             className="flex items-center gap-4 rounded-[1.25rem] bg-sand p-6 hover:-translate-y-0.5 transition-transform duration-500 ease-[var(--ease-clay)]"
@@ -88,6 +88,32 @@ export function OrdersEnquiries() {
               </span>
             </span>
           </a>
+          <Link
+            href="/bulk-orders"
+            className="flex items-center gap-4 rounded-[1.25rem] bg-sand p-6 hover:-translate-y-0.5 transition-transform duration-500 ease-[var(--ease-clay)]"
+          >
+            <span className="grid place-items-center w-[52px] h-[52px] shrink-0 rounded-full bg-clay text-cream">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                aria-hidden="true"
+                className="w-[22px] h-[22px]"
+              >
+                <path d="M4 7h16v12H4z" />
+                <path d="M4 11h16M9 7V4h6v3" />
+              </svg>
+            </span>
+            <span>
+              <span className="block font-display text-[1.65rem] leading-tight text-earth">
+                Bulk &amp; custom
+              </span>
+              <span className="block mt-0.5 text-sm text-muted-foreground">
+                For cafés, hotels and gifting, or a piece made to your brief
+              </span>
+            </span>
+          </Link>
         </div>
       </div>
     </section>

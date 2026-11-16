@@ -71,6 +71,8 @@ export interface BkProduct {
   stock_left: number;
   category?: string;
   type?: string;
+  /** The shop's own item code ("MK-BP-101"), sent when the Code field is ticked in Bikriup. */
+  code?: string;
   size_label?: string;
   dimensions_mm?: { length?: number | null; width?: number | null; height?: number | null };
   description?: string;
@@ -128,6 +130,7 @@ export function toStoreProductShape(p: BkProduct) {
     description,
     story: p.story ?? "",
     sizeLabel: p.size_label ?? "",
+    code: p.code ?? "",
     // Round pots are entered as length × width; either one is the width across.
     widthMm: p.dimensions_mm?.width || p.dimensions_mm?.length || null,
     heightMm: p.dimensions_mm?.height || null,

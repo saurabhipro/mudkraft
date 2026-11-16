@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { OrdersEnquiries } from "@/components/OrdersEnquiries";
+import { Field, inputCls } from "@/components/form-bits";
 import { SALES_EMAIL } from "@/lib/catalogue";
 import handsClay from "@/assets/hands-clay.jpg";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
@@ -335,17 +336,5 @@ export function WorkshopsPage() {
 
       <SiteFooter />
     </div>
-  );
-}
-
-const inputCls =
-  "w-full bg-cream/60 border border-border rounded-xl px-4 py-3 text-earth placeholder:text-muted-foreground/70 focus:outline-none focus:border-clay transition";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="text-[11px] tracking-[0.3em] uppercase text-clay">{label}</span>
-      <div className="mt-2">{children}</div>
-    </label>
   );
 }
