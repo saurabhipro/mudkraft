@@ -199,22 +199,6 @@ export function ProductDetail({
       <SiteHeader
         cartCount={cartCount}
         cartHref={cartCount > 0 ? "/checkout" : "/#collection"}
-        rightSlot={
-          // There is no cart drawer on this page, so the basket goes where the
-          // items can actually be reviewed and paid for.
-          <Link
-            href={cartCount > 0 ? "/checkout" : "/#collection"}
-            className="relative inline-flex items-center gap-2.5 text-xs tracking-widest uppercase bg-earth text-cream pl-4 sm:pl-5 pr-2 min-h-[44px] rounded-full hover:bg-ink transition-colors"
-          >
-            Basket
-            <span
-              key={cartCount}
-              className="inline-flex items-center justify-center min-w-[30px] h-[30px] px-1.5 rounded-full bg-clay text-cream text-[12px] font-medium tracking-normal animate-in zoom-in-50 duration-500 ease-[var(--ease-spring)]"
-            >
-              {cartCount}
-            </span>
-          </Link>
-        }
       />
 
       <nav

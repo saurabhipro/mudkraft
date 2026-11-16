@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Field, inputCls } from "@/components/form-bits";
 import { BROCHURE } from "@/lib/catalogue";
-import { WHATSAPP_NUMBER, whatsappLink } from "@/lib/whatsapp";
+import { whatsappLink } from "@/lib/whatsapp";
 import { sendTradeEnquiry, type TradeEnquiryInput } from "@/server/actions/enquiries";
 
 /** One piece the buyer can add to a bulk list (built on the server from the live catalogue). */
@@ -264,18 +264,7 @@ export function BulkOrdersPage({
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <SiteHeader
-        rightSlot={
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center text-xs tracking-widest uppercase bg-earth text-cream px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
-          >
-            WhatsApp
-          </a>
-        }
-      />
+      <SiteHeader />
 
       <section className="pt-32 md:pt-40 pb-10 px-6 md:px-10 max-w-6xl mx-auto">
         <p className="text-xs tracking-[0.4em] uppercase text-clay mb-5">

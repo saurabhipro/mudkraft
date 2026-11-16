@@ -6,12 +6,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, ShoppingBag, X } from "lucide-react";
 
+import { useCartCount } from "@/lib/cart";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 
 import { BrandLogo } from "./BrandLogo";
 import { HeaderAccount, SheetAccount } from "./HeaderAccount";
 
-type NavItem = { label: string; href: string; match: (path: string, hash: string) => boolean };
+/** `wide`: shown in the desktop bar only from xl up (the mobile menu always lists it). */
+type NavItem = {
+  label: string;
+  href: string;
+  match: (path: string, hash: string) => boolean;
+  wide?: boolean;
+};
 
 const NAV: NavItem[] = [
   { label: "Collection", href: "/#collection", match: (p, h) => p === "/" && h === "collection" },
@@ -19,11 +27,12 @@ const NAV: NavItem[] = [
   { label: "Soil report", href: "/soil-report", match: (p) => p.startsWith("/soil-report") },
   { label: "Workshops", href: "/workshops", match: (p) => p.startsWith("/workshops") },
   { label: "Bulk orders", href: "/bulk-orders", match: (p) => p.startsWith("/bulk-orders") },
-  { label: "Story", href: "/#story", match: (p, h) => p === "/" && h === "story" },
+  { label: "Story", href: "/#story", match: (p, h) => p === "/" && h === "story", wide: true },
   {
     label: "Videos",
     href: "/#videos",
     match: (p, h) => (p === "/" && h === "videos") || p.startsWith("/videos"),
+    wide: true,
   },
 ];
 
@@ -57,14 +66,19 @@ export function SiteHeader({
   onCartOpen,
   cartHref,
 }: {
-  /** Desktop-only extras beside the account control. Phones get the compact bar instead. */
+  /** Desktop-only extras before the standard Enquire · Basket · account controls. Rarely needed. */
   rightSlot?: ReactNode;
-  /** When provided with onCartOpen or cartHref, the phone bar shows a basket button with this count. */
+  /** The basket count; read from the stored cart when left out. */
   cartCount?: number;
+  /** Opens the page's cart drawer (home). Without it the basket links to checkout. */
   onCartOpen?: () => void;
-  /** Where the phone basket button goes on pages without a cart drawer. */
+  /** Where the basket goes on pages without a cart drawer. Default: checkout, or the collection when empty. */
   cartHref?: string;
 }) {
+  // Every page shows the same controls: Enquire, Basket and the account.
+  const storedCount = useCartCount();
+  const count = cartCount ?? storedCount;
+  const basketHref = cartHref ?? (count > 0 ? "/checkout" : "/#collection");
   const [mobileOpen, setMobileOpen] = useState(false);
   const path = usePathname();
   const hash = useHash();
@@ -96,7 +110,7 @@ export function SiteHeader({
     <header className="fixed top-3 md:top-5 left-0 right-0 z-50 px-3 sm:px-5 animate-fade-up">
       <nav
         aria-label="Main"
-        className="max-w-7xl mx-auto flex items-center justify-between gap-3 pl-4 pr-2 sm:pl-6 py-2 rounded-full bg-cream/80 backdrop-blur-xl border border-earth/10 shadow-[0_20px_50px_-30px_rgba(30,22,18,0.55)]"
+        className="max-w-7xl 2xl:max-w-[86rem] mx-auto flex items-center justify-between gap-3 lg:gap-5 pl-4 pr-2 sm:pl-6 py-2 rounded-full bg-cream/80 backdrop-blur-xl border border-earth/10 shadow-[0_20px_50px_-30px_rgba(30,22,18,0.55)]"
       >
         <Link
           href="/"
@@ -110,13 +124,13 @@ export function SiteHeader({
           </span>
         </Link>
 
-        <div className="hidden lg:flex items-center gap-6 xl:gap-8 text-[12px] tracking-[0.14em] uppercase text-earth">
+        <div className="hidden lg:flex flex-1 min-w-0 items-center justify-center gap-4 xl:gap-6 2xl:gap-8 px-3 xl:px-4 text-[11.5px] tracking-[0.12em] uppercase text-earth whitespace-nowrap">
           {NAV.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               aria-current={isActive(item) ? "page" : undefined}
-              className={`mk-link transition-colors ${isActive(item) ? "text-clay-deep" : "hover:text-clay-deep"}`}
+              className={`mk-link transition-colors ${item.wide ? "hidden xl:inline" : ""} ${isActive(item) ? "text-clay-deep" : "hover:text-clay-deep"}`}
             >
               {item.label}
             </Link>
@@ -125,14 +139,24 @@ export function SiteHeader({
 
         <div className="hidden lg:flex items-center gap-2 shrink-0">
           {rightSlot}
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Enquire on WhatsApp"
+            title="Enquire on WhatsApp"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] 2xl:px-4 rounded-full border border-earth/25 text-earth text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors duration-500"
+          >
+            <WhatsAppIcon className="w-4 h-4" />
+            <span className="hidden 2xl:inline">Enquire</span>
+          </a>
+          <DesktopBasket count={count} onOpen={onCartOpen} href={basketHref} />
           <HeaderAccount />
         </div>
 
         {/* Phones and tablets: basket and menu only; the account lives in the menu sheet. */}
         <div className="flex lg:hidden items-center gap-2 shrink-0">
-          {typeof cartCount === "number" && (onCartOpen || cartHref) && (
-            <PhoneBasket count={cartCount} onOpen={onCartOpen} href={cartHref} />
-          )}
+          <PhoneBasket count={count} onOpen={onCartOpen} href={basketHref} />
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -218,7 +242,7 @@ export function SiteHeader({
                 >
                   Basket
                   <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-clay text-cream text-[11px] font-medium">
-                    {cartCount ?? 0}
+                    {count}
                   </span>
                 </button>
               )}
@@ -238,6 +262,40 @@ export function SiteHeader({
           document.body,
         )}
     </header>
+  );
+}
+
+function DesktopBasket({
+  count,
+  onOpen,
+  href,
+}: {
+  count: number;
+  onOpen?: () => void;
+  href: string;
+}) {
+  const className =
+    "relative inline-flex items-center gap-2.5 text-xs tracking-widest uppercase bg-earth text-cream pl-5 pr-2 min-h-[44px] rounded-full hover:bg-ink transition-colors";
+  const inner = (
+    <>
+      Basket
+      <span
+        key={count}
+        className="inline-flex items-center justify-center min-w-[30px] h-[30px] px-1.5 rounded-full bg-clay text-cream text-[12px] font-medium tracking-normal animate-in zoom-in-50 duration-500 ease-[var(--ease-spring)]"
+      >
+        {count}
+      </span>
+    </>
+  );
+  const label = `Basket, ${count} item${count === 1 ? "" : "s"}`;
+  return onOpen ? (
+    <button type="button" onClick={onOpen} aria-label={label} className={className}>
+      {inner}
+    </button>
+  ) : (
+    <Link href={href} aria-label={label} className={className}>
+      {inner}
+    </Link>
   );
 }
 
