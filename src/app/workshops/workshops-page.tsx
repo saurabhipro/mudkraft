@@ -103,16 +103,6 @@ export function WorkshopsPage() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader
-        rightSlot={
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center text-xs tracking-widest uppercase bg-earth text-cream px-5 py-2.5 rounded-full hover:bg-clay transition-colors"
-          >
-            Enquire
-          </a>
-        }
       />
 
       {/* HERO */}

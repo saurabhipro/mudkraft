@@ -35,8 +35,6 @@ import {
   updateQty as updateQtyStore,
   removeItem as removeItemStore,
 } from "@/lib/cart";
-import { WhatsAppIcon } from "@/components/WhatsAppIcon";
-import { whatsappLink } from "@/lib/whatsapp";
 import { VideoCard } from "@/components/VideoCard";
 import { type YouTubeVideo } from "@/lib/youtube";
 
@@ -162,40 +160,12 @@ export function HomePage({
 
   const totalPaise = cart.reduce((s, x) => s + x.pricePaise * x.qty, 0);
   const count = cart.reduce((s, x) => s + x.qty, 0);
-  const whatsappEnquiry = () =>
-    whatsappLink(["Namaste Mudkraft 🙏 I'd love to know more about your clay pieces."]);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader
         cartCount={count}
         onCartOpen={() => setOpen(true)}
-        rightSlot={
-          <>
-            <a
-              href={whatsappEnquiry()}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Enquire on WhatsApp"
-              className="hidden xl:inline-flex items-center gap-2 text-xs tracking-widest uppercase border border-earth/25 px-4 min-h-[44px] rounded-full text-earth hover:bg-earth hover:text-cream transition-colors duration-500"
-            >
-              <WhatsAppIcon className="w-4 h-4" />
-              Enquire
-            </a>
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="relative inline-flex items-center gap-2.5 text-xs tracking-widest uppercase bg-earth text-cream pl-5 pr-2 min-h-[44px] rounded-full hover:bg-ink transition-colors"
-            >
-              Basket
-              <span
-                className="inline-flex items-center justify-center min-w-[30px] h-[30px] px-1.5 rounded-full bg-clay text-cream text-[12px] font-medium tracking-normal"
-              >
-                {count}
-              </span>
-            </button>
-          </>
-        }
       />
 
       {/* HERO — pick a piece on the wheel */}
