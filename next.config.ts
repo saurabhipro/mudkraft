@@ -59,6 +59,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Self-hosted on the Bikriup VM: `next build` writes a self-contained server to .next/standalone.
   output: "standalone",
+  experimental: {
+    // The custom-piece form sends up to three reference pictures, made small in the browser first.
+    serverActions: { bodySizeLimit: "5mb" },
+  },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
