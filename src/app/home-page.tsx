@@ -36,6 +36,9 @@ import {
   removeItem as removeItemStore,
 } from "@/lib/cart";
 import { VideoCard } from "@/components/VideoCard";
+import { PromiseCarousel } from "@/components/PromiseCarousel";
+import { TrustStrip } from "@/components/TrustStrip";
+import { storyFor } from "@/lib/product-stories";
 import { type YouTubeVideo } from "@/lib/youtube";
 
 const TAPE_FRONT = ["River clay", "Wood fired", "Hand thrown", "Slow made"];
@@ -152,8 +155,11 @@ export function HomePage({
   // category left there is nothing to filter, so the row disappears.
   const liveCategories = categories.filter((c) => families.some((f) => f.categories.includes(c)));
   const filterOptions = liveCategories.length > 1 ? ["All", ...liveCategories] : [];
-  const visibleFamilies =
-    activeCategory === "All" ? families : families.filter((f) => f.categories.includes(activeCategory));
+  const [sort, setSort] = useState<SortKey>("featured");
+  const visibleFamilies = sortFamilies(
+    activeCategory === "All" ? families : families.filter((f) => f.categories.includes(activeCategory)),
+    sort,
+  );
 
   const updateQty = (slug: string, delta: number) => updateQtyStore(slug, delta);
   const removeItem = (slug: string) => removeItemStore(slug);
@@ -249,9 +255,7 @@ export function HomePage({
                 );
               })}
             </div>
-            <p className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
-              Prices incl. taxes &amp; delivery
-            </p>
+            <SortPills value={sort} onChange={setSort} />
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -259,8 +263,14 @@ export function HomePage({
               <FamilyCard key={f.key} family={f} />
             ))}
           </div>
+          <p className="mt-6 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
+            Prices incl. taxes &amp; delivery
+          </p>
+          <TrustStrip className="mt-8" />
         </div>
       </section>
+
+      <PromiseCarousel products={products} />
 
       <MadeByHand />
 
@@ -865,6 +875,7 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
     { label: "Wide", value: p.widthCm ? `${p.widthCm} cm` : "" },
     { label: "Tall", value: p.heightCm ? `${p.heightCm} cm` : "" },
   ].filter((f) => f.value);
+  const useTags = storyFor(p)?.tags ?? [];
 
   return (
     <article className="group relative flex flex-col rounded-[1.6rem] bg-sand p-2.5 transition-[transform,box-shadow] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:shadow-[0_34px_56px_-34px_rgba(59,42,34,0.55)]">
@@ -876,6 +887,11 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
         {few && (
           <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-clay-deep px-2.5 py-1 text-[11.5px] font-semibold text-cream">
             Only {p.stockQty} left
+          </span>
+        )}
+        {p.discountPct > 0 && !soldOut && (
+          <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-clay px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-cream">
+            {p.discountPct}% off
           </span>
         )}
         <ShareButton
@@ -941,14 +957,24 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
           ))}
         </div>
 
-        <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
-          {CARD_PROMISES.map((promise) => (
-            <li key={promise} className="flex items-center gap-1.5">
-              <span aria-hidden="true" className="h-1 w-1 rounded-full bg-clay" />
-              {promise}
-            </li>
-          ))}
-        </ul>
+        {useTags.length > 0 ? (
+          <ul aria-label="Made for" className="flex flex-wrap gap-1.5">
+            {useTags.map((tag) => (
+              <li key={tag} className="rounded-full bg-[oklch(0.935_0.022_75)] px-2.5 py-1 text-xs text-earth/80">
+                {tag}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+            {CARD_PROMISES.map((promise) => (
+              <li key={promise} className="flex items-center gap-1.5">
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-clay" />
+                {promise}
+              </li>
+            ))}
+          </ul>
+        )}
 
         <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
           <span className={`flex items-center gap-1.5 text-xs ${soldOut || few ? "font-semibold text-clay-deep" : "text-[oklch(0.45_0.08_130)]"}`}>
@@ -968,3 +994,58 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
 }
 
 const CARD_PROMISES = ["Wood-fired", "Lab-tested food safe", "No glaze"];
+
+type SortKey = "featured" | "low" | "high";
+
+const SORTS: Array<{ key: SortKey; label: string }> = [
+  { key: "featured", label: "Featured" },
+  { key: "low", label: "Price: low to high" },
+  { key: "high", label: "Price: high to low" },
+];
+
+/** A family's price is its cheapest size, the "from" a shopper compares. */
+const fromPaise = (f: ProductFamily) => Math.min(...f.sizes.map((s) => s.pricePaise));
+
+function sortFamilies(families: ProductFamily[], sort: SortKey): ProductFamily[] {
+  if (sort === "featured") return families;
+  const sign = sort === "low" ? 1 : -1;
+  return [...families].sort((a, b) => sign * (fromPaise(a) - fromPaise(b)));
+}
+
+function SortPills({ value, onChange }: { value: SortKey; onChange: (key: SortKey) => void }) {
+  return (
+    <div role="group" aria-label="Sort" className="flex flex-wrap items-center gap-2">
+      <span className="mr-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Sort</span>
+      {SORTS.map((s) => (
+        <button
+          key={s.key}
+          type="button"
+          onClick={() => onChange(s.key)}
+          aria-pressed={value === s.key}
+          className={`min-h-[40px] rounded-full border px-4 text-[12.5px] font-medium transition-colors ${
+            value === s.key ? "border-earth bg-earth text-cream" : "border-earth/25 text-earth hover:border-clay"
+          }`}
+        >
+          {s.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The category pages' grid: the same cards, with the sort pills. */
+export function SortableFamilyGrid({ families }: { families: ProductFamily[] }) {
+  const [sort, setSort] = useState<SortKey>("featured");
+  return (
+    <>
+      <div className="mb-6 flex justify-end">
+        <SortPills value={sort} onChange={setSort} />
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {sortFamilies(families, sort).map((f) => (
+          <FamilyCard key={f.key} family={f} />
+        ))}
+      </div>
+    </>
+  );
+}

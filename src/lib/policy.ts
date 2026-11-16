@@ -13,10 +13,15 @@ export const POLICY = {
   refundDays: 5,
   cod: "Cash on delivery is available across India.",
   payments: "UPI, cards and net banking online, or cash on delivery.",
+  /** The local promise: the studio delivers across Delhi NCR itself. */
+  ncr: "Delivered within 24 hours across Delhi NCR",
 } as const;
 
+/** The towns the 24-hour promise covers, for the places that list them. */
+export const NCR_CITIES = ["Delhi", "Noida", "Gurugram", "Ghaziabad", "Faridabad"] as const;
+
 export const SHIP_ZONES: { zone: string; days: string }[] = [
-  { zone: "Delhi NCR", days: "2–4 working days" },
+  { zone: "Delhi NCR", days: "Within 24 hours" },
   { zone: "North India", days: "3–6 working days" },
   { zone: "Rest of India", days: "5–9 working days" },
 ];

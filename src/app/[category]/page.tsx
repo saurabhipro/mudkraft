@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { FamilyCard } from "@/app/home-page";
+import { SortableFamilyGrid } from "@/app/home-page";
+import { TrustStrip } from "@/components/TrustStrip";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ARTICLES } from "@/lib/articles";
@@ -18,12 +19,19 @@ export const dynamic = "force-dynamic";
 async function load(slug: string) {
   const page = categoryBySlug(slug);
   if (!page) return null;
-  const products = (await getActiveProducts()).map(toProductView).filter(page.match);
+  const all = (await getActiveProducts()).map(toProductView);
+  const products = all.filter(page.match);
   const cheapest = products.reduce<number | null>(
     (low, p) => (low === null || p.pricePaise < low ? p.pricePaise : low),
     null,
   );
-  return { page, products, from: cheapest === null ? "" : formatPaise(cheapest) };
+  // One tile per category that has something on its shelf, pictured by its first piece.
+  const tiles = CATEGORY_PAGES.map((c) => {
+    const shelf = all.filter(c.match);
+    const cover = shelf.find((p) => p.cutout || p.img);
+    return { slug: c.slug, label: c.label, count: groupFamilies(shelf).length, cover };
+  }).filter((t) => t.count > 0);
+  return { page, products, tiles, from: cheapest === null ? "" : formatPaise(cheapest) };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -108,10 +116,45 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
           ))}
         </div>
 
-        <section aria-label={page.label} className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {families.map((f) => (
-            <FamilyCard key={f.key} family={f} />
-          ))}
+        {data.tiles.length > 1 && (
+          <nav aria-label="Shop by category" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {data.tiles.map((t) => {
+              const on = t.slug === page.slug;
+              const src = t.cover ? (t.cover.cutout ?? t.cover.img) : null;
+              return (
+                <Link
+                  key={t.slug}
+                  href={`/${t.slug}`}
+                  aria-current={on ? "page" : undefined}
+                  className={`flex items-center gap-4 rounded-3xl border p-2.5 pr-5 transition-colors ${
+                    on ? "border-earth bg-earth text-cream" : "border-border bg-[oklch(0.985_0.008_75)] text-earth hover:border-clay"
+                  }`}
+                >
+                  <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-sand">
+                    {src && (
+                      <img
+                        src={src}
+                        alt=""
+                        loading="lazy"
+                        className={`h-12 w-12 object-contain ${src === t.cover?.cutout ? "" : "mix-blend-multiply brightness-[1.06]"}`}
+                      />
+                    )}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-display text-2xl leading-none">{t.label}</span>
+                    <span className={`text-xs ${on ? "text-cream/70" : "text-muted-foreground"}`}>
+                      {t.count} {t.count === 1 ? "piece" : "pieces"}
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
+        <section aria-label={page.label} className="mt-10">
+          <SortableFamilyGrid families={families} />
+          <TrustStrip className="mt-10" />
         </section>
 
         <section className="mt-20 max-w-3xl">

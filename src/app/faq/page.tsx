@@ -36,7 +36,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Do you ship across India?",
-    a: `Yes. ${POLICY.delivery}. Every piece is packed in ${POLICY.packing}. Orders leave the studio within ${POLICY.dispatch}; delivery takes 2–4 working days in Delhi NCR and 5–9 elsewhere in India.`,
+    a: `Yes. ${POLICY.delivery}. Every piece is packed in ${POLICY.packing}. In Delhi NCR your order reaches you within 24 hours. Elsewhere it leaves the studio within ${POLICY.dispatch} and takes 5–9 working days.`,
   },
   {
     q: "How do I place an order?",
