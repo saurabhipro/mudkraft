@@ -1,8 +1,10 @@
 import { ARTICLES } from "@/lib/articles";
 import { CATEGORY_PAGES } from "@/lib/categories";
+import { deliveryText } from "@/lib/delivery";
 import { POLICY } from "@/lib/policy";
 import { toProductView } from "@/lib/product-view";
 import { SITE_URL } from "@/lib/seo";
+import { getDeliveryTerms } from "@/server/store/delivery";
 import { getActiveProducts } from "@/server/store/products";
 
 /** A plain-text summary for AI assistants, built from the live catalogue so it never goes stale. */
@@ -10,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const products = (await getActiveProducts().catch(() => [])).map(toProductView);
+  const delivery = await getDeliveryTerms();
   const categories = CATEGORY_PAGES.filter((c) => products.some(c.match));
 
   const lines = [
@@ -17,7 +20,8 @@ export async function GET() {
     "",
     "> Handmade unglazed clay cookware and matkas from river clay, made in Khurja and fired for 48 hours in a wood kiln. Lab-tested: no lead, cadmium or arsenic found.",
     "",
-    `- ${POLICY.delivery}. ${POLICY.cod}`,
+    "- An online store: orders are taken on the website 24x7 and ship from our warehouses.",
+    `- ${deliveryText(delivery)}. ${POLICY.cod}`,
     `- Breakage cover: ${POLICY.breakage}`,
     `- Returns: ${POLICY.returnDays} days for unused pieces.`,
     "",

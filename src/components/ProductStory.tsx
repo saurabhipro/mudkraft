@@ -154,7 +154,7 @@ function CookStory({ p, story }: { p: ProductView; story: ProductStory }) {
                       <PieceImage
                         p={p}
                         src={photos[i % photos.length]}
-                        alt=""
+                        alt={`Clay ${p.name} for ${use.title.toLowerCase()}`}
                         className="relative h-32 w-[78%]"
                       />
                     )}
@@ -509,7 +509,7 @@ export function NeedHelpBand({ product: p }: { product: ProductView }) {
             <PieceImage
               p={p}
               src={photo}
-              alt=""
+              alt={`Handmade unglazed clay ${p.name} from Mudkraft`}
               className="absolute inset-x-[10%] top-[12%] h-[66%] w-[80%]"
             />
           )}

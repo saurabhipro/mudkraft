@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 
 import { displayImage, toProductView } from "@/lib/product-view";
-import { availability } from "@/lib/schema";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getCategories } from "@/server/store/categories";
 import { getActiveProducts } from "@/server/store/products";
 import { imageBoxes } from "@/server/image-box";
 import { getChannelVideos } from "@/server/youtube";
 import { HomePage } from "./home-page";
+import { keywordsFor } from "@/lib/keywords";
 
 const DESCRIPTION =
   "Buy handmade unglazed clay handi, kadai, dahi handi and matka from Khurja. Wood-fired, lab-tested with no lead, cadmium or arsenic. Doorstep delivery across India.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/"),
   title: "Mudkraft – Handmade Clay Cookware & Mitti Ke Bartan Online | Unglazed",
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/` },
@@ -50,22 +51,17 @@ export default async function Page() {
     categories?.map((c) => c.name) ??
     [...new Set(views.map((v) => v.category).filter((c): c is string => Boolean(c)))];
 
+  // A list of links, not full Product entities: Google wants Product markup on each piece's own
+  // page, where it carries shipping and returns. Copies here only drew "missing field" warnings.
   const productsJsonLd = {
     "@context": "https://schema.org",
-    "@graph": views.map((p) => ({
-      "@type": "Product",
-      name: p.name,
-      description: p.description || `${p.tag} — handcrafted river-clay piece by Mudkraft.`,
-      image: displayImage(p) ?? undefined,
-      brand: { "@type": "Brand", name: "Mudkraft" },
-      offers: {
-        "@type": "Offer",
-        // Schema.org expects a plain decimal, so convert out of paise.
-        price: (p.pricePaise / 100).toFixed(2),
-        priceCurrency: "INR",
-        availability: availability(p.stockQty),
-        url: `${SITE_URL}/shop/${p.slug}`,
-      },
+    "@type": "ItemList",
+    name: "Mudkraft handmade clay pieces",
+    itemListElement: views.map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${SITE_URL}/shop/${p.slug}`,
+      name: `${p.name} ${p.sizeLabel}`.trim(),
     })),
   };
 

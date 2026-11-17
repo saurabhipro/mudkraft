@@ -274,7 +274,7 @@ export function ProductDetail({
                   onClick={() => setShot(i)}
                   className={`group relative h-[88px] w-[88px] overflow-hidden rounded-[1.25rem] transition-opacity duration-300 ${i === shot ? "" : "opacity-80 hover:opacity-100"}`}
                 >
-                  <ClayPlinth product={p} src={src} alt="" />
+                  <ClayPlinth product={p} src={src} />
                   {i === shot && <span aria-hidden="true" className="absolute inset-0 rounded-[1.25rem] ring-2 ring-inset ring-earth" />}
                 </button>
               ))}
@@ -620,7 +620,7 @@ export function ProductDetail({
                   <div className="aspect-[4/3] overflow-hidden">
                     <img
                       src={step.img}
-                      alt=""
+                      alt={`Seasoning a clay pot, step ${i + 1}: ${step.title.toLowerCase()}`}
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-[1600ms] ease-[var(--ease-clay)] group-hover:scale-[1.06]"
                     />

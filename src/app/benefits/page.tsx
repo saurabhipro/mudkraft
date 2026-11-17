@@ -8,6 +8,7 @@ import alkalineImg from "@/assets/benefit-alkaline.jpg";
 import mineralsImg from "@/assets/benefit-minerals.jpg";
 import coolingImg from "@/assets/benefit-cooling.jpg";
 import nutrientsImg from "@/assets/benefit-nutrients.jpg";
+import { keywordsFor } from "@/lib/keywords";
 
 const URL = `${SITE_URL}/benefits`;
 const TITLE = "Why Cook & Store Water in Unglazed Clay — Lab-Tested, Natural Cooling | Mudkraft";
@@ -15,6 +16,7 @@ const DESCRIPTION =
   "Why unglazed clay: lab-tested river clay with no lead, cadmium or arsenic, natural evaporative cooling for water, and slow even heat for cooking. A plain guide from Mudkraft.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/benefits"),
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL },

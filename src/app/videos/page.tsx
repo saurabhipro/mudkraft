@@ -3,15 +3,17 @@ import type { Metadata } from "next";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VideoCard } from "@/components/VideoCard";
-import { OG_IMAGE, SITE_URL } from "@/lib/seo";
-import { YOUTUBE_CHANNEL_URL, YOUTUBE_SUBSCRIBE_URL } from "@/lib/youtube";
+import { OG_IMAGE, ORG_ID, SITE_URL } from "@/lib/seo";
+import { YOUTUBE_CHANNEL_URL, YOUTUBE_SUBSCRIBE_URL, youtubeThumbnail } from "@/lib/youtube";
 import { getChannelVideos } from "@/server/youtube";
+import { keywordsFor } from "@/lib/keywords";
 
 const TITLE = "Videos — Mudkraft";
 const DESCRIPTION =
   "Watch the wheel turn: films from the Mudkraft studio — throwing, shaping and wood-firing unglazed river clay by hand.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/videos"),
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/videos` },
@@ -29,8 +31,32 @@ export const metadata: Metadata = {
 export default async function VideosPage() {
   const videos = await getChannelVideos();
 
+  // One VideoObject per film, so they can show in Google's video results. The feed has no
+  // description, so the title stands in; a video without a publish date is left out.
+  const videosJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": videos
+      .filter((v) => v.publishedAt)
+      .map((v) => ({
+        "@type": "VideoObject",
+        name: v.title,
+        description: v.title,
+        thumbnailUrl: youtubeThumbnail(v.id),
+        uploadDate: v.publishedAt,
+        contentUrl: `https://www.youtube.com/watch?v=${v.id}`,
+        embedUrl: `https://www.youtube-nocookie.com/embed/${v.id}`,
+        publisher: { "@id": ORG_ID },
+      })),
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {videos.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(videosJsonLd) }}
+        />
+      )}
       <SiteHeader />
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-24 md:pt-28 pb-8">

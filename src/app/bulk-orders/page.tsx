@@ -5,6 +5,7 @@ import { displayImage, toProductView } from "@/lib/product-view";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getActiveProducts } from "@/server/store/products";
 import { BulkOrdersPage, type PickerItem } from "./bulk-orders-page";
+import { keywordsFor } from "@/lib/keywords";
 
 const URL = `${SITE_URL}/bulk-orders`;
 const TITLE = "Bulk & Custom Orders — Mudkraft";
@@ -12,6 +13,7 @@ const DESCRIPTION =
   "Order handmade clay cookware, teaware and serveware in bulk for cafés, hotels, gifting and resale, or ask for a custom piece made to your brief.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/bulk-orders"),
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL },

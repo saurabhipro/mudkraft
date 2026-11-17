@@ -3,13 +3,18 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButton } from "@/components/ShareButton";
+import { deliveryText } from "@/lib/delivery";
 import { POLICY, SHIP_ZONES } from "@/lib/policy";
-import { OG_IMAGE } from "@/lib/seo";
+import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { getDeliveryTerms } from "@/server/store/delivery";
+import { keywordsFor } from "@/lib/keywords";
 
 const TITLE = "Shipping & Returns — Mudkraft";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/shipping-returns"),
   title: TITLE,
+  alternates: { canonical: `${SITE_URL}/shipping-returns` },
   description:
     "How Mudkraft packs, ships, and stands behind every hand-thrown clay piece — timelines, charges, breakage policy, and returns.",
   openGraph: {
@@ -18,12 +23,17 @@ export const metadata: Metadata = {
     description:
       "Doorstep delivery across India, delivery charges and timelines, breakage-in-transit cover, and returns for our hand-thrown clay pieces.",
     type: "website",
+    url: `${SITE_URL}/shipping-returns`,
     images: [OG_IMAGE],
   },
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
 };
 
-export default function ShippingReturnsPage() {
+/** Rebuilt every ten minutes, so the delivery line follows Bikriup's delivery setting. */
+export const revalidate = 600;
+
+export default async function ShippingReturnsPage() {
+  const delivery = await getDeliveryTerms();
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <SiteHeader />
@@ -54,7 +64,7 @@ export default function ShippingReturnsPage() {
 
       <section className="max-w-4xl mx-auto px-6 md:px-10 py-8">
         <h2 className="font-display text-3xl text-earth mb-6">Delivery</h2>
-        <p className="mb-6 text-foreground/85">{POLICY.delivery}. {POLICY.cod}</p>
+        <p className="mb-6 text-foreground/85">{deliveryText(delivery)}. {POLICY.cod}</p>
         <div className="overflow-x-auto rounded-2xl border border-earth/15">
           <table className="w-full min-w-[20rem] text-sm">
             <thead className="bg-earth text-cream">

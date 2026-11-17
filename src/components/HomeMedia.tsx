@@ -379,7 +379,7 @@ export function StudioStories() {
               >
                 <img
                   src={`${M}/reel-${s.id}.jpg`}
-                  alt=""
+                  alt={s.title}
                   loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1600ms] ease-[var(--ease-clay)] group-hover:scale-[1.05]"
                 />

@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SALES_EMAIL, SALES_PHONE_DISPLAY } from "@/lib/catalogue";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { keywordsFor } from "@/lib/keywords";
 
 const URL = `${SITE_URL}/terms`;
 const TITLE = "Terms & Conditions — Mudkraft";
@@ -13,6 +14,7 @@ const DESCRIPTION =
   "The terms for buying from Mudkraft: orders, prices, payment, delivery, handmade variation, returns, care and workshops.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/terms"),
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL },

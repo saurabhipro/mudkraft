@@ -160,7 +160,7 @@ export function WelcomePopup() {
               <img
                 key={piece.src}
                 src={piece.src}
-                alt={i === 1 || pieces.length === 1 ? "Mudkraft clay pieces" : ""}
+                alt={piece.name ? `Handmade clay ${piece.name} by Mudkraft` : "Mudkraft clay piece"}
                 className={`h-full min-w-0 object-contain object-bottom animate-in fade-in slide-in-from-bottom-4 duration-700 ${
                   piece.cutout ? "" : "mix-blend-multiply brightness-[1.06] contrast-[1.06]"
                 } ${GROW[pieces.length - 1][i]} ${pieces.length === 3 && i !== 1 ? "max-h-[82%]" : ""}`}

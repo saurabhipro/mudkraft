@@ -247,7 +247,7 @@ export function HeroPieces({
                   <span className="isolate shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[radial-gradient(circle,#fffdf9,#ead9c6)]">
                     <img
                       src={displayImage(p)!}
-                      alt=""
+                      alt={`Handmade clay ${p.name} by Mudkraft`}
                       className="w-full h-full object-contain p-1 mix-blend-multiply"
                     />
                   </span>

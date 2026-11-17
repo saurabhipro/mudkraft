@@ -1,9 +1,9 @@
-import { A, ArticleLayout, H2, P, UL, articleMetadata, type ArticleFaq } from "@/components/ArticleLayout";
+import { A, ArticleLayout, H2, P, RANGE_SHARE_IMAGE, UL, articleMetadata, type ArticleFaq } from "@/components/ArticleLayout";
 import { ARTICLES } from "@/lib/articles";
 
 const a = ARTICLES.find((x) => x.href === "/journal/mitti-ke-bartan-buying-guide")!;
 
-export const metadata = articleMetadata(a.href, a.title, a.description);
+export const metadata = articleMetadata(a.href, a.title, a.description, RANGE_SHARE_IMAGE);
 
 const FAQS: ArticleFaq[] = [
   {
@@ -28,6 +28,10 @@ export default function Page() {
   return (
     <ArticleLayout
       href={a.href}
+      hero={{
+        shot: "ledge",
+        alt: "Mitti ke bartan: unglazed clay handis, kadhai, jugs, bottles and mugs side by side",
+      }}
       title={a.title}
       description={a.description}
       date={a.date}

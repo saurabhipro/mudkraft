@@ -6,12 +6,14 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ARTICLES } from "@/lib/articles";
 import { breadcrumbs } from "@/lib/schema";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { keywordsFor } from "@/lib/keywords";
 
 const TITLE = "Journal: Clay Cooking Guides and Care Advice";
 const DESCRIPTION =
   "Plain guides to cooking and storing water in clay: is it safe, clay vs steel, how to season a handi, and how to choose mitti ke bartan.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/journal"),
   title: { absolute: `${TITLE} | Mudkraft` },
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/journal` },
