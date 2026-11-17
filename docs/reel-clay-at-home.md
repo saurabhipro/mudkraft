@@ -99,8 +99,8 @@
 - "Lead, cadmium, arsenic: not detected · pH 7.2" · *Source: CGCRI lab report, mudkraft.com/soil-report*
 
 **Reference images**
-- `src/assets/product-matka.jpg`, `src/assets/matka-stand.jpg` (Lovable asset)
-- `public/hero/jug-1-5l.webp`, `src/assets/bottle-jug.jpg` (Lovable asset)
+- `src/assets/product-matka.jpg`
+- `public/hero/jug-1-5l.webp`
 - `src/assets/benefit-cooling.jpg`
 - Screen-record the live page at mudkraft.com/soil-report for the phone insert. Do not let AI generate this one; it must show the real page.
 
@@ -132,7 +132,7 @@
 
 **Reference images**
 - `public/hero/dahi-handi-1-5l.webp`, `public/hero/dahi-handi-750g.webp`, `public/hero/handi-2-5l.webp`
-- `src/assets/kulhad-set.jpg` (Lovable asset), `src/assets/product-kulhad.jpg`
+- `src/assets/product-kulhad.jpg`
 - `public/mudkraft-logo.png` for the end card
 - Optional craft B-roll behind the end card: `public/media/reel-potter.jpg`, `public/media/reel-wheel.jpg`, `public/media/craft-shaped.jpg`
 

@@ -12,7 +12,7 @@ export default tseslint.config(
     files: ["**/*.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-unused-vars": "off",
-      // Product imagery is served from remote, Lovable-hosted URLs alongside local
+      // Product imagery is served from remote (Cloudinary) URLs alongside local
       // files; a plain <img> keeps both on one code path.
       "@next/next/no-img-element": "off",
     },

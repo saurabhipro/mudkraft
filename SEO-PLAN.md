@@ -4,7 +4,7 @@ Last updated: 2 Nov 2026 (evening). Live site: https://www.mudkraft.com
 
 How to read this file:
 
-- **YOU** = work only you can do (accounts, logins, content, money, anything on Google/Meta/GitHub/Lovable).
+- **YOU** = work only you can do (accounts, logins, content, money, anything on Google/Meta/GitHub).
 - **ME** = work Claude does in this repo or on the VM once you say go.
 - Each step has a **done when** line so you can tell it is finished.
 - Do each section in order. Steps inside a section are in priority order.
@@ -21,7 +21,6 @@ How to read this file:
 | Google Analytics 4 | `G-F16PQW6P0C` live in the site |
 | Merchant Center | Account created; feed `https://www.mudkraft.com/feeds/google.xml` added |
 | Google Business Profile | Created; verification pending |
-| `mudkraft.lovable.app` | **Taken down** (returns 404 "Project not found"). Done. |
 | Push-to-deploy (GitHub Actions) | **Broken**, see section 1 |
 | Meta Pixel | Code live, **off** until a Pixel ID is set |
 | Speed (live, phone) | Measured 2 Nov: load 0.5-1.0 s, layout shift 0, home film not downloaded at load. Nothing to fix. |
@@ -92,24 +91,23 @@ C. **Workflow (ME, done).** It now names the missing secret, or the "Permission 
 
 ## 2. YOU: do these now (about 1-2 hours)
 
-1. ~~Take down `mudkraft.lovable.app`~~ **Done 2 Nov** (verified: 404).
-2. **Merchant Center feed.** Merchant Center > Products > Diagnostics. Send me any "Disapproved" or error text.
+1. **Merchant Center feed.** Merchant Center > Products > Diagnostics. Send me any "Disapproved" or error text.
    *Done when* products show as Approved (out-of-stock items are fine).
-3. **Merchant Center settings.** Add the shipping (free delivery in India, 2-3 day dispatch, 2-9 days transit) and returns
+2. **Merchant Center settings.** Add the shipping (free delivery in India, 2-3 day dispatch, 2-9 days transit) and returns
    (7 days) to match the site. Claim the website (the same Search Console verification works).
-4. **Google Business Profile.** Finish verification (video or postcard). Use the exact same name, address and phone as on
+3. **Google Business Profile.** Finish verification (video or postcard). Use the exact same name, address and phone as on
    the site: **+91 70420 05946**. Category "Pottery store", second category "Pottery class".
-5. **Fix data in Bikriup admin:**
+4. **Fix data in Bikriup admin:**
    - The Handi 1.5 L costs **more** (Rs 1,200) than the 2.5 L (Rs 1,170). Correct the price.
    - Rename the three **"Water Cooler"** products (8/12/18) to **"Clay Matka Water Pot"**. Tell me if the web address
      (slug) changes, so I can add redirects.
    - Set real stock on the five out-of-stock items.
    - Write a real description for each product (first sentence should say "unglazed clay handi / mitti ki handi",
      what it is for, the size, and that it is lab-tested).
-6. **Link your accounts to the website.** `https://www.mudkraft.com` in: the Facebook page's website field, the YouTube
+5. **Link your accounts to the website.** `https://www.mudkraft.com` in: the Facebook page's website field, the YouTube
    channel's About links, and the first line of every YouTube video description.
-7. **Instagram.** Create the account, put the website in the bio, and send me the handle (goes in footer + schema).
-8. **Meta Business.** Create a Meta Pixel and send me the Pixel ID. Later, a Conversions API access token.
+6. **Instagram.** Create the account, put the website in the bio, and send me the handle (goes in footer + schema).
+7. **Meta Business.** Create a Meta Pixel and send me the Pixel ID. Later, a Conversions API access token.
 
 ---
 
