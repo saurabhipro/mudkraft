@@ -20,7 +20,13 @@ export interface BulkSingle {
 
 export const BULK_SINGLES: BulkSingle[] = [
   // The shop spells it "Kullad"; match kulhad / kullad / kulad alike.
-  { slug: "bulk-kulhad-single", name: "Kullad", matches: /\bkul+h?ad/i, img: null, priceInr: 160 },
+  {
+    slug: "bulk-kulhad-single",
+    name: "Kullad",
+    matches: /\bkul+h?ad/i,
+    img: "/media/bulk/kulhad-single.webp",
+    priceInr: 160,
+  },
   {
     slug: "bulk-glass-single",
     name: "Glass",
