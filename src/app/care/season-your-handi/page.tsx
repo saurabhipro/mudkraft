@@ -12,8 +12,10 @@ import stepDry from "@/assets/step-dry.jpg";
 import stepOil from "@/assets/step-oil.jpg";
 import stepRice from "@/assets/step-rice.jpg";
 import stepCare from "@/assets/step-care.jpg";
+import { keywordsFor } from "@/lib/keywords";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/care/season-your-handi"),
   title: "How to Season a Clay Handi (So It Never Cracks) — Mudkraft",
   description:
     "A step-by-step ritual to cure your new clay handi before cooking — soak, dry, first rice, and daily care. Follow it once and your handi will last for years without cracking.",

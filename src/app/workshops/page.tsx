@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { WorkshopsPage } from "./workshops-page";
+import { keywordsFor } from "@/lib/keywords";
 
 const URL = `${SITE_URL}/workshops`;
 const TITLE = "Workshops & Soil Report — Mudkraft";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/workshops"),
   title: TITLE,
   description:
     "Book a Mudkraft pottery workshop for schools, birthdays and private parties. Read the full soil report of our river clay from the banks of the Ganges.",

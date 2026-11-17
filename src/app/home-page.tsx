@@ -37,6 +37,7 @@ import {
 } from "@/lib/cart";
 import { VideoCard } from "@/components/VideoCard";
 import { PromiseCarousel } from "@/components/PromiseCarousel";
+import { RangePhoto } from "@/components/RangePhoto";
 import { TrustStrip } from "@/components/TrustStrip";
 import { storyFor } from "@/lib/product-stories";
 import { type YouTubeVideo } from "@/lib/youtube";
@@ -267,6 +268,42 @@ export function HomePage({
             Prices incl. taxes &amp; delivery
           </p>
           <TrustStrip className="mt-8" />
+        </div>
+      </section>
+
+      {/* THE RANGE — the whole kitchen in one photograph, leading on to the shop */}
+      <section aria-labelledby="range-title" className="px-4 sm:px-6 md:px-10 pb-24 md:pb-32">
+        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-sand">
+          <RangePhoto
+            shot="ledge"
+            alt="Handmade unglazed clay handis, kadhai, jugs, bottles and mugs by Mudkraft on a garden ledge"
+            sizes="(min-width: 1280px) 1280px, 100vw"
+            className="block h-[560px] w-full object-cover sm:h-auto sm:aspect-[16/9] md:aspect-[21/10]"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            // Darkest behind the heading (bottom left), clear over the pieces on the right.
+            style={{
+              background:
+                "linear-gradient(to top, oklch(0.2 0.03 45 / 0.85), oklch(0.2 0.03 45 / 0.35) 45%, transparent 75%), linear-gradient(to right, oklch(0.2 0.03 45 / 0.45), transparent 55%)",
+            }}
+          />
+          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10 md:p-14 text-cream">
+            <p className="text-xs tracking-[0.35em] uppercase text-cream/75">The whole kitchen</p>
+            <h2
+              id="range-title"
+              className="mt-3 max-w-2xl font-display font-normal text-[clamp(2.25rem,4.5vw,4rem)] leading-[1.02] text-balance"
+            >
+              From handi to kullad, all in <em className="italic">unglazed clay</em>
+            </h2>
+            <Link
+              href="/shop"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-cream px-6 py-3 text-sm text-earth transition-colors hover:bg-white"
+            >
+              Shop all pieces <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </div>
       </section>
 

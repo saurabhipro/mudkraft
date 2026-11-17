@@ -59,7 +59,7 @@ export function ShopGrid({ families }: { families: ProductFamily[] }) {
                   {img && (
                     <img
                       src={img.src}
-                      alt=""
+                      alt={`${t.label}: handmade clay by Mudkraft`}
                       loading="lazy"
                       className={`h-12 w-12 object-contain ${img.cutout ? "" : "mix-blend-multiply brightness-[1.06]"}`}
                     />

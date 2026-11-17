@@ -6,6 +6,7 @@ import { OrdersEnquiries } from "@/components/OrdersEnquiries";
 import { BROCHURE } from "@/lib/catalogue";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { whatsappLink } from "@/lib/whatsapp";
+import { keywordsFor } from "@/lib/keywords";
 
 const URL = `${SITE_URL}/soil-report`;
 const TITLE = "Soil Report — Lab-Tested, Food-Safe River Clay | Mudkraft";
@@ -13,6 +14,7 @@ const DESCRIPTION =
   "The full lab report on Mudkraft's river clay from Khurja: tested by the Central Glass & Ceramic Research Institute. pH 7.2, no lead, cadmium or arsenic detected, no chemical glaze.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/soil-report"),
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL },

@@ -3,12 +3,15 @@ import type { ReactNode } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { OG_IMAGE } from "@/lib/seo";
+import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { keywordsFor } from "@/lib/keywords";
 
 const TITLE = "Trust & Privacy — Mudkraft";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/trust"),
   title: TITLE,
+  alternates: { canonical: `${SITE_URL}/trust` },
   description:
     "How Mudkraft handles your data, orders, payments, and privacy. Maintained by the Mudkraft studio team.",
   openGraph: {
@@ -16,6 +19,7 @@ export const metadata: Metadata = {
     title: TITLE,
     description: "How Mudkraft handles your data, orders, payments, and privacy.",
     type: "website",
+    url: `${SITE_URL}/trust`,
     images: [OG_IMAGE],
   },
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },

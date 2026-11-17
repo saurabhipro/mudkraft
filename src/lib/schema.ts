@@ -1,3 +1,4 @@
+import type { DeliveryTerms } from "@/lib/delivery";
 import { POLICY } from "@/lib/policy";
 import type { ProductView } from "@/lib/product-view";
 import { SITE_URL } from "@/lib/seo";
@@ -9,16 +10,28 @@ export const availability = (stockQty: number) =>
 
 const days = (min: number, max: number) => ({ "@type": "QuantitativeValue", minValue: min, maxValue: max, unitCode: "DAY" });
 
-export const shippingDetails = {
+/** What delivery adds to the price, or null when no single figure is true (priced per PIN code). */
+export function shippingRatePaise(terms: DeliveryTerms): number | null {
+  if (terms.mode === "included") return 0;
+  if (terms.mode === "flat") return terms.feePaise;
+  return null;
+}
+
+export const shippingDetails = (terms: DeliveryTerms) => ({
   "@type": "OfferShippingDetails",
-  // No shippingRate: delivery is priced per PIN code and weight at checkout, so no single figure is true.
+  // Per PIN code there is no one true rate, so none is stated. A flat fee is stated in full, even
+  // where an order may cross the free threshold: overstating is safe, understating is not.
+  shippingRate:
+    shippingRatePaise(terms) === null
+      ? undefined
+      : { "@type": "MonetaryAmount", value: (shippingRatePaise(terms)! / 100).toFixed(2), currency: "INR" },
   shippingDestination: { "@type": "DefinedRegion", addressCountry: "IN" },
   deliveryTime: {
     "@type": "ShippingDeliveryTime",
     handlingTime: days(2, 3),
     transitTime: days(2, 9),
   },
-};
+});
 
 export const returnPolicy = {
   "@type": "MerchantReturnPolicy",

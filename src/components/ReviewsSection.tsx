@@ -173,7 +173,7 @@ function Lightbox({
                 i === index ? "ring-gold" : "ring-cream/20 hover:ring-cream/50"
               }`}
             >
-              <img src={p.src} alt="" className="w-full h-full object-contain bg-cream/10" />
+              <img src={p.src} alt={`Customer photo ${i + 1}`} className="w-full h-full object-contain bg-cream/10" />
             </button>
           ))}
           </div>

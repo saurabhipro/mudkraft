@@ -1,9 +1,10 @@
 import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
-import { productSeo } from "@/lib/categories";
-import { POLICY } from "@/lib/policy";
+import { productDescription, productSeo } from "@/lib/categories";
+import { deliveryText, type DeliveryTerms } from "@/lib/delivery";
 import { toProductView, type ProductView } from "@/lib/product-view";
-import { variantGroupId } from "@/lib/schema";
+import { shippingRatePaise, variantGroupId } from "@/lib/schema";
 import { SITE_URL } from "@/lib/seo";
+import { getDeliveryTerms } from "@/server/store/delivery";
 import { getActiveProducts } from "@/server/store/products";
 
 /**
@@ -24,16 +25,14 @@ const googleCategory = (p: ProductView) =>
     ? "Home & Garden > Kitchen & Dining > Tableware > Drinkware"
     : "Home & Garden > Kitchen & Dining > Cookware & Bakeware";
 
-function item(p: ProductView, groupId: string | null): string | null {
+function item(p: ProductView, groupId: string | null, delivery: DeliveryTerms): string | null {
   // Merchant Center rejects a listing without a photo or one customers cannot have delivered.
   const photo = p.gallery[0] ?? p.img;
   if (!photo || p.fulfilmentMode !== "ship_nationwide") return null;
 
   const seo = productSeo(p);
   const title = seo.title.replace(/\s*\|\s*Mudkraft$/, "").slice(0, 150);
-  // A one-line tagline is too thin for a listing, so it is followed by the factual description.
-  const written = (p.description || p.note).replace(/\s+/g, " ").trim();
-  const description = (written.length >= 80 ? written : `${written.replace(/[.!\s]*$/, "")}. ${seo.description}`.replace(/^\. /, "")).slice(0, 5000);
+  const description = productDescription(p);
   const code = CATALOGUE_CODES[catalogueSlug(p) ?? ""] ?? p.slug;
   const extra = [...new Set(p.gallery.slice(1, 10))];
   const size = p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? p.sizeLabel : "";
@@ -61,28 +60,42 @@ function item(p: ProductView, groupId: string | null): string | null {
   const lines = tags
     .filter((t): t is [string, string] => Boolean(t[1]))
     .map(([tag, value]) => `      <${tag}>${esc(value)}</${tag}>`);
-  lines.push(
-    "      <g:shipping>",
-    "        <g:country>IN</g:country>",
-    "        <g:service>Standard</g:service>",
-    "        <g:price>0.00 INR</g:price>",
-    "      </g:shipping>",
-  );
+  // Priced per PIN code there is no one true figure for the feed, so the rate comes from the
+  // shipping settings in Merchant Center instead. A ₹0 here would be a false promise.
+  const rate = shippingRatePaise(delivery);
+  if (rate !== null) {
+    lines.push(
+      "      <g:shipping>",
+      "        <g:country>IN</g:country>",
+      "        <g:service>Standard</g:service>",
+      `        <g:price>${(rate / 100).toFixed(2)} INR</g:price>`,
+      "      </g:shipping>",
+    );
+  }
+  if (delivery.mode === "flat" && delivery.freeAbovePaise > 0) {
+    lines.push(
+      "      <g:free_shipping_threshold>",
+      "        <g:country>IN</g:country>",
+      `        <g:price_threshold>${(delivery.freeAbovePaise / 100).toFixed(2)} INR</g:price_threshold>`,
+      "      </g:free_shipping_threshold>",
+    );
+  }
   return `    <item>\n${lines.join("\n")}\n    </item>`;
 }
 
 export async function GET() {
-  const views = (await getActiveProducts()).map(toProductView);
+  const [products, delivery] = await Promise.all([getActiveProducts(), getDeliveryTerms()]);
+  const views = products.map(toProductView);
 
   // Sizes of one piece share a group id, so Google shows them as variants of one product.
-  const items = views.flatMap((p) => item(p, variantGroupId(p, views)) ?? []);
+  const items = views.flatMap((p) => item(p, variantGroupId(p, views), delivery) ?? []);
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
     <title>Mudkraft</title>
     <link>${SITE_URL}</link>
-    <description>${esc(`Handmade unglazed clay cookware from Khurja. ${POLICY.delivery}.`)}</description>
+    <description>${esc(`Handmade unglazed clay cookware from Khurja. ${deliveryText(delivery)}.`)}</description>
 ${items.join("\n")}
   </channel>
 </rss>

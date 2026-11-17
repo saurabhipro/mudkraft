@@ -64,7 +64,8 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "5mb" },
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    // Next refuses an empty headers list, which is what development gets.
+    return securityHeaders.length ? [{ source: "/(.*)", headers: securityHeaders }] : [];
   },
 };
 

@@ -154,6 +154,19 @@ const HINDI_NAMES: Array<[RegExp, string]> = [
   [/matka|water|cooler|jug|surahi/i, "Matka"],
 ];
 
+/**
+ * The long description for the product schema and the Merchant feed. A one-line tagline is too
+ * thin for a listing, so it is followed by the factual SEO description.
+ */
+export function productDescription(p: ProductView): string {
+  const written = (p.description || p.note).replace(/\s+/g, " ").trim();
+  const text =
+    written.length >= 80
+      ? written
+      : `${written.replace(/[.!\s]*$/, "")}. ${productSeo(p).description}`.replace(/^\. /, "");
+  return text.slice(0, 5000);
+}
+
 /** Keyword-led title and description for a product page, built from its data so every size is distinct. */
 export function productSeo(p: ProductView): { title: string; description: string; label: string } {
   const size = p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? p.sizeLabel : "";

@@ -4,7 +4,9 @@ import type { ReactNode } from "react";
 
 import { FACEBOOK_URL, INSTAGRAM_URL, SALES_EMAIL, SALES_PHONE_DISPLAY } from "@/lib/catalogue";
 import { YOUTUBE_CHANNEL_URL } from "@/lib/youtube";
-import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { keywordsFor } from "@/lib/keywords";
+import { returnPolicy } from "@/lib/schema";
+import { OG_IMAGE, ORG_ID, SITE_URL, WEBSITE_ID } from "@/lib/seo";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -52,6 +54,8 @@ export const metadata: Metadata = {
     ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
     : {}),
   description: DESCRIPTION,
+  // The site's own keywords, for pages that do not name theirs (checkout, sign-in and the like).
+  keywords: keywordsFor("/"),
   authors: [{ name: "Mudkraft" }],
   // Tab and home-screen icons come from app/icon.png and app/apple-icon.png.
   openGraph: {
@@ -78,7 +82,11 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Organization",
+      // An online store with no public address: orders ship from Bikriup's warehouses. No
+      // PostalAddress or LocalBusiness on purpose, since Google wants those only for a place
+      // customers can visit.
+      "@type": "OnlineStore",
+      "@id": ORG_ID,
       name: "Mudkraft",
       url: SITE_URL,
       logo: `${SITE_URL}/mudkraft-logo.png`,
@@ -86,19 +94,40 @@ const organizationJsonLd = {
         "Handmade unglazed clay cookware and matkas from Khurja, wood-fired and lab-tested.",
       email: SALES_EMAIL,
       telephone: SALES_PHONE_DISPLAY,
-      contactPoint: {
-        "@type": "ContactPoint",
-        contactType: "customer service",
-        email: SALES_EMAIL,
-        telephone: SALES_PHONE_DISPLAY,
-        areaServed: "IN",
-        availableLanguage: ["English", "Hindi"],
-      },
+      areaServed: { "@type": "Country", name: "India" },
+      hasMerchantReturnPolicy: returnPolicy,
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          contactType: "customer service",
+          email: SALES_EMAIL,
+          telephone: SALES_PHONE_DISPLAY,
+          areaServed: "IN",
+          availableLanguage: ["English", "Hindi"],
+        },
+        {
+          // The website takes orders around the clock. Phone and WhatsApp hours are not stated.
+          "@type": "ContactPoint",
+          contactType: "sales",
+          url: `${SITE_URL}/shop`,
+          areaServed: "IN",
+          availableLanguage: ["English", "Hindi"],
+          hoursAvailable: {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            opens: "00:00",
+            closes: "23:59",
+          },
+        },
+      ],
       sameAs: [FACEBOOK_URL, YOUTUBE_CHANNEL_URL, INSTAGRAM_URL].filter(Boolean),
     },
     {
       "@type": "WebSite",
+      "@id": WEBSITE_ID,
       name: "Mudkraft",
+      publisher: { "@id": ORG_ID },
+      inLanguage: "en-IN",
       alternateName: ["Mudkraft Studio", "mudkraft.com"],
       url: SITE_URL,
     },

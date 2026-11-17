@@ -72,7 +72,7 @@ export function HeaderAccount() {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={session.user.image}
-            alt=""
+            alt={`${displayName} profile photo`}
             referrerPolicy="no-referrer"
             onError={() => setFailedImageSrc(session.user.image ?? null)}
             className="w-5 h-5 rounded-full"

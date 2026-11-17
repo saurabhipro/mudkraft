@@ -2,18 +2,23 @@ import type { Metadata } from "next";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { withDelivery } from "@/lib/delivery";
 import { POLICY } from "@/lib/policy";
-import { OG_IMAGE } from "@/lib/seo";
+import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { whatsappLink } from "@/lib/whatsapp";
+import { getDeliveryTerms } from "@/server/store/delivery";
+import { keywordsFor } from "@/lib/keywords";
 
 const TITLE = "FAQ — Mudkraft";
 const DESCRIPTION =
   "Answers about our handcrafted clay pots, seasoning, shipping, care, and workshops.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/faq"),
   title: TITLE,
+  alternates: { canonical: `${SITE_URL}/faq` },
   description: DESCRIPTION,
-  openGraph: { siteName: "Mudkraft", title: TITLE, description: DESCRIPTION, type: "website", images: [OG_IMAGE] },
+  openGraph: { siteName: "Mudkraft", title: TITLE, description: DESCRIPTION, type: "website", url: `${SITE_URL}/faq`, images: [OG_IMAGE] },
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
 };
 
@@ -60,17 +65,22 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQS.map((f) => ({
-    "@type": "Question",
-    name: f.q,
-    acceptedAnswer: { "@type": "Answer", text: f.a },
-  })),
-};
+/** Rebuilt every ten minutes, so the delivery answer follows Bikriup's delivery setting. */
+export const revalidate = 600;
 
-export default function FAQPage() {
+export default async function FAQPage() {
+  const delivery = await getDeliveryTerms();
+  const faqs = FAQS.map((f) => ({ q: f.q, a: withDelivery(f.a, delivery) }));
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-cream text-earth">
       <script
@@ -93,7 +103,7 @@ export default function FAQPage() {
 
       <section className="px-6 md:px-10 max-w-4xl mx-auto pb-24">
         <ul className="divide-y divide-earth/15 border-y border-earth/15">
-          {FAQS.map((f, i) => (
+          {faqs.map((f, i) => (
             <li key={i} className="py-8 grid md:grid-cols-[3rem_1fr] gap-4 md:gap-8">
               <div className="text-xs tracking-widest text-clay font-sans">
                 {String(i + 1).padStart(2, "0")}

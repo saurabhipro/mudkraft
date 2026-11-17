@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { CATEGORY_PAGES, productSeo } from "@/lib/categories";
+import { CATEGORY_PAGES, productDescription, productSeo } from "@/lib/categories";
 import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
+import { productKeywords } from "@/lib/keywords";
 import { displayImage, groupFamilies, toProductView } from "@/lib/product-view";
 import { toReviewView } from "@/lib/review-view";
 import { breadcrumbs, priceValidUntil, availability, returnPolicy, shippingDetails, variantGroupId } from "@/lib/schema";
-import { SITE_URL } from "@/lib/seo";
+import { ORG_ID, SITE_URL } from "@/lib/seo";
 import { getActiveProducts, getProductBySlug } from "@/server/store/products";
+import { getDeliveryTerms } from "@/server/store/delivery";
 import { getApprovedReviews, getReviewSummary } from "@/server/store/reviews";
 import { ProductDetail } from "./product-detail";
 
 type PageProps = { params: Promise<{ slug: string }> };
+
+/** A measurement in centimetres, as schema.org wants it (CMT is the UN/CEFACT code). */
+const cm = (value: number | null) =>
+  value ? { "@type": "QuantitativeValue", value, unitCode: "CMT" } : undefined;
 
 /**
  * Rendered on every visit (from the store cache, which Bikriup's webhook clears), so a
@@ -36,6 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: { absolute: title },
     description,
+    keywords: productKeywords(view),
     alternates: { canonical: url },
     // `og:type: product` is rendered as a hoisted meta tag below: Next's metadata
     // API only knows a fixed set of og types and silently drops unknown ones.
@@ -51,10 +58,11 @@ export default async function Page({ params }: PageProps) {
   if (!product) notFound();
 
   const view = toProductView(product);
-  const [allProducts, reviews, summary] = await Promise.all([
+  const [allProducts, reviews, summary, delivery] = await Promise.all([
     getActiveProducts(),
     getApprovedReviews(slug),
     getReviewSummary(slug),
+    getDeliveryTerms(),
   ]);
 
   // Other variants of this product type (Handi 2.5 L, Dahi Handi 1.5 L) become the picker,
@@ -79,17 +87,37 @@ export default async function Page({ params }: PageProps) {
 
   const groupId = variantGroupId(view, sizes);
 
+  const reviewsLd = reviewViews.slice(0, 5).map((r) => ({
+    "@type": "Review",
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: r.rating,
+      bestRating: "5",
+      worstRating: "1",
+    },
+    author: { "@type": "Person", name: r.name },
+    datePublished: r.date,
+    name: r.title,
+    reviewBody: r.body,
+  }));
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${url}#product`,
     name: seo.label,
-    description: view.description || view.note || seo.description,
+    url,
+    description: productDescription(view),
     image: photos.length ? photos : undefined,
     sku: CATALOGUE_CODES[catalogueSlug(view) ?? ""] ?? view.slug,
     brand: { "@type": "Brand", name: "Mudkraft" },
     category: view.category ?? undefined,
     material: "Unglazed river clay",
     size: view.sizeLabel || undefined,
+    width: cm(view.widthCm),
+    height: cm(view.heightCm),
+    countryOfOrigin: { "@type": "Country", name: "India" },
+    manufacturer: { "@id": ORG_ID },
     // Sizes of one piece are variants of one product family, not competing duplicates.
     isVariantOf: groupId
       ? {
@@ -108,8 +136,8 @@ export default async function Page({ params }: PageProps) {
       // Mirrors the page's own "sold out" rule: a stock of 0 means unavailable.
       availability: availability(product.trackInventory === false ? 1 : view.stockQty),
       url,
-      seller: { "@type": "Organization", name: "Mudkraft" },
-      shippingDetails,
+      seller: { "@id": ORG_ID },
+      shippingDetails: shippingDetails(delivery),
       hasMerchantReturnPolicy: returnPolicy,
     },
     aggregateRating:
@@ -123,19 +151,8 @@ export default async function Page({ params }: PageProps) {
           }
         : undefined,
     // Only approved reviews reach this array; the store filters in SQL.
-    review: reviewViews.slice(0, 5).map((r) => ({
-      "@type": "Review",
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: r.rating,
-        bestRating: "5",
-        worstRating: "1",
-      },
-      author: { "@type": "Person", name: r.name },
-      datePublished: r.date,
-      name: r.title,
-      reviewBody: r.body,
-    })),
+    // Left out when there are none: an empty array reads as a broken field to validators.
+    review: reviewsLd.length > 0 ? reviewsLd : undefined,
   };
 
   return (

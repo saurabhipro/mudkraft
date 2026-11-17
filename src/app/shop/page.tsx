@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { RangePhoto } from "@/components/RangePhoto";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TrustStrip } from "@/components/TrustStrip";
 import { CATEGORY_PAGES, DELIVERY_Q, FLAME_Q, SAFE_Q, SEASON_Q } from "@/lib/categories";
+import { withDelivery } from "@/lib/delivery";
+import { keywordsFor } from "@/lib/keywords";
 import { formatPaise } from "@/lib/money";
 import { groupFamilies, toProductView } from "@/lib/product-view";
-import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { SITE_URL } from "@/lib/seo";
+import { getDeliveryTerms } from "@/server/store/delivery";
 import { getActiveProducts } from "@/server/store/products";
 
 import { ShopGrid } from "./shop-grid";
@@ -17,6 +21,8 @@ export const dynamic = "force-dynamic";
 
 const URL = `${SITE_URL}/shop`;
 const TITLE = "Shop All Clay Cookware & Serveware Online | Mudkraft";
+/** The whole range on one ledge: a better share card for "shop all" than the logo card. */
+const SHARE_IMAGE = { url: `${SITE_URL}/media/range/og-range.jpg`, width: 1200, height: 630, alt: "The Mudkraft range of handmade clay cookware" };
 const FAQS = [SAFE_Q, FLAME_Q, SEASON_Q, DELIVERY_Q];
 
 /** Short buying guide: what to cook in, by dish. Names are matched to live products for the links. */
@@ -66,6 +72,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { absolute: TITLE },
     description,
+    keywords: keywordsFor("/shop"),
     alternates: { canonical: URL },
     openGraph: {
       title: TITLE,
@@ -73,14 +80,15 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       url: URL,
       siteName: "Mudkraft",
-      images: [OG_IMAGE],
+      images: [SHARE_IMAGE],
     },
-    twitter: { card: "summary_large_image", title: TITLE, description, images: [OG_IMAGE] },
+    twitter: { card: "summary_large_image", title: TITLE, description, images: [SHARE_IMAGE.url] },
   };
 }
 
 export default async function ShopPage() {
-  const { products, from } = await load();
+  const [{ products, from }, delivery] = await Promise.all([load(), getDeliveryTerms()]);
+  const faqs = FAQS.map((f) => ({ q: f.q, a: withDelivery(f.a, delivery) }));
   const families = groupFamilies(products);
 
   // Link a guide pick to the first live product whose name starts with it; picks not on sale are dropped.
@@ -122,7 +130,7 @@ export default async function ShopPage() {
       },
       {
         "@type": "FAQPage",
-        mainEntity: FAQS.map((f) => ({
+        mainEntity: faqs.map((f) => ({
           "@type": "Question",
           name: f.q,
           acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -162,6 +170,16 @@ export default async function ShopPage() {
             for the table, or a water cooler for the summer. Our clay was lab-tested for lead,
             cadmium and arsenic, and none was found.
           </p>
+        </div>
+
+        <div className="mt-8 overflow-hidden rounded-[2rem] bg-sand">
+          <RangePhoto
+            shot="grass"
+            alt="The full Mudkraft range of unglazed clay handis, kadhai, jugs, bottles, mugs and a roti tawa on a lawn"
+            sizes="(min-width: 1280px) 1216px, 100vw"
+            priority
+            className="block aspect-[4/3] w-full object-cover sm:aspect-[16/7] md:aspect-[16/5] object-[center_60%]"
+          />
         </div>
 
         {families.length > 0 ? (
@@ -219,7 +237,7 @@ export default async function ShopPage() {
         <section className="mt-20 max-w-3xl">
           <h2 className="font-display text-3xl text-earth md:text-4xl">Questions, answered</h2>
           <div className="mt-6 divide-y divide-border border-y border-border">
-            {FAQS.map((f) => (
+            {faqs.map((f) => (
               <details key={f.q} className="group py-4">
                 <summary className="cursor-pointer list-none font-medium text-earth marker:hidden">
                   {f.q}

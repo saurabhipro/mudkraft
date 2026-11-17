@@ -8,9 +8,12 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ARTICLES } from "@/lib/articles";
 import { CATEGORY_PAGES, categoryBySlug } from "@/lib/categories";
+import { withDelivery } from "@/lib/delivery";
+import { keywordsFor } from "@/lib/keywords";
 import { formatPaise } from "@/lib/money";
 import { groupFamilies, toProductView } from "@/lib/product-view";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { getDeliveryTerms } from "@/server/store/delivery";
 import { getActiveProducts } from "@/server/store/products";
 
 /** Prices and stock come from Bikriup, so these pages are built on each visit like the home page. */
@@ -19,7 +22,8 @@ export const dynamic = "force-dynamic";
 async function load(slug: string) {
   const page = categoryBySlug(slug);
   if (!page) return null;
-  const all = (await getActiveProducts()).map(toProductView);
+  const [allProducts, delivery] = await Promise.all([getActiveProducts(), getDeliveryTerms()]);
+  const all = allProducts.map(toProductView);
   const products = all.filter(page.match);
   const cheapest = products.reduce<number | null>(
     (low, p) => (low === null || p.pricePaise < low ? p.pricePaise : low),
@@ -31,7 +35,9 @@ async function load(slug: string) {
     const cover = shelf.find((p) => p.cutout || p.img);
     return { slug: c.slug, label: c.label, count: groupFamilies(shelf).length, cover };
   }).filter((t) => t.count > 0);
-  return { page, products, tiles, from: cheapest === null ? "" : formatPaise(cheapest) };
+  // The delivery answer follows Bikriup's delivery setting; the rest of the copy is as written.
+  const faqs = page.faqs.map((f) => ({ q: f.q, a: withDelivery(f.a, delivery) }));
+  return { page, products, tiles, faqs, from: cheapest === null ? "" : formatPaise(cheapest) };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
@@ -43,6 +49,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
   return {
     title: { absolute: data.page.title },
     description,
+    keywords: keywordsFor(`/${data.page.slug}`),
     alternates: { canonical: url },
     openGraph: { title: data.page.title, description, type: "website", url, siteName: "Mudkraft", images: [OG_IMAGE] },
     twitter: { card: "summary_large_image", title: data.page.title, description, images: [OG_IMAGE] },
@@ -52,7 +59,7 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
   const data = await load((await params).category);
   if (!data || data.products.length === 0) notFound();
-  const { page, products } = data;
+  const { page, products, faqs } = data;
   const families = groupFamilies(products);
   const url = `${SITE_URL}/${page.slug}`;
 
@@ -84,7 +91,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       },
       {
         "@type": "FAQPage",
-        mainEntity: page.faqs.map((f) => ({
+        mainEntity: faqs.map((f) => ({
           "@type": "Question",
           name: f.q,
           acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -134,7 +141,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                     {src && (
                       <img
                         src={src}
-                        alt=""
+                        alt={`${t.label}: handmade clay by Mudkraft`}
                         loading="lazy"
                         className={`h-12 w-12 object-contain ${src === t.cover?.cutout ? "" : "mix-blend-multiply brightness-[1.06]"}`}
                       />
@@ -160,7 +167,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         <section className="mt-20 max-w-3xl">
           <h2 className="font-display text-3xl text-earth md:text-4xl">Questions, answered</h2>
           <div className="mt-6 divide-y divide-border border-y border-border">
-            {page.faqs.map((f) => (
+            {faqs.map((f) => (
               <details key={f.q} className="group py-4">
                 <summary className="cursor-pointer list-none font-medium text-earth marker:hidden">
                   {f.q}

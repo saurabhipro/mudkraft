@@ -7,3 +7,7 @@ export const SITE_URL = "https://www.mudkraft.com";
 export const INDEXNOW_KEY = "640047d4cc18a55eb06267b8be79e8e3";
 
 export const OG_IMAGE = `${SITE_URL}/og.jpg`;
+
+/** Stable ids for the site-wide entities, so every page's schema points at one Mudkraft, not a copy. */
+export const ORG_ID = `${SITE_URL}/#organization`;
+export const WEBSITE_ID = `${SITE_URL}/#website`;

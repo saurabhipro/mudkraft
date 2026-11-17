@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { RangePhoto } from "@/components/RangePhoto";
 import { Field, inputCls } from "@/components/form-bits";
 import { BROCHURE } from "@/lib/catalogue";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -295,6 +296,14 @@ export function BulkOrdersPage({
             Download the catalogue (PDF)
           </a>
         </div>
+        <div className="mt-10 overflow-hidden rounded-[2rem] bg-sand">
+          <RangePhoto
+            shot="grass-low"
+            alt="Handmade clay handis, jugs, bottles, mugs and a roti tawa from the Mudkraft range, ready for bulk orders"
+            sizes="(min-width: 1152px) 1104px, 100vw"
+            className="block aspect-[4/3] w-full object-cover sm:aspect-[16/6] object-[center_60%]"
+          />
+        </div>
       </section>
 
       {status === "sent" ? (
@@ -376,7 +385,7 @@ export function BulkOrdersPage({
                             {m.img ? (
                               <img
                                 src={m.img}
-                                alt=""
+                                alt={labelOf(m)}
                                 className="w-10 h-10 object-contain rounded-lg bg-sand"
                               />
                             ) : (
@@ -419,7 +428,7 @@ export function BulkOrdersPage({
                         {l.img ? (
                           <img
                             src={l.img}
-                            alt=""
+                            alt={l.name || l.code}
                             className="w-16 h-16 object-contain rounded-xl bg-sand"
                           />
                         ) : (

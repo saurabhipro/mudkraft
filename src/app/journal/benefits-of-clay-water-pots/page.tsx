@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { SiteFooter } from "@/components/SiteFooter";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { keywordsFor } from "@/lib/keywords";
 
 const URL = `${SITE_URL}/journal/benefits-of-clay-water-pots`;
 const TITLE = "Matka Water: How a Clay Pot Cools Water & How to Season It — Mudkraft";
@@ -10,6 +11,7 @@ const DESCRIPTION =
   "A plain guide to matka water: how an unglazed clay pot cools water without electricity, how to season a new matka, and how to clean it without soap.";
 
 export const metadata: Metadata = {
+  keywords: keywordsFor("/journal/benefits-of-clay-water-pots"),
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL },

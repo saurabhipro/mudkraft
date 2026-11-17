@@ -7,6 +7,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ARTICLES } from "@/lib/articles";
 import { breadcrumbs } from "@/lib/schema";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
+import { keywordsFor } from "@/lib/keywords";
+import { RangePhoto, type RangeShot } from "@/components/RangePhoto";
 
 export interface ArticleFaq {
   q: string;
@@ -14,14 +16,18 @@ export interface ArticleFaq {
 }
 
 /** Page metadata for a guide: the title and description double as the search snippet. */
-export function articleMetadata(href: string, title: string, description: string): Metadata {
+/** Share card for a guide headed by the range photograph (see ArticleLayout's `hero`). */
+export const RANGE_SHARE_IMAGE = `${SITE_URL}/media/range/og-range.jpg`;
+
+export function articleMetadata(href: string, title: string, description: string, image: string = OG_IMAGE): Metadata {
   const url = `${SITE_URL}${href}`;
   return {
     title: { absolute: `${title} | Mudkraft` },
     description,
+    keywords: keywordsFor(href),
     alternates: { canonical: url },
-    openGraph: { title, description, type: "article", url, siteName: "Mudkraft", images: [OG_IMAGE] },
-    twitter: { card: "summary_large_image", title, description, images: [OG_IMAGE] },
+    openGraph: { title, description, type: "article", url, siteName: "Mudkraft", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -48,6 +54,7 @@ export function ArticleLayout({
   intro,
   faqs = [],
   shop,
+  hero,
   children,
 }: {
   href: string;
@@ -58,6 +65,8 @@ export function ArticleLayout({
   faqs?: ArticleFaq[];
   /** The category page this guide leads to. */
   shop: { href: string; label: string };
+  /** A range photograph under the title; the ledge shot also becomes the article's schema image. */
+  hero?: { shot: RangeShot; alt: string };
   children: ReactNode;
 }) {
   const url = `${SITE_URL}${href}`;
@@ -71,7 +80,7 @@ export function ArticleLayout({
         datePublished: date,
         dateModified: date,
         mainEntityOfPage: url,
-        image: OG_IMAGE,
+        image: hero?.shot === "ledge" ? RANGE_SHARE_IMAGE : OG_IMAGE,
         author: { "@type": "Organization", name: "Mudkraft" },
         publisher: {
           "@type": "Organization",
@@ -115,6 +124,18 @@ export function ArticleLayout({
         <p className="mt-3 text-xs uppercase tracking-[0.2em] text-clay-deep">
           By Mudkraft · <time dateTime={date}>{new Date(date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</time>
         </p>
+
+        {hero && (
+          <div className="mt-8 overflow-hidden rounded-[1.75rem] bg-sand">
+            <RangePhoto
+              shot={hero.shot}
+              alt={hero.alt}
+              sizes="(min-width: 768px) 720px, 100vw"
+              priority
+              className="block aspect-[3/2] w-full object-cover"
+            />
+          </div>
+        )}
 
         {children}
 
