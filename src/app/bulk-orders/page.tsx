@@ -6,6 +6,7 @@ import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getActiveProducts } from "@/server/store/products";
 import { BulkOrdersPage, type PickerItem } from "./bulk-orders-page";
 import { keywordsFor } from "@/lib/keywords";
+import { SINGLE_LABEL, withSingles } from "@/lib/bulk-singles";
 
 const URL = `${SITE_URL}/bulk-orders`;
 const TITLE = "Bulk & Custom Orders — Mudkraft";
@@ -35,8 +36,9 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
   let items: PickerItem[] = [];
+  let replaced = new Map<string, string>();
   try {
-    items = (await getActiveProducts()).map((p) => {
+    const products: PickerItem[] = (await getActiveProducts()).map((p) => {
       const view = toProductView(p);
       return {
         slug: view.slug,
@@ -47,12 +49,23 @@ export default async function Page({ searchParams }: PageProps) {
         img: displayImage(view),
       };
     });
+    // Drinkware packs are ordered in bulk by the piece: each pack family becomes one single.
+    ({ items, replaced } = withSingles(products, (single, family) => ({
+      slug: single.slug,
+      name: single.name,
+      sizeLabel: SINGLE_LABEL,
+      code: "",
+      category: family[0].category,
+      img: single.img ?? family.find((f) => f.img)?.img ?? null,
+      priceInr: single.priceInr,
+    })));
   } catch (error) {
     // The form still works without the list: pieces can be typed by name or code.
     console.error("[bulk-orders] products not loaded:", error);
   }
   const kind = first(params.type) === "custom" ? "custom" : "bulk";
-  const start = first(params.product).toLowerCase();
+  const asked = first(params.product).toLowerCase();
+  const start = replaced.get(asked) ?? asked;
 
   const jsonLd = {
     "@context": "https://schema.org",

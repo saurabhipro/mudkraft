@@ -18,6 +18,8 @@ export interface PickerItem {
   code: string;
   category: string;
   img: string | null;
+  /** Price of one piece in rupees, for pieces quoted by the piece (bulk drinkware). */
+  priceInr?: number;
 }
 
 interface Line {
@@ -27,6 +29,7 @@ interface Line {
   name: string;
   img: string | null;
   qty: number;
+  priceInr?: number;
 }
 
 type Kind = "bulk" | "custom";
@@ -38,6 +41,7 @@ const MAX_PICTURES = 3;
 
 const labelOf = (i: { name: string; sizeLabel?: string }) =>
   [i.name, i.sizeLabel].filter(Boolean).join(" · ");
+const perPiece = (inr: number) => `₹${inr.toLocaleString("en-IN")} / piece`;
 const clampQty = (n: number) =>
   Math.max(1, Math.min(100000, Math.round(Number.isFinite(n) ? n : 1)));
 
@@ -66,7 +70,17 @@ export function BulkOrdersPage({
   const [lines, setLines] = useState<Line[]>(() => {
     const p = items.find((i) => i.slug === startSlug);
     return p
-      ? [{ key: p.slug, slug: p.slug, code: p.code, name: labelOf(p), img: p.img, qty: 10 }]
+      ? [
+          {
+            key: p.slug,
+            slug: p.slug,
+            code: p.code,
+            name: labelOf(p),
+            img: p.img,
+            qty: 10,
+            priceInr: p.priceInr,
+          },
+        ]
       : [];
   });
   const [query, setQuery] = useState("");
@@ -126,7 +140,15 @@ export function BulkOrdersPage({
   const addItem = (p: PickerItem) => {
     setLines([
       ...lines,
-      { key: p.slug, slug: p.slug, code: p.code, name: labelOf(p), img: p.img, qty: 10 },
+      {
+        key: p.slug,
+        slug: p.slug,
+        code: p.code,
+        name: labelOf(p),
+        img: p.img,
+        qty: 10,
+        priceInr: p.priceInr,
+      },
     ]);
     setQuery("");
   };
@@ -391,7 +413,14 @@ export function BulkOrdersPage({
                             ) : (
                               <span className="w-10 h-10 rounded-lg bg-sand" />
                             )}
-                            <span className="flex-1 min-w-0 text-earth">{labelOf(m)}</span>
+                            <span className="flex-1 min-w-0 text-earth">
+                              {labelOf(m)}
+                              {m.priceInr ? (
+                                <span className="block text-xs text-muted-foreground">
+                                  {perPiece(m.priceInr)}
+                                </span>
+                              ) : null}
+                            </span>
                             {m.code && (
                               <span className="text-[11px] px-2.5 py-1 rounded-full bg-earth text-cream">
                                 {m.code}
@@ -436,6 +465,11 @@ export function BulkOrdersPage({
                         )}
                         <div className="flex-[1_1_180px] min-w-0">
                           <div className="text-earth font-medium">{l.name || l.code}</div>
+                          {l.priceInr ? (
+                            <div className="text-xs text-muted-foreground">
+                              {perPiece(l.priceInr)}
+                            </div>
+                          ) : null}
                           {l.code && l.name && (
                             <span className="inline-block mt-1 text-[11px] px-2.5 py-0.5 rounded-full bg-earth text-cream">
                               {l.code}
