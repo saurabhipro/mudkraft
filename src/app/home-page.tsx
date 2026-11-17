@@ -995,7 +995,7 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
 
 const CARD_PROMISES = ["Wood-fired", "Lab-tested food safe", "No glaze"];
 
-type SortKey = "featured" | "low" | "high";
+export type SortKey = "featured" | "low" | "high";
 
 const SORTS: Array<{ key: SortKey; label: string }> = [
   { key: "featured", label: "Featured" },
@@ -1006,13 +1006,13 @@ const SORTS: Array<{ key: SortKey; label: string }> = [
 /** A family's price is its cheapest size, the "from" a shopper compares. */
 const fromPaise = (f: ProductFamily) => Math.min(...f.sizes.map((s) => s.pricePaise));
 
-function sortFamilies(families: ProductFamily[], sort: SortKey): ProductFamily[] {
+export function sortFamilies(families: ProductFamily[], sort: SortKey): ProductFamily[] {
   if (sort === "featured") return families;
   const sign = sort === "low" ? 1 : -1;
   return [...families].sort((a, b) => sign * (fromPaise(a) - fromPaise(b)));
 }
 
-function SortPills({ value, onChange }: { value: SortKey; onChange: (key: SortKey) => void }) {
+export function SortPills({ value, onChange }: { value: SortKey; onChange: (key: SortKey) => void }) {
   return (
     <div role="group" aria-label="Sort" className="flex flex-wrap items-center gap-2">
       <span className="mr-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Sort</span>

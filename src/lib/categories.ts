@@ -27,22 +27,22 @@ export interface CategoryPage {
 
 const has = (p: ProductView, re: RegExp) => re.test(`${p.tag} ${p.name}`);
 
-const SAFE_Q: CategoryFaq = {
+export const SAFE_Q: CategoryFaq = {
   q: "Is unglazed clay safe for cooking?",
   a: "Our clay was tested by the Central Glass & Ceramic Research Institute: no lead, cadmium or arsenic was found, and the pH is a near-neutral 7.2. Nothing is glazed or painted, so your food only touches fired river clay. The numbers are on our soil report page.",
 };
 
-const FLAME_Q: CategoryFaq = {
+export const FLAME_Q: CategoryFaq = {
   q: "Can I use it on a gas stove or induction?",
   a: "Yes on a low-to-medium gas flame or a wood fire once the pot is seasoned. Always start cold, warm it slowly, and never put a hot pot on a cold surface. Induction does not work, because clay is not magnetic.",
 };
 
-const SEASON_Q: CategoryFaq = {
+export const SEASON_Q: CategoryFaq = {
   q: "How do I season a new clay pot?",
   a: "Soak the new pot in clean water for 12–24 hours, dry it in the shade, rub a thin layer of mustard or coconut oil inside, then cook a first batch of plain rice on the lowest flame. Our season-your-handi guide has every step with photos.",
 };
 
-const DELIVERY_Q: CategoryFaq = {
+export const DELIVERY_Q: CategoryFaq = {
   q: "Do you deliver across India?",
   a: `Yes. ${POLICY.delivery}. Orders leave the studio within ${POLICY.dispatch}. ${POLICY.cod}`,
 };
