@@ -38,11 +38,14 @@ describe("withSingles", () => {
     expect(items.map((i) => i.slug)).toEqual(["handi-2-5l"]);
   });
 
-  it("falls back to the family's shop photo when there is no single photo", () => {
+  it("matches the shop's Kullad spelling and uses the single-piece photo", () => {
     const { items } = withSingles(
-      [item("kullad-set-of-6-0-5", "Kullad Set of 4", "kulhad.png")],
+      [item("kullad-set-of-6-0-5", "Kullad Set of 4", "pack.png")],
       make,
     );
-    expect(items[0]).toMatchObject({ slug: "bulk-kulhad-single", img: "kulhad.png" });
+    expect(items[0]).toMatchObject({
+      slug: "bulk-kulhad-single",
+      img: "/media/bulk/kulhad-single.webp",
+    });
   });
 });
