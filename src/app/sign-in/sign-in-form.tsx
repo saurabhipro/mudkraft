@@ -5,12 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { MagicLinkDialog } from "@/components/auth/MagicLinkDialog";
 import { PasswordField, authInputCls, authLabelCls } from "@/components/auth/PasswordField";
 import { authClient } from "@/lib/auth-client";
 import { checkPassword } from "@/lib/password-policy";
 
 type Mode = "signin" | "signup";
-type Pending = "google" | "email" | "link" | null;
+type Pending = "google" | "email" | null;
 
 const primaryBtn =
   "w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase shadow-[0_10px_24px_-12px_rgba(59,42,34,0.7)] hover:bg-clay transition-colors disabled:opacity-60";
@@ -61,7 +62,7 @@ export function SignInForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(linkError);
   const [exists, setExists] = useState(false);
-  const [linkSentTo, setLinkSentTo] = useState<string | null>(null);
+  const [magicOpen, setMagicOpen] = useState(false);
   const [pending, setPending] = useState<Pending>(null);
 
   const forgotHref = `/forgot-password?next=${encodeURIComponent(nextPath)}${
@@ -92,33 +93,6 @@ export function SignInForm({
       setError(authError.message ?? "Could not reach Google. Please try again.");
       setPending(null);
     }
-  };
-
-  const handleMagicLink = async () => {
-    setError(null);
-    const address = email.trim();
-    if (!EMAIL_RE.test(address)) {
-      setError("Enter your email above and we'll send you a sign-in link.");
-      document.getElementById("email")?.focus();
-      return;
-    }
-    setPending("link");
-    const { error: authError } = await authClient.signIn.magicLink({
-      email: address,
-      name: name.trim() || undefined,
-      callbackURL: nextPath,
-      errorCallbackURL: `/sign-in?next=${encodeURIComponent(nextPath)}`,
-    });
-    setPending(null);
-    if (authError) {
-      setError(
-        authError.status === 429
-          ? "Too many requests. Please wait a minute and try again."
-          : "We could not send the link just now. Please try again.",
-      );
-      return;
-    }
-    setLinkSentTo(address);
   };
 
   const handleSignIn = async (event: React.FormEvent) => {
@@ -168,39 +142,6 @@ export function SignInForm({
     }
     finish();
   };
-
-  if (linkSentTo) {
-    return (
-      <div className="rounded-2xl border border-earth/15 bg-sand/60 p-8 text-center">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-earth text-cream">
-          <Mail className="h-6 w-6" aria-hidden="true" />
-        </div>
-        <div className="mt-5 font-display text-3xl text-earth">Check your inbox</div>
-        <p className="mt-3 text-earth/80">
-          We&apos;ve sent a sign-in link to{" "}
-          <strong className="break-all text-earth">{linkSentTo}</strong>.
-        </p>
-        <p className="mt-2 text-sm text-foreground/65">
-          Open it on this device to continue
-          {nextPath.startsWith("/checkout") ? " to checkout" : ""}. It expires in 10 minutes — check
-          spam if it isn&apos;t there.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-earth/70">
-          <button
-            type="button"
-            onClick={handleMagicLink}
-            disabled={pending !== null}
-            className={textBtn}
-          >
-            {pending === "link" ? "Sending…" : "Send it again"}
-          </button>
-          <button type="button" onClick={() => setLinkSentTo(null)} className={textBtn}>
-            Use a different email
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -255,9 +196,31 @@ export function SignInForm({
         {pending === "google" ? "Redirecting…" : "Continue with Google"}
       </button>
 
+      <button
+        type="button"
+        onClick={() => setMagicOpen(true)}
+        disabled={pending !== null}
+        className={`mt-3 ${secondaryBtn}`}
+      >
+        <Mail className="h-4 w-4" aria-hidden="true" />
+        Email me a sign-in link
+      </button>
+      <p className="mt-2 text-center text-[11px] text-earth/50">
+        No password needed — we email you a one-tap link.
+      </p>
+
+      <MagicLinkDialog
+        open={magicOpen}
+        onOpenChange={setMagicOpen}
+        nextPath={nextPath}
+        initialEmail={email.trim()}
+      />
+
       <div className="my-6 flex items-center gap-4">
         <span className="h-px flex-1 bg-earth/15" />
-        <span className="text-[10px] tracking-[0.3em] uppercase text-earth/45">or with email</span>
+        <span className="text-[10px] tracking-[0.3em] uppercase text-earth/45">
+          or use a password
+        </span>
         <span className="h-px flex-1 bg-earth/15" />
       </div>
 
@@ -330,12 +293,7 @@ export function SignInForm({
               <button type="button" onClick={() => switchMode("signin")} className={textBtn}>
                 Sign in instead
               </button>
-              <button
-                type="button"
-                onClick={handleMagicLink}
-                disabled={pending !== null}
-                className={textBtn}
-              >
+              <button type="button" onClick={() => setMagicOpen(true)} className={textBtn}>
                 Email me a sign-in link
               </button>
               <Link href={forgotHref} className={textBtn}>
@@ -361,21 +319,6 @@ export function SignInForm({
               : "Sign in"}
         </button>
       </form>
-
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={handleMagicLink}
-          disabled={pending !== null}
-          className={secondaryBtn}
-        >
-          <Mail className="h-4 w-4" aria-hidden="true" />
-          {pending === "link" ? "Sending link…" : "Email me a sign-in link instead"}
-        </button>
-        <p className="mt-2 text-center text-[11px] text-earth/50">
-          No password needed — we email you a one-tap link.
-        </p>
-      </div>
 
       <p className="mt-8 text-center text-[11px] leading-relaxed text-earth/50">
         By continuing you agree to our{" "}
