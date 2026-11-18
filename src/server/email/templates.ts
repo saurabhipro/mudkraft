@@ -507,6 +507,56 @@ export function signInCodeEmail(email: string, code: string): RenderedEmail {
   };
 }
 
+/** The one-tap link sent by the magic-link plugin. `url` is built by Better Auth from our own base URL. */
+export function magicLinkEmail(email: string, url: string): RenderedEmail {
+  const href = escapeHtml(url);
+  return {
+    subject: "Your Mudkraft sign-in link",
+    html: layout(
+      "Your Mudkraft sign-in link",
+      `${intro(
+        "Sign in",
+        "Here is your link.",
+        `Tap the button to sign in to mudkraft.com as ${escapeHtml(email)}. No password needed.`,
+      )}
+       ${ctaRow(button(href, "Sign in to Mudkraft"))}
+       ${section(
+         `<div style="font-family:${SANS};font-size:13px;line-height:1.7;color:${MUTED};">The link works once and expires in 10 minutes. If the button does not work, paste this into your browser:<br><a href="${href}" style="color:${CLAY};word-break:break-all;">${href}</a></div>`,
+       )}
+       ${section(
+         `<div style="font-family:${SANS};font-size:14px;line-height:1.7;color:${BODY};">Did not ask for this? Ignore this email and nothing happens.</div>`,
+         "20px 32px 28px",
+       )}`,
+      "You are receiving this because someone asked for a sign-in link for this email at mudkraft.com.",
+    ),
+  };
+}
+
+export function passwordResetEmail(name: string, url: string): RenderedEmail {
+  const first = escapeHtml(name.trim().split(/\s+/)[0] || "there");
+  const href = escapeHtml(url);
+  return {
+    subject: "Reset your Mudkraft password",
+    html: layout(
+      "Reset your Mudkraft password",
+      `${intro(
+        "Your account",
+        `Hello ${first}, let's get you back in.`,
+        "Someone (hopefully you) asked to reset the password on your Mudkraft account. Choose a new one with the button below.",
+      )}
+       ${ctaRow(button(href, "Choose a new password"))}
+       ${section(
+         `<div style="font-family:${SANS};font-size:13px;line-height:1.7;color:${MUTED};">The link works once and expires in 1 hour. If the button does not work, paste this into your browser:<br><a href="${href}" style="color:${CLAY};word-break:break-all;">${href}</a></div>`,
+       )}
+       ${section(
+         `<div style="font-family:${SANS};font-size:14px;line-height:1.7;color:${BODY};">Did not ask for this? Ignore this email; your password stays the same.</div>`,
+         "20px 32px 28px",
+       )}`,
+      "You are receiving this because a password reset was requested for this email at mudkraft.com.",
+    ),
+  };
+}
+
 export interface SignInAlertData {
   name: string;
   email: string;

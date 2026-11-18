@@ -303,6 +303,18 @@ function readCartToken(token: string): { phone: string; cart: CartLine[] } | nul
 interface Quote {
   lines: Array<{ name: string; size: string; qty: number }>;
   total: number;
+  /** Delivery on top of the prices; 0 when it is built into them, as for every Mudkraft piece. */
+  delivery?: number;
+  /** Delivery is priced per PIN code and none was sent yet. */
+  delivery_pending?: boolean;
+}
+
+/** What the cart says about delivery, from the quote rather than a guess. */
+function deliveryNote(quote: Quote): string {
+  if (quote.delivery_pending) return "+ delivery for your PIN code, shown before you pay";
+  if (quote.delivery && quote.delivery > 0)
+    return `+ ${formatPaise(Math.round(quote.delivery * 100))} delivery`;
+  return "(delivery included)";
 }
 
 const itemLine = (l: { name: string; size?: string; qty: number }) =>
@@ -339,7 +351,7 @@ async function checkout(to: string, cart: CartLine[], profileName: string) {
       type: "flow",
       header: { type: "text", text: "Your order" },
       body: {
-        text: `${quote.lines.map(itemLine).join("\n")}\n\nTotal: ${total} + delivery (priced for your PIN code at checkout)\n\nTap below to add your delivery address and choose how to pay.`,
+        text: `${quote.lines.map(itemLine).join("\n")}\n\nTotal: ${total} ${deliveryNote(quote)}\n\nTap below to add your delivery address and choose how to pay.`,
       },
       footer: { text: "Handmade in Khurja" },
       action: {

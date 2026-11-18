@@ -33,8 +33,8 @@ export function proxy(request: NextRequest) {
 }
 
 /**
- * /checkout is deliberately absent: guest checkout is supported, so requiring a
- * session there would put a signup wall at the point of purchase.
+ * /checkout needs a session too, but is guarded in the page itself
+ * (`requireUser("/checkout")`) and in `placeOrder`, which is enough.
  */
 export const config = {
   matcher: ["/admin/:path*", "/account/:path*"],

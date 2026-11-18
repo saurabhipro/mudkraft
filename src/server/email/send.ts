@@ -7,8 +7,10 @@ import {
   appBaseUrl,
   orderConfirmationEmail,
   newsletterStudioNoteEmail,
+  magicLinkEmail,
   newsletterWelcomeEmail,
   orderUpdateEmail,
+  passwordResetEmail,
   signInAlertEmail,
   signInCodeEmail,
   welcomeEmail,
@@ -88,7 +90,17 @@ export async function sendOrderUpdateEmail(
   return sendEmail({ to, subject, html });
 }
 
-/** Not wired into sign-in yet: the site signs in with Google/password, and OTPs go by SMS. */
+export async function sendMagicLinkEmail(to: string, url: string): Promise<boolean> {
+  const { subject, html } = magicLinkEmail(to, url);
+  return sendEmail({ to, subject, html });
+}
+
+export async function sendPasswordResetEmail(to: string, name: string, url: string): Promise<boolean> {
+  const { subject, html } = passwordResetEmail(name, url);
+  return sendEmail({ to, subject, html });
+}
+
+/** Not wired into sign-in: the site uses Google, magic links and passwords; OTPs go by SMS. */
 export async function sendSignInCodeEmail(to: string, code: string): Promise<boolean> {
   const { subject, html } = signInCodeEmail(to, code);
   return sendEmail({ to, subject, html });

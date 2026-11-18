@@ -4,13 +4,16 @@ import { deliveryText, type DeliveryTerms } from "@/lib/delivery";
 import { toProductView, type ProductView } from "@/lib/product-view";
 import { shippingRatePaise, variantGroupId } from "@/lib/schema";
 import { SITE_URL } from "@/lib/seo";
+import { catalogInStock, catalogPrice } from "@/server/meta-catalog";
 import { getDeliveryTerms } from "@/server/store/delivery";
 import { getActiveProducts } from "@/server/store/products";
 
 /**
  * Product feed for Google Merchant Center (free listings on Shopping and Images); Bing Merchant
  * Center reads the same format. Built from the live catalogue, so prices and stock stay current.
- * Register `${SITE_URL}/feeds/google.xml` as a scheduled fetch in Merchant Center.
+ * Register `${SITE_URL}/feeds/google.xml` as a scheduled fetch in Merchant Center. Meta's catalog
+ * (WhatsApp and Instagram shops) reads it hourly too; price and stock changes are also pushed to
+ * Meta at once (server/meta-catalog.ts).
  */
 export const dynamic = "force-dynamic";
 
@@ -44,8 +47,8 @@ function item(p: ProductView, groupId: string | null, delivery: DeliveryTerms): 
     ["link", `${SITE_URL}/shop/${p.slug}`],
     ["g:image_link", abs(photo)],
     ...extra.map((url): [string, string] => ["g:additional_image_link", abs(url)]),
-    ["g:availability", p.stockQty > 0 ? "in_stock" : "out_of_stock"],
-    ["g:price", `${(p.pricePaise / 100).toFixed(2)} INR`],
+    ["g:availability", catalogInStock(p) ? "in_stock" : "out_of_stock"],
+    ["g:price", catalogPrice(p)],
     ["g:brand", "Mudkraft"],
     ["g:mpn", code],
     ["g:identifier_exists", "no"],

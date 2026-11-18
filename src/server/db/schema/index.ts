@@ -11,3 +11,4 @@ export * from "./orders";
 export * from "./workshops";
 export * from "./newsletter";
 export * from "./webhooks";
+export * from "./customer";

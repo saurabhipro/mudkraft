@@ -1,6 +1,6 @@
 "use client";
 
-import { adminClient, inferAdditionalFields } from "better-auth/client/plugins";
+import { adminClient, inferAdditionalFields, magicLinkClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 /**
@@ -26,6 +26,7 @@ export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 export const authClient = createAuthClient({
   plugins: [
     adminClient(),
+    magicLinkClient(),
     /**
      * `role` and `phone` live on our user table but are not part of Better
      * Auth's base user type. Declaring them here is what makes
@@ -33,7 +34,8 @@ export const authClient = createAuthClient({
      */
     inferAdditionalFields({
       user: {
-        role: { type: "string" },
+        // Not an input: sign-up must never let a visitor choose their own role.
+        role: { type: "string", input: false },
         phone: { type: "string", required: false },
       },
     }),
