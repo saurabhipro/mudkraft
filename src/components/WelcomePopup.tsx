@@ -13,7 +13,7 @@ import { getWelcomeOffer, joinWelcome, type WelcomeOffer } from "@/server/action
  * "No thanks" and for good after signing up. A desktop dialog, a sheet on phones.
  */
 
-const SKIP = ["/checkout", "/admin", "/account", "/login", "/signup", "/order", "/verify", "/bulk-orders"];
+const SKIP = ["/checkout", "/admin", "/account", "/sign-in", "/forgot-password", "/reset-password", "/login", "/signup", "/order", "/verify", "/bulk-orders"];
 const DELAY_MS = 8000;
 const SCROLL_SHARE = 0.4;
 

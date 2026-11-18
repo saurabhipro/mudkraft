@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { signOut } from "@/lib/auth-client";
 import { clearCart, removeItem, syncPrices, syncStock, updateQty, useCart } from "@/lib/cart";
 import { toItem, track } from "@/lib/analytics";
 import { formatPaise } from "@/lib/money";
@@ -121,12 +122,10 @@ export interface CheckoutDefaults {
 
 export function CheckoutForm({
   defaults,
-  signedIn,
   fromLastOrder,
 }: {
   defaults: CheckoutDefaults;
-  signedIn: boolean;
-  /** True when the address below came from this customer's previous order. */
+  /** True when the address below came from this customer's saved address. */
   fromLastOrder: boolean;
 }) {
   const router = useRouter();
@@ -486,11 +485,11 @@ export function CheckoutForm({
             <span className={`${stepCls} ${live && !ready ? "bg-earth/45" : ""}`}>2</span>
             <h2 className="font-display text-2xl text-earth">Your details &amp; address</h2>
           </div>
-          {signedIn && (
-            <p className="mt-1 text-xs text-muted-foreground md:pl-11">
-              {fromLastOrder ? "Pre-filled from your last order." : "Pre-filled from your account."}
-            </p>
-          )}
+          <p className="mt-1 text-xs text-muted-foreground md:pl-11">
+            {fromLastOrder
+              ? "Pre-filled from your saved address."
+              : "We'll save this address for your next order."}
+          </p>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             <Field id="name" label="Full name" error={fieldErrors.name}>
@@ -517,17 +516,32 @@ export function CheckoutForm({
             </Field>
 
             <div className="sm:col-span-2">
+              {/* The account email: confirmations go to an inbox the customer has proved they own. */}
               <Field id="email" label="Email" error={fieldErrors.email}>
                 <input
                   id="email"
                   type="email"
                   autoComplete="email"
-                  value={form.email}
-                  onChange={(e) => set("email")(e.target.value)}
-                  placeholder="you@example.com"
-                  className={inputCls}
+                  value={defaults.email}
+                  readOnly
+                  aria-describedby="email-note"
+                  className={`${inputCls} bg-earth/5 text-earth/70 cursor-not-allowed`}
                 />
               </Field>
+              <p id="email-note" className="mt-2 text-xs text-muted-foreground">
+                Order updates go to your account email.{" "}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    router.push("/sign-in?next=/checkout");
+                    router.refresh();
+                  }}
+                  className="underline underline-offset-2 hover:text-earth"
+                >
+                  Not you? Sign out
+                </button>
+              </p>
             </div>
 
             <div className="sm:col-span-2">

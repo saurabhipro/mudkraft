@@ -23,6 +23,7 @@ import { product } from "../db/schema/catalog";
 import { order, orderEvent, orderItem, paymentTransaction } from "../db/schema/orders";
 import { sendOrderConfirmationEmail } from "../email/send";
 import { clientIp, createLimiter } from "../rate-limit";
+import { saveAddressForUser } from "../store/orders";
 import {
   createGatewayOrder,
   describePaymentMethod,
@@ -114,10 +115,14 @@ const checkoutSchema = z.object({
  * which the visitor can edit freely; every amount below is re-read from the
  * product table. The client's figures are never referenced at all.
  *
- * Guests are allowed — no `requireUser` here. That is why `src/proxy.ts`
- * deliberately does not match `/checkout`.
+ * A signed-in customer is required. /checkout redirects signed-out visitors
+ * to /sign-in, but this check is the one that counts: a server action can be
+ * called directly. Confirmations always go to the account email.
  */
 export async function placeOrder(input: unknown): Promise<CheckoutResult> {
+  const session = await getSession();
+  if (!session) return { ok: false, error: "Please sign in to place your order." };
+
   const parsed = checkoutSchema.safeParse(input);
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
@@ -128,7 +133,7 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
     return { ok: false, error: "Please correct the highlighted fields.", fieldErrors };
   }
 
-  const d = parsed.data;
+  const d = { ...parsed.data, email: session.user.email };
 
   // The form only shows COD inside the serviceable region, but that is UX,
   // not enforcement — re-checked here like everything else the client sends.
@@ -148,7 +153,11 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
     requested.set(line.slug, (requested.get(line.slug) ?? 0) + line.qty);
   }
 
-  if (bikriupEnabled()) return placeBikriupOrder(d, requested);
+  if (bikriupEnabled()) {
+    const result = await placeBikriupOrder(d, requested);
+    if (result.ok) await rememberAddress(session.user.id, d);
+    return result;
+  }
 
   const rows = await db.query.product.findMany({
     where: inArray(product.slug, [...requested.keys()]),
@@ -217,8 +226,6 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
     return { ok: false, error: "Your basket is empty." };
   }
 
-  const session = await getSession();
-
   /**
    * Shipping is zero on purpose, and must stay that way. `product.pricePaise`
    * already contains the zone-blended all-India freight computed in
@@ -239,7 +246,7 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
     db.insert(order).values({
       id: orderId,
       lookupToken,
-      userId: session?.user.id ?? null,
+      userId: session.user.id,
       contactEmail: d.email,
       contactPhone: d.phone,
       shippingName: d.name,
@@ -304,8 +311,22 @@ export async function placeOrder(input: unknown): Promise<CheckoutResult> {
       d.phone,
       orderReceived(d.name, created.orderNumber, totalPaise, lookupToken),
     );
+  await rememberAddress(session.user.id, d);
 
   return { ok: true, token: lookupToken, method: d.method };
+}
+
+/** Next checkout starts filled in. Never throws. */
+function rememberAddress(userId: string, d: z.infer<typeof checkoutSchema>) {
+  return saveAddressForUser(userId, {
+    name: d.name,
+    phone: d.phone,
+    line1: d.line1,
+    line2: d.line2,
+    city: d.city,
+    state: d.state,
+    postalCode: d.postalCode,
+  });
 }
 
 /**

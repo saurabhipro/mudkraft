@@ -1,11 +1,14 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { admin, oneTap } from "better-auth/plugins";
+import { admin, magicLink, oneTap } from "better-auth/plugins";
+
+import { PASSWORD_MIN_LENGTH, checkPassword } from "@/lib/password-policy";
 
 import { db } from "./db";
 import { account, session, user, verification } from "./db/schema/auth";
-import { sendWelcomeEmail } from "./email/send";
+import { sendMagicLinkEmail, sendPasswordResetEmail, sendWelcomeEmail } from "./email/send";
 import { serverEnv } from "./env";
 
 export const ROLE_ADMIN = "admin";
@@ -28,7 +31,39 @@ export const auth = betterAuth({
    */
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 12,
+    // Length only; the capital / small / special rules are enforced in `hooks.before`.
+    minPasswordLength: PASSWORD_MIN_LENGTH,
+    resetPasswordTokenExpiresIn: 60 * 60, // 1 hour
+    // A reset is often "someone else got in": sign every device out.
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail(user.email, user.name, url);
+    },
+  },
+
+  /**
+   * The forms show the same checklist, but they are only a convenience: this
+   * is where a weak password is actually refused, for sign-up and reset alike.
+   */
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-up/email" && ctx.path !== "/reset-password") return;
+      const body = ctx.body as { password?: unknown; newPassword?: unknown } | undefined;
+      const password = ctx.path === "/sign-up/email" ? body?.password : body?.newPassword;
+      const problem = checkPassword(typeof password === "string" ? password : "");
+      if (problem) throw new APIError("BAD_REQUEST", { message: problem });
+    }),
+  },
+
+  /**
+   * Better Auth's limiter is on in production by default. Anything that sends
+   * an email gets a tighter window so the form cannot be used to spam inboxes.
+   */
+  rateLimit: {
+    customRules: {
+      "/sign-in/magic-link": { window: 60, max: 3 },
+      "/request-password-reset": { window: 60, max: 3 },
+    },
   },
 
   socialProviders: {
@@ -77,6 +112,16 @@ export const auth = betterAuth({
      * `customer` role, exactly like any other Google sign-in.
      */
     oneTap(),
+    /**
+     * Passwordless sign-in and sign-up: a new email gets an account on first
+     * click (and the welcome email via the user-create hook above).
+     */
+    magicLink({
+      expiresIn: 60 * 10,
+      sendMagicLink: async ({ email, url }) => {
+        await sendMagicLinkEmail(email, url);
+      },
+    }),
     nextCookies(),
   ],
 });

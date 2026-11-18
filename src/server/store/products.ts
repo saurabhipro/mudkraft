@@ -107,7 +107,8 @@ function toStoreProduct(row: {
   };
 }
 
-async function queryActiveProducts(): Promise<StoreProduct[]> {
+/** Every active product, read now (no cache); for pushes that must send the latest price. */
+export async function queryActiveProducts(): Promise<StoreProduct[]> {
   // Bikriup runs the catalogue once it is switched on; every listed size comes back as its own row.
   if (bikriupEnabled()) {
     const data = await bikriup<{ products: BkProduct[] }>("/products?group=0&limit=300");

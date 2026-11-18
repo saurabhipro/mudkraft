@@ -1,5 +1,5 @@
 import { revalidateTag } from "next/cache";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import { formatPaise } from "@/lib/money";
 import { SITE_URL } from "@/lib/seo";
@@ -14,6 +14,7 @@ import { sendOrderUpdateEmail } from "@/server/email/send";
 import { describeError } from "@/server/redact";
 import { claimWebhookEvent } from "@/server/webhook-events";
 import { pingIndexNow } from "@/server/indexnow";
+import { pushCatalogPrices } from "@/server/meta-catalog";
 import { appBaseUrl } from "@/server/email/templates";
 import { CACHE_TAGS } from "@/server/store/tags";
 import { importMessenger, productTemplate, sendSocialRaw, syncProfiles } from "@/server/social";
@@ -265,6 +266,8 @@ export async function POST(request: Request) {
     }
     // Not awaited: the shop's save must not wait on Bing.
     void pingIndexNow([`${SITE_URL}/`, ...slugs.map((slug) => `${SITE_URL}/shop/${slug}`)]);
+    // WhatsApp carts show Meta's copy of the price: send the new one now, after replying.
+    after(() => pushCatalogPrices(slugs));
   }
 
   if (

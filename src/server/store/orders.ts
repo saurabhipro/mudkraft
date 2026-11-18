@@ -1,7 +1,9 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 
 import { bikriupEnabled, getBikriupOrder, siteOrderStatus, sitePaymentProvider, sitePaymentStatus } from "../bikriup";
 import { db } from "../db";
+import { user } from "../db/schema/auth";
+import { customerAddress } from "../db/schema/customer";
 import { deliveryVerification, order } from "../db/schema/orders";
 
 /**
@@ -84,6 +86,23 @@ export interface SavedAddress {
  * book, and it is visible and editable rather than silent.
  */
 export async function getSavedAddressForUser(userId: string): Promise<SavedAddress | null> {
+  // Saved by every order since this table existed; the order-row fallback below
+  // covers older local orders (and is always empty in Bikriup mode).
+  const saved = await db.query.customerAddress.findFirst({
+    where: eq(customerAddress.userId, userId),
+  });
+  if (saved) {
+    return {
+      name: saved.name,
+      phone: saved.phone,
+      line1: saved.line1,
+      line2: saved.line2,
+      city: saved.city,
+      state: saved.state,
+      postalCode: saved.postalCode,
+    };
+  }
+
   // Served by order_user_idx on (user_id, created_at).
   const row = await db.query.order.findFirst({
     where: eq(order.userId, userId),
@@ -110,6 +129,30 @@ export async function getSavedAddressForUser(userId: string): Promise<SavedAddre
     state: row.shippingState,
     postalCode: row.shippingPostalCode,
   };
+}
+
+/**
+ * Remembers the address an order went to, for the next checkout, and fills
+ * the account phone if it has none. Best-effort: never throws, because the
+ * order has already been placed by the time this runs.
+ */
+export async function saveAddressForUser(
+  userId: string,
+  address: Omit<SavedAddress, "phone"> & { phone: string },
+): Promise<void> {
+  try {
+    const values = { ...address, updatedAt: new Date() };
+    await db
+      .insert(customerAddress)
+      .values({ userId, ...values })
+      .onConflictDoUpdate({ target: customerAddress.userId, set: values });
+    await db
+      .update(user)
+      .set({ phone: address.phone })
+      .where(and(eq(user.id, userId), isNull(user.phone)));
+  } catch (error) {
+    console.error(`[checkout] could not save address: ${error instanceof Error ? error.message : error}`);
+  }
 }
 
 export interface DeliveryVerificationView {
