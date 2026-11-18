@@ -13,7 +13,7 @@ import {
   StudioStories,
   WorkshopGallery,
 } from "@/components/HomeMedia";
-import { ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
+import { ClayPlinth } from "@/components/ClayPlinth";
 import { ShareButton } from "@/components/ShareButton";
 import { NewsletterForm } from "@/components/NewsletterForm";
 import { SITE_URL } from "@/lib/seo";
@@ -25,7 +25,6 @@ import benefitNutrients from "@/assets/benefit-nutrients.jpg";
 import { formatPaise } from "@/lib/money";
 import {
   groupFamilies,
-  variantLabel,
   type ImageBox,
   type ProductFamily,
   type ProductView,
@@ -39,7 +38,6 @@ import { VideoCard } from "@/components/VideoCard";
 import { PromiseCarousel } from "@/components/PromiseCarousel";
 import { RangePhoto } from "@/components/RangePhoto";
 import { TrustStrip } from "@/components/TrustStrip";
-import { storyFor } from "@/lib/product-stories";
 import { type YouTubeVideo } from "@/lib/youtube";
 
 const TAPE_FRONT = ["River clay", "Wood fired", "Hand thrown", "Slow made"];
@@ -609,23 +607,6 @@ export function HomePage({
                 Read the soil report
                 <Arrow className="mk-arrow" />
               </Link>
-              <a
-                href="/brochure/Mudkraft-Catalogue-2026.pdf"
-                download
-                className="inline-flex items-center gap-2.5 min-h-[52px] px-6 rounded-full border border-earth/25 text-earth text-xs tracking-[0.16em] uppercase hover:border-clay transition-colors"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  aria-hidden="true"
-                  className="w-4 h-4"
-                >
-                  <path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14" />
-                </svg>
-                Download catalogue
-              </a>
             </div>
           </div>
           <figure className="mk-reveal justify-self-center w-full max-w-[460px]">
@@ -890,37 +871,27 @@ export function HomePage({
 }
 
 /**
- * A product card: the piece on its clay plinth, what it holds and measures, and its sizes.
- * Picking a size changes the price and the page the card opens; buying happens there.
+ * A product card, kept short: the piece on its clay plinth, its name, price and line, and a way in.
+ * Sizes, measurements and what it is made for live on the product page.
  */
 export function FamilyCard({ family }: { family: ProductFamily }) {
-  // Start on the largest size that is in stock, the one the catalogue and photos lead with.
-  const [slug, setSlug] = useState(() => {
-    const sizes = [...family.sizes].reverse();
-    return (sizes.find((size) => size.stockQty > 0) ?? sizes[0]).slug;
-  });
-  const p = family.sizes.find((size) => size.slug === slug) ?? family.sizes[0];
-  const soldOut = p.stockQty <= 0;
+  // Open on the largest size that is in stock, the one the catalogue and photos lead with.
+  const sizes = [...family.sizes].reverse();
+  const p = sizes.find((size) => size.stockQty > 0) ?? sizes[0];
+  const soldOut = family.sizes.every((size) => size.stockQty <= 0);
   const few = !soldOut && p.stockQty <= 5;
   const href = `/shop/${p.slug}`;
-  // Chips say the size alone, unless two variants share one (then the name tells them apart).
-  const labels = family.sizes.map((size) => size.sizeLabel || "One size");
-  const chip = (size: ProductView, i: number) =>
-    labels.indexOf(labels[i]) === labels.lastIndexOf(labels[i]) ? labels[i] : variantLabel(size, family.sizes);
-  const facts = [
-    { label: "Holds", value: p.sizeLabel },
-    { label: "Wide", value: p.widthCm ? `${p.widthCm} cm` : "" },
-    { label: "Tall", value: p.heightCm ? `${p.heightCm} cm` : "" },
-  ].filter((f) => f.value);
-  const useTags = storyFor(p)?.tags ?? [];
+  const name = family.sizes.every((size) => size.name === p.name) ? p.name : family.name;
+  // One price when every size costs the same; otherwise the cheapest, as "from".
+  const prices = family.sizes.map((size) => size.pricePaise);
+  const onePrice = prices.every((price) => price === prices[0]);
 
   return (
     <article className="group relative flex flex-col rounded-[1.6rem] bg-sand p-2.5 transition-[transform,box-shadow] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:shadow-[0_34px_56px_-34px_rgba(59,42,34,0.55)]">
       <div className="relative aspect-[5/4] overflow-hidden rounded-[1.2rem]">
-        <Link href={href} aria-label={`View ${p.name} ${p.sizeLabel}`.trim()} className="absolute inset-0">
+        <Link href={href} aria-label={`View ${name}`} className="absolute inset-0">
           <ClayPlinth product={p} />
         </Link>
-        {/\d/.test(p.sizeLabel) && <HoldsBadge size={p.sizeLabel} className="left-3 top-3 h-14 w-14 text-[19px]" />}
         {few && (
           <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-clay-deep px-2.5 py-1 text-[11.5px] font-semibold text-cream">
             Only {p.stockQty} left
@@ -932,16 +903,16 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
           </span>
         )}
         <ShareButton
-          title={`${p.name} ${p.sizeLabel}`.trim()}
+          title={name}
           text={p.note || "Handcrafted clay from Mudkraft."}
           url={`${SITE_URL}${href}`}
-          label={`Share ${p.name}`}
+          label={`Share ${name}`}
           icon="grid h-11 w-11 place-items-center rounded-full bg-cream/95 text-earth transition-colors hover:bg-earth hover:text-cream"
           className="absolute! right-3 top-3"
         />
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 px-2 pb-1 pt-3.5">
+      <div className="flex flex-1 flex-col gap-4 px-2 pb-1 pt-3.5">
         <div>
           <p className="text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
             {[p.category, "Khurja clay"].filter(Boolean).join(" · ")}
@@ -949,69 +920,22 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
           <div className="mt-1 flex items-baseline justify-between gap-3">
             <h3 className="min-w-0 truncate font-display text-[1.75rem] leading-tight text-earth">
               <Link href={href} className="transition-colors hover:text-clay-deep">
-                {family.sizes.every((size) => size.name === p.name) ? p.name : family.name}
+                {name}
               </Link>
             </h3>
             <div className="flex shrink-0 items-baseline gap-1.5">
-              {p.compareAt && (
-                <span className="text-[12px] text-muted-foreground line-through">{p.compareAt}</span>
+              {onePrice ? (
+                p.compareAt && <span className="text-[12px] text-muted-foreground line-through">{p.compareAt}</span>
+              ) : (
+                <span className="text-[12px] text-muted-foreground">from</span>
               )}
-              <span className="font-display text-[1.5rem] text-earth">{p.price}</span>
+              <span className="font-display text-[1.5rem] text-earth">
+                {onePrice ? p.price : formatPaise(Math.min(...prices))}
+              </span>
             </div>
           </div>
           {p.note && <p className="font-hand text-[19px] leading-snug text-clay-deep">{p.note}</p>}
         </div>
-
-        {facts.length > 0 && (
-          <dl
-            className="grid gap-1 rounded-2xl bg-[oklch(0.935_0.022_75)] p-1"
-            style={{ gridTemplateColumns: `repeat(${facts.length}, minmax(0, 1fr))` }}
-          >
-            {facts.map((f, i) => (
-              <div key={f.label} className={`flex flex-col-reverse px-2 py-1.5 ${i ? "border-l border-border/70" : ""}`}>
-                <dt className="text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">{f.label}</dt>
-                <dd className="text-sm font-semibold text-earth">{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-
-        <div role="group" aria-label={`${family.name} size`} className="flex flex-wrap gap-2">
-          {family.sizes.map((size, i) => (
-            <button
-              key={size.slug}
-              type="button"
-              onClick={() => setSlug(size.slug)}
-              aria-pressed={size.slug === p.slug}
-              className={`min-h-10 min-w-[60px] rounded-full border-[1.5px] px-3.5 text-[13.5px] transition-colors ${
-                size.slug === p.slug
-                  ? "border-earth bg-earth font-semibold text-cream"
-                  : "border-border font-medium text-earth hover:border-clay"
-              } ${size.stockQty <= 0 ? "line-through opacity-50" : ""}`}
-            >
-              {chip(size, i)}
-            </button>
-          ))}
-        </div>
-
-        {useTags.length > 0 ? (
-          <ul aria-label="Made for" className="flex flex-wrap gap-1.5">
-            {useTags.map((tag) => (
-              <li key={tag} className="rounded-full bg-[oklch(0.935_0.022_75)] px-2.5 py-1 text-xs text-earth/80">
-                {tag}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
-            {CARD_PROMISES.map((promise) => (
-              <li key={promise} className="flex items-center gap-1.5">
-                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-clay" />
-                {promise}
-              </li>
-            ))}
-          </ul>
-        )}
 
         <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
           <span className={`flex items-center gap-1.5 text-xs ${soldOut || few ? "font-semibold text-clay-deep" : "text-[oklch(0.45_0.08_130)]"}`}>
@@ -1029,8 +953,6 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
     </article>
   );
 }
-
-const CARD_PROMISES = ["Wood-fired", "Lab-tested food safe", "No glaze"];
 
 export type SortKey = "featured" | "low" | "high";
 

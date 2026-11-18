@@ -6,7 +6,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { RangePhoto } from "@/components/RangePhoto";
 import { Field, inputCls } from "@/components/form-bits";
-import { BROCHURE } from "@/lib/catalogue";
 import { whatsappLink } from "@/lib/whatsapp";
 import { sendTradeEnquiry, type TradeEnquiryInput } from "@/server/actions/enquiries";
 
@@ -310,13 +309,6 @@ export function BulkOrdersPage({
             {tab("bulk", "Bulk order")}
             {tab("custom", "Custom piece")}
           </div>
-          <a
-            href={BROCHURE.href}
-            download={BROCHURE.fileName}
-            className="text-sm text-earth underline underline-offset-4 decoration-clay/40 hover:decoration-clay"
-          >
-            Download the catalogue (PDF)
-          </a>
         </div>
         <div className="mt-10 overflow-hidden rounded-[2rem] bg-sand">
           <RangePhoto
