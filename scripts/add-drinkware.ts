@@ -15,7 +15,8 @@
  * Photos come from scripts/fixtures/drinkware/ and are uploaded to Cloudinary (overwriting the same
  * public ids, so re-running is safe). Items are matched by slug, so running again updates them.
  * Every run saves them unlisted (Bikriup lists new items by default). Once they are live, re-run
- * with --keep-listing to update details without hiding them again.
+ * with --keep-listing to update details without hiding them again, or with --images-only to swap
+ * just the photos (price, stock, listing and the rest stay as they are in Bikriup).
  *
  * Prices follow the kulhad: ₹600 for 4, ₹900 for 6. Box sizes and weights are rough estimates
  * scaled from the kulhad set (taller pieces, so a taller box); weigh a packed set and correct them
@@ -32,7 +33,8 @@ const API = (process.env.BIKRIUP_API_URL ?? "").replace(/\/$/, "");
 const KEY = process.env.BIKRIUP_SECRET_KEY ?? "";
 const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 const DRY = process.argv.includes("--dry-run");
-const KEEP_LISTING = process.argv.includes("--keep-listing");
+const IMAGES_ONLY = process.argv.includes("--images-only");
+const KEEP_LISTING = IMAGES_ONLY || process.argv.includes("--keep-listing");
 const OUT = process.argv.includes("--out") ? process.argv[process.argv.indexOf("--out") + 1] : "";
 
 const PHOTOS = path.join(__dirname, "fixtures", "drinkware");
@@ -147,13 +149,14 @@ async function main() {
     photos.set("mug-set", await uploadPhoto("mug-set", "Handmade clay coffee mugs with handles"));
   }
 
-  const products = PACKS.map((p) => ({
+  const full = PACKS.map((p) => ({
     slug: p.slug,
     name: p.name,
     code: p.code,
     brand: "Mudkraft",
     category: "Drinkware",
-    type: `Drinkware · Set of ${p.pieces}`,
+    // The storefront groups cards by type, so the type is the product (like "Handi"), not the pack.
+    type: p.name,
     size_label: `Set of ${p.pieces}`,
     // Same group for both sizes, so the shop shows one page with a 4 / 6 choice.
     style_group: `drinkware-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
@@ -171,6 +174,10 @@ async function main() {
     ...(KEEP_LISTING ? {} : { listed: false }),
     ...(photos.get(p.photo) ? { images: photos.get(p.photo) } : {}),
   }));
+  // gst_rate goes along so Bikriup does not fall back to its price slabs for the rate.
+  const products = IMAGES_ONLY
+    ? full.map(({ slug, gst_rate, images }) => ({ slug, gst_rate, ...(images ? { images } : {}) }))
+    : full;
 
   if (DRY) {
     console.log(JSON.stringify(products, null, 2));

@@ -1,12 +1,7 @@
 /**
- * The printed product catalogue (public/brochure/), and the details from it
- * that the website repeats.
+ * Details from the printed product catalogue that the website repeats. The catalogue
+ * itself is not offered for download on the site.
  */
-
-export const BROCHURE = {
-  href: "/brochure/Mudkraft-Catalogue-2026.pdf",
-  fileName: "Mudkraft-Catalogue-2026.pdf",
-} as const;
 
 /** Catalogue item codes, keyed by product slug, as printed in the brochure. */
 export const CATALOGUE_CODES: Record<string, string> = {

@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { OrdersEnquiries } from "@/components/OrdersEnquiries";
-import { BROCHURE } from "@/lib/catalogue";
 import { OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { whatsappLink } from "@/lib/whatsapp";
 import { keywordsFor } from "@/lib/keywords";
@@ -247,13 +246,6 @@ export default function SoilReportPage() {
                 className="inline-flex items-center min-h-[50px] px-6 rounded-full bg-[#25D366] text-[#0f3d22] text-xs font-medium tracking-[0.14em] uppercase"
               >
                 Request on WhatsApp
-              </a>
-              <a
-                href={BROCHURE.href}
-                download={BROCHURE.fileName}
-                className="inline-flex items-center min-h-[50px] px-6 rounded-full border border-cream/30 text-cream text-xs tracking-[0.14em] uppercase hover:border-gold transition-colors"
-              >
-                Download catalogue
               </a>
             </div>
           </div>
