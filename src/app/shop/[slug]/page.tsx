@@ -36,14 +36,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const view = toProductView(product);
   const url = `${SITE_URL}/shop/${view.slug}`;
-  // Built from the product's data so every size has its own title that says what people search for.
-  const { title, description } = productSeo(view);
+  // The shop's own search & sharing from Bikriup wins; each empty part is built from the
+  // product's data so every size still has its own title that says what people search for.
+  const auto = productSeo(view);
+  const seo = product.seo ?? {};
+  const title = seo.title || auto.title;
+  const description = seo.description || auto.description;
+  const keywords = seo.keywords?.length ? seo.keywords : productKeywords(view);
 
   return {
     title: { absolute: title },
     description,
-    keywords: productKeywords(view),
+    keywords,
     alternates: { canonical: url },
+    ...(seo.noindex ? { robots: { index: false, follow: true } } : {}),
     // `og:type: product` is rendered as a hoisted meta tag below: Next's metadata
     // API only knows a fixed set of og types and silently drops unknown ones.
     // The share image is ./opengraph-image.tsx: the piece, its price and the Mudkraft seal.
