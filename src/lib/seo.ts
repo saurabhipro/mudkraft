@@ -6,7 +6,8 @@ export const SITE_URL = "https://www.mudkraft.com";
 /** IndexNow key: public by design, served at /<key>.txt so Bing can confirm we own the site. */
 export const INDEXNOW_KEY = "640047d4cc18a55eb06267b8be79e8e3";
 
-export const OG_IMAGE = `${SITE_URL}/og.jpg`;
+// Bump ?v= when og.jpg changes: WhatsApp and Facebook cache share images by URL.
+export const OG_IMAGE = `${SITE_URL}/og.jpg?v=2`;
 
 /** Stable ids for the site-wide entities, so every page's schema points at one Mudkraft, not a copy. */
 export const ORG_ID = `${SITE_URL}/#organization`;
