@@ -1,6 +1,12 @@
 import { and, desc, eq, isNull } from "drizzle-orm";
 
-import { bikriupEnabled, getBikriupOrder, siteOrderStatus, sitePaymentProvider, sitePaymentStatus } from "../bikriup";
+import {
+  bikriupEnabled,
+  getBikriupOrder,
+  siteOrderStatus,
+  sitePaymentProvider,
+  sitePaymentStatus,
+} from "../bikriup";
 import { db } from "../db";
 import { user } from "../db/schema/auth";
 import { customerAddress } from "../db/schema/customer";
@@ -133,7 +139,7 @@ export async function getSavedAddressForUser(userId: string): Promise<SavedAddre
 
 /**
  * Remembers the address an order went to, for the next checkout, and fills
- * the account phone if it has none. Best-effort: never throws, because the
+ * the account phone and name if they are empty. Best-effort: never throws, because the
  * order has already been placed by the time this runs.
  */
 export async function saveAddressForUser(
@@ -150,8 +156,15 @@ export async function saveAddressForUser(
       .update(user)
       .set({ phone: address.phone })
       .where(and(eq(user.id, userId), isNull(user.phone)));
+    // Magic-link sign-ups have no name until now; the delivery name is the best we have.
+    await db
+      .update(user)
+      .set({ name: address.name })
+      .where(and(eq(user.id, userId), eq(user.name, "")));
   } catch (error) {
-    console.error(`[checkout] could not save address: ${error instanceof Error ? error.message : error}`);
+    console.error(
+      `[checkout] could not save address: ${error instanceof Error ? error.message : error}`,
+    );
   }
 }
 

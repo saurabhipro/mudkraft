@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { firstNameOf } from "@/lib/display-name";
 import { getSession } from "@/server/auth-guard";
 import { getSavedAddressForUser } from "@/server/store/orders";
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 export default async function CheckoutPage() {
   const session = await getSession();
   const saved = session ? await getSavedAddressForUser(session.user.id) : null;
-  const firstName = session?.user.name.trim().split(/\s+/)[0] || "there";
+  const firstName = session ? firstNameOf(session.user) : "there";
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
