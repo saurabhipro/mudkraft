@@ -36,7 +36,7 @@ export function ResetPasswordForm({ token, nextPath }: { token: string; nextPath
 
   if (expired) {
     return (
-      <div className="rounded-3xl bg-cream/60 border border-earth/15 p-6 md:p-8 text-center">
+      <div className="rounded-2xl border border-earth/15 bg-sand/60 p-6 text-center">
         <p className="text-earth">This reset link has expired or was already used.</p>
         <Link
           href={`/forgot-password?next=${encodeURIComponent(nextPath)}`}
@@ -49,11 +49,7 @@ export function ResetPasswordForm({ token, nextPath }: { token: string; nextPath
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="grid gap-5 rounded-3xl bg-cream/60 border border-earth/15 p-6 md:p-8"
-    >
+    <form onSubmit={handleSubmit} noValidate className="grid gap-5">
       <PasswordField
         id="password"
         label="New password"

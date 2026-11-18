@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { safeNextPath } from "@/lib/safe-next";
 
 import { ResetPasswordForm } from "./reset-password-form";
@@ -26,33 +25,32 @@ export default async function ResetPasswordPage({
   const forgotHref = `/forgot-password?next=${encodeURIComponent(nextPath)}`;
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <SiteHeader />
-
-      <section className="max-w-md mx-auto px-6 md:px-10 pt-24 pb-8">
-        <div className="text-xs tracking-[0.35em] uppercase text-clay">Your account</div>
-        <h1 className="font-display text-4xl md:text-5xl text-earth leading-[1.05] mt-3">
+    <AuthShell
+      eyebrow="Your account"
+      title={
+        <>
           Choose a new <span className="italic">password</span>
-        </h1>
-      </section>
-
-      <section className="max-w-md mx-auto px-6 md:px-10 pb-20">
-        {token && !error ? (
-          <ResetPasswordForm token={token} nextPath={nextPath} />
-        ) : (
-          <div className="rounded-3xl bg-cream/60 border border-earth/15 p-6 md:p-8 text-center">
-            <p className="text-earth">This reset link has expired or was already used.</p>
-            <Link
-              href={forgotHref}
-              className="mt-6 inline-flex items-center justify-center bg-earth text-cream px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors"
-            >
-              Send a new link
-            </Link>
-          </div>
-        )}
-      </section>
-
-      <SiteFooter />
-    </div>
+        </>
+      }
+      intro={
+        token && !error
+          ? "Pick something you haven't used here before. You'll sign in with it straight after."
+          : "This link can't be used any more."
+      }
+    >
+      {token && !error ? (
+        <ResetPasswordForm token={token} nextPath={nextPath} />
+      ) : (
+        <div className="rounded-2xl border border-earth/15 bg-sand/60 p-6 text-center">
+          <p className="text-earth">This reset link has expired or was already used.</p>
+          <Link
+            href={forgotHref}
+            className="mt-5 inline-flex items-center justify-center bg-earth text-cream px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors"
+          >
+            Send a new link
+          </Link>
+        </div>
+      )}
+    </AuthShell>
   );
 }
