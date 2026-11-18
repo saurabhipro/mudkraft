@@ -70,11 +70,15 @@ export function ShareButton({
   const shareUrl = getShareUrl(url);
   const encoded = encodeURIComponent(shareUrl);
   const encodedText = encodeURIComponent(`${title} — ${text}`);
+  // WhatsApp: the name in bold, the line, then the link under a "Visit" label. The link is
+  // the message's only URL, so WhatsApp builds its preview (photo and title) from it.
+  const whatsappText = encodeURIComponent(`*${title}*\n${text}\n\nVisit: ${shareUrl}`);
 
   const handleNative = async () => {
     if (typeof navigator !== "undefined" && (navigator as Navigator & { share?: unknown }).share) {
       try {
-        await navigator.share({ title, text, url: shareUrl });
+        // Apps put the link after the text, so the text ends on the "Visit" label.
+        await navigator.share({ title, text: `${title}\n${text}\n\nVisit:`, url: shareUrl });
         return;
       } catch {
         /* user dismissed — fall through to menu */
@@ -136,7 +140,7 @@ export function ShareButton({
             }`}
           >
             <a
-              href={`https://wa.me/?text=${encodedText}%20${encoded}`}
+              href={`https://wa.me/?text=${whatsappText}`}
               target="_blank"
               rel="noopener noreferrer"
               className="block px-3 py-2 rounded-lg text-sm text-earth hover:bg-earth hover:text-cream transition-colors"
