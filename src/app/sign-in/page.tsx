@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 function linkErrorMessage(error: string | undefined): string | null {
   if (!error) return null;
   if (/EXPIRED|INVALID|TOKEN/i.test(error))
-    return "That sign-in link has expired or was already used. Request a new one below.";
+    return "That sign-in link has expired or was already used. Tap “Email me a sign-in link” to get a new one.";
   return "We could not sign you in with that link. Please try again.";
 }
 
