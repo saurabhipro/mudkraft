@@ -43,7 +43,7 @@ export function ForgotPasswordForm({
 
   if (sent) {
     return (
-      <div className="rounded-3xl bg-cream/60 border border-earth/15 p-6 md:p-8 text-center">
+      <div className="rounded-2xl border border-earth/15 bg-sand/60 p-6 text-center">
         <div className="text-xs tracking-[0.3em] uppercase text-clay">Check your inbox</div>
         <p className="mt-4 text-earth">
           If an account exists for <strong className="break-all">{email.trim()}</strong>, we&apos;ve
@@ -63,11 +63,7 @@ export function ForgotPasswordForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="rounded-3xl bg-cream/60 border border-earth/15 p-6 md:p-8"
-    >
+    <form onSubmit={handleSubmit} noValidate>
       <label className={authLabelCls} htmlFor="email">
         Email
       </label>

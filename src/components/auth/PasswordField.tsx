@@ -5,8 +5,8 @@ import { useState } from "react";
 import { PASSWORD_RULES } from "@/lib/password-policy";
 
 export const authInputCls =
-  "mt-2 w-full rounded-full border border-earth/25 bg-background px-5 py-3 text-earth " +
-  "placeholder:text-earth/40 focus:outline-none focus:ring-2 focus:ring-earth/40";
+  "mt-2 w-full rounded-full border border-earth/20 bg-background px-5 py-3.5 text-earth shadow-[inset_0_1px_2px_rgba(59,42,34,0.06)] " +
+  "placeholder:text-earth/35 transition-colors focus:border-earth/50 focus:outline-none focus:ring-4 focus:ring-clay/15";
 
 export const authLabelCls = "block text-xs tracking-widest uppercase text-earth/70";
 

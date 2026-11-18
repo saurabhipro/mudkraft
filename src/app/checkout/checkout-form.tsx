@@ -106,6 +106,44 @@ function courierName(raw: string): string {
   return raw.replace(/\s*\d+(\.\d+)?\s*kgs?$/i, "").trim();
 }
 
+const SIGN_IN_HREF = "/sign-in?next=/checkout";
+
+/** Step 2 for a signed-out shopper: the basket and delivery check stay usable above. */
+function SignInStep() {
+  return (
+    <section className="relative overflow-hidden rounded-3xl border-2 border-earth/30 bg-earth p-6 md:p-8 text-cream">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-clay/40 blur-3xl"
+      />
+      <div className="relative flex items-center gap-3">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-cream text-sm font-medium text-earth">
+          2
+        </span>
+        <h2 className="font-display text-2xl">Sign in to continue</h2>
+      </div>
+      <p className="relative mt-3 max-w-md text-sm leading-relaxed text-cream/80 md:pl-11">
+        One quick step so we can send order updates to you, and fill in your address next time. Use
+        Google, a one-tap email link, or a password.
+      </p>
+      <div className="relative mt-6 flex flex-col gap-3 sm:flex-row md:pl-11">
+        <Link
+          href={SIGN_IN_HREF}
+          className="inline-flex items-center justify-center rounded-full bg-cream px-7 py-3.5 text-xs tracking-widest uppercase text-earth transition-colors hover:bg-gold"
+        >
+          Sign in
+        </Link>
+        <Link
+          href={`${SIGN_IN_HREF}&mode=signup`}
+          className="inline-flex items-center justify-center rounded-full border border-cream/40 px-7 py-3.5 text-xs tracking-widest uppercase text-cream transition-colors hover:bg-cream/10"
+        >
+          Create account
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 const stepCls =
   "inline-grid h-8 w-8 shrink-0 place-items-center rounded-full bg-earth text-sm font-semibold text-cream";
 
@@ -123,8 +161,11 @@ export interface CheckoutDefaults {
 export function CheckoutForm({
   defaults,
   fromLastOrder,
+  signedIn,
 }: {
   defaults: CheckoutDefaults;
+  /** Signed-out shoppers see their basket and the delivery check; step 2 asks them to sign in. */
+  signedIn: boolean;
   /** True when the address below came from this customer's saved address. */
   fromLastOrder: boolean;
 }) {
@@ -480,141 +521,149 @@ export function CheckoutForm({
           </div>
         </section>
 
-        <section className="rounded-3xl border-2 border-earth/30 bg-cream p-6 md:p-8">
-          <div className="flex items-center gap-3">
-            <span className={`${stepCls} ${live && !ready ? "bg-earth/45" : ""}`}>2</span>
-            <h2 className="font-display text-2xl text-earth">Your details &amp; address</h2>
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground md:pl-11">
-            {fromLastOrder
-              ? "Pre-filled from your saved address."
-              : "We'll save this address for your next order."}
-          </p>
+        {!signedIn ? (
+          <SignInStep />
+        ) : (
+          <section className="rounded-3xl border-2 border-earth/30 bg-cream p-6 md:p-8">
+            <div className="flex items-center gap-3">
+              <span className={`${stepCls} ${live && !ready ? "bg-earth/45" : ""}`}>2</span>
+              <h2 className="font-display text-2xl text-earth">Your details &amp; address</h2>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground md:pl-11">
+              {fromLastOrder
+                ? "Pre-filled from your saved address."
+                : "We'll save this address for your next order."}
+            </p>
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <Field id="name" label="Full name" error={fieldErrors.name}>
-              <input
-                id="name"
-                autoComplete="name"
-                value={form.name}
-                onChange={(e) => set("name")(e.target.value)}
-                placeholder="Aarushi Sharma"
-                className={inputCls}
-              />
-            </Field>
-
-            <Field id="phone" label="Phone (WhatsApp)" error={fieldErrors.phone}>
-              <input
-                id="phone"
-                type="tel"
-                autoComplete="tel"
-                value={form.phone}
-                onChange={(e) => set("phone")(e.target.value)}
-                placeholder="98xxx xxxxx"
-                className={inputCls}
-              />
-            </Field>
-
-            <div className="sm:col-span-2">
-              {/* The account email: confirmations go to an inbox the customer has proved they own. */}
-              <Field id="email" label="Email" error={fieldErrors.email}>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              <Field id="name" label="Full name" error={fieldErrors.name}>
                 <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={defaults.email}
-                  readOnly
-                  aria-describedby="email-note"
-                  className={`${inputCls} bg-earth/5 text-earth/70 cursor-not-allowed`}
+                  id="name"
+                  autoComplete="name"
+                  value={form.name}
+                  onChange={(e) => set("name")(e.target.value)}
+                  placeholder="Aarushi Sharma"
+                  className={inputCls}
                 />
               </Field>
-              <p id="email-note" className="mt-2 text-xs text-muted-foreground">
-                Order updates go to your account email.{" "}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await signOut();
-                    router.push("/sign-in?next=/checkout");
-                    router.refresh();
-                  }}
-                  className="underline underline-offset-2 hover:text-earth"
+
+              <Field id="phone" label="Phone (WhatsApp)" error={fieldErrors.phone}>
+                <input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={form.phone}
+                  onChange={(e) => set("phone")(e.target.value)}
+                  placeholder="98xxx xxxxx"
+                  className={inputCls}
+                />
+              </Field>
+
+              <div className="sm:col-span-2">
+                {/* The account email: confirmations go to an inbox the customer has proved they own. */}
+                <Field id="email" label="Email" error={fieldErrors.email}>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    value={defaults.email}
+                    readOnly
+                    aria-describedby="email-note"
+                    className={`${inputCls} bg-earth/5 text-earth/70 cursor-not-allowed`}
+                  />
+                </Field>
+                <p id="email-note" className="mt-2 text-xs text-muted-foreground">
+                  Order updates go to your account email.{" "}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await signOut();
+                      router.push("/sign-in?next=/checkout");
+                      router.refresh();
+                    }}
+                    className="underline underline-offset-2 hover:text-earth"
+                  >
+                    Not you? Sign out
+                  </button>
+                </p>
+              </div>
+
+              <div className="sm:col-span-2">
+                <Field id="line1" label="Address" error={fieldErrors.line1}>
+                  <input
+                    id="line1"
+                    autoComplete="address-line1"
+                    value={form.line1}
+                    onChange={(e) => set("line1")(e.target.value)}
+                    placeholder="House / flat, street"
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+
+              <div className="sm:col-span-2">
+                <Field id="line2" label="Landmark, area (optional)" error={fieldErrors.line2}>
+                  <input
+                    id="line2"
+                    autoComplete="address-line2"
+                    value={form.line2}
+                    onChange={(e) => set("line2")(e.target.value)}
+                    placeholder="Near…"
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+
+              <Field id="city" label="City" error={fieldErrors.city}>
+                <input
+                  id="city"
+                  autoComplete="address-level2"
+                  value={form.city}
+                  onChange={(e) => set("city")(e.target.value)}
+                  placeholder="New Delhi"
+                  className={inputCls}
+                />
+              </Field>
+
+              <Field id="state" label="State" error={fieldErrors.state}>
+                <select
+                  id="state"
+                  autoComplete="address-level1"
+                  value={form.state}
+                  onChange={(e) => set("state")(e.target.value)}
+                  className={inputCls}
                 >
-                  Not you? Sign out
-                </button>
-              </p>
-            </div>
-
-            <div className="sm:col-span-2">
-              <Field id="line1" label="Address" error={fieldErrors.line1}>
-                <input
-                  id="line1"
-                  autoComplete="address-line1"
-                  value={form.line1}
-                  onChange={(e) => set("line1")(e.target.value)}
-                  placeholder="House / flat, street"
-                  className={inputCls}
-                />
+                  <option value="">Select a state</option>
+                  {INDIAN_STATES.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
               </Field>
-            </div>
 
-            <div className="sm:col-span-2">
-              <Field id="line2" label="Landmark, area (optional)" error={fieldErrors.line2}>
-                <input
-                  id="line2"
-                  autoComplete="address-line2"
-                  value={form.line2}
-                  onChange={(e) => set("line2")(e.target.value)}
-                  placeholder="Near…"
-                  className={inputCls}
-                />
-              </Field>
-            </div>
-
-            <Field id="city" label="City" error={fieldErrors.city}>
-              <input
-                id="city"
-                autoComplete="address-level2"
-                value={form.city}
-                onChange={(e) => set("city")(e.target.value)}
-                placeholder="New Delhi"
-                className={inputCls}
-              />
-            </Field>
-
-            <Field id="state" label="State" error={fieldErrors.state}>
-              <select
-                id="state"
-                autoComplete="address-level1"
-                value={form.state}
-                onChange={(e) => set("state")(e.target.value)}
-                className={inputCls}
-              >
-                <option value="">Select a state</option>
-                {INDIAN_STATES.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
-            <div className="sm:col-span-2">
-              <Field id="note" label="Anything we should know? (optional)" error={fieldErrors.note}>
-                <textarea
+              <div className="sm:col-span-2">
+                <Field
                   id="note"
-                  rows={3}
-                  value={form.note}
-                  onChange={(e) => set("note")(e.target.value)}
-                  placeholder="Gift wrap, delivery timing, a message to the potter…"
-                  className={`${inputCls} rounded-2xl`}
-                />
-              </Field>
+                  label="Anything we should know? (optional)"
+                  error={fieldErrors.note}
+                >
+                  <textarea
+                    id="note"
+                    rows={3}
+                    value={form.note}
+                    onChange={(e) => set("note")(e.target.value)}
+                    placeholder="Gift wrap, delivery timing, a message to the potter…"
+                    className={`${inputCls} rounded-2xl`}
+                  />
+                </Field>
+              </div>
             </div>
-          </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            {delivery.place ? "City and state were filled in from your PIN code." : "\u00a0"}
-          </p>
-        </section>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {delivery.place ? "City and state were filled in from your PIN code." : "\u00a0"}
+            </p>
+          </section>
+        )}
       </form>
 
       {/* ---- the order, how to pay, and the total ---- */}
@@ -866,31 +915,45 @@ export function CheckoutForm({
           </p>
         )}
 
-        <div className="mt-6 space-y-3">
-          <button
-            type="button"
-            onClick={() => submit(cod ? "cod" : "gateway")}
-            disabled={pending !== null || soldOut.length > 0 || !canDeliver}
-            className="w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors disabled:opacity-60"
-          >
-            {pending === "gateway" || pending === "cod"
-              ? "Placing order…"
-              : live && !ready
-                ? "Check delivery first"
-                : cod
-                  ? `Place order · pay ${formatPaise(grandPaise)} on delivery`
-                  : `Pay now · ${formatPaise(grandPaise)}`}
-          </button>
+        {!signedIn ? (
+          <div className="mt-6">
+            <Link
+              href={SIGN_IN_HREF}
+              className="w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors"
+            >
+              Sign in to check out
+            </Link>
+            <p className="mt-3 text-center text-[11px] text-muted-foreground">
+              Your basket stays right here while you sign in.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 space-y-3">
+            <button
+              type="button"
+              onClick={() => submit(cod ? "cod" : "gateway")}
+              disabled={pending !== null || soldOut.length > 0 || !canDeliver}
+              className="w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors disabled:opacity-60"
+            >
+              {pending === "gateway" || pending === "cod"
+                ? "Placing order…"
+                : live && !ready
+                  ? "Check delivery first"
+                  : cod
+                    ? `Place order · pay ${formatPaise(grandPaise)} on delivery`
+                    : `Pay now · ${formatPaise(grandPaise)}`}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => submit("whatsapp")}
-            disabled={pending !== null || soldOut.length > 0 || !canDeliver}
-            className="w-full inline-flex items-center justify-center gap-2 border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
-          >
-            {pending === "whatsapp" ? "Placing order…" : "Confirm on WhatsApp"}
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => submit("whatsapp")}
+              disabled={pending !== null || soldOut.length > 0 || !canDeliver}
+              className="w-full inline-flex items-center justify-center gap-2 border border-earth/25 bg-background text-earth px-6 py-4 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
+            >
+              {pending === "whatsapp" ? "Placing order…" : "Confirm on WhatsApp"}
+            </button>
+          </div>
+        )}
 
         <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
           {live

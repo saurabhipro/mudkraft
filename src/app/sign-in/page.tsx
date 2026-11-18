@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { safeNextPath } from "@/lib/safe-next";
 import { getSession } from "@/server/auth-guard";
-import { redirect } from "next/navigation";
 
 import { SignInForm } from "./sign-in-form";
 
@@ -35,39 +34,32 @@ export default async function SignInPage({
   if (session) redirect(nextPath);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <SiteHeader />
-
-      <section className="max-w-md mx-auto px-6 md:px-10 pt-24 pb-8">
-        <div className="text-xs tracking-[0.35em] uppercase text-clay">Your account</div>
-        <h1 className="font-display text-4xl md:text-5xl text-earth leading-[1.05] mt-3">
-          {forCheckout ? (
-            <>
-              Almost <span className="italic">there</span>
-            </>
-          ) : (
-            <>
-              Welcome <span className="italic">back</span>
-            </>
-          )}
-        </h1>
-        <p className="mt-4 text-foreground/80">
-          {forCheckout
-            ? "Sign in or create an account to check out. Your basket is saved, and we'll remember your address for next time."
-            : "Sign in to check out faster, see your orders and leave a review."}
-        </p>
-      </section>
-
-      <section className="max-w-md mx-auto px-6 md:px-10 pb-20">
-        <SignInForm
-          nextPath={nextPath}
-          initialMode={mode === "signup" ? "signup" : "signin"}
-          linkError={linkErrorMessage(error)}
-          notice={reset === "1" ? "Password updated. Sign in with your new password." : null}
-        />
-      </section>
-
-      <SiteFooter />
-    </div>
+    <AuthShell
+      forCheckout={forCheckout}
+      eyebrow={forCheckout ? "One quick step" : "Your account"}
+      title={
+        forCheckout ? (
+          <>
+            Almost <span className="italic">there</span>
+          </>
+        ) : (
+          <>
+            Welcome to <span className="italic">Mudkraft</span>
+          </>
+        )
+      }
+      intro={
+        forCheckout
+          ? "Sign in or create an account to place your order. It takes a few seconds, and we'll remember your address next time."
+          : "Sign in to check out faster, follow your orders and leave a review."
+      }
+    >
+      <SignInForm
+        nextPath={nextPath}
+        initialMode={mode === "signup" ? "signup" : "signin"}
+        linkError={linkErrorMessage(error)}
+        notice={reset === "1" ? "Password updated. Sign in with your new password." : null}
+      />
+    </AuthShell>
   );
 }

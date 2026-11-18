@@ -1,5 +1,6 @@
 "use client";
 
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,8 +13,35 @@ type Mode = "signin" | "signup";
 type Pending = "google" | "email" | "link" | null;
 
 const primaryBtn =
-  "w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-clay transition-colors disabled:opacity-60";
+  "w-full inline-flex items-center justify-center bg-earth text-cream px-6 py-4 rounded-full text-xs tracking-widest uppercase shadow-[0_10px_24px_-12px_rgba(59,42,34,0.7)] hover:bg-clay transition-colors disabled:opacity-60";
+const secondaryBtn =
+  "w-full inline-flex items-center justify-center gap-3 border border-earth/20 bg-background text-earth px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:border-earth/50 hover:bg-sand/60 transition-colors disabled:opacity-60";
 const textBtn = "underline underline-offset-2 hover:text-earth disabled:opacity-60";
+
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
+function GoogleMark() {
+  return (
+    <svg className="h-[18px] w-[18px]" viewBox="0 0 48 48" aria-hidden="true">
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"
+      />
+    </svg>
+  );
+}
 
 export function SignInForm({
   nextPath,
@@ -69,8 +97,9 @@ export function SignInForm({
   const handleMagicLink = async () => {
     setError(null);
     const address = email.trim();
-    if (!/^\S+@\S+\.\S+$/.test(address)) {
+    if (!EMAIL_RE.test(address)) {
       setError("Enter your email above and we'll send you a sign-in link.");
+      document.getElementById("email")?.focus();
       return;
     }
     setPending("link");
@@ -117,8 +146,7 @@ export function SignInForm({
     setExists(false);
 
     if (name.trim().length < 2) return setError("Please enter your name.");
-    if (!/^\S+@\S+\.\S+$/.test(email.trim()))
-      return setError("Please enter a valid email address.");
+    if (!EMAIL_RE.test(email.trim())) return setError("Please enter a valid email address.");
     const problem = checkPassword(password);
     if (problem) return setError(problem);
 
@@ -143,33 +171,50 @@ export function SignInForm({
 
   if (linkSentTo) {
     return (
-      <div className="rounded-3xl bg-cream/60 border border-earth/15 p-6 md:p-8 text-center">
-        <div className="text-xs tracking-[0.3em] uppercase text-clay">Check your inbox</div>
-        <p className="mt-4 text-earth">
-          We&apos;ve sent a sign-in link to <strong className="break-all">{linkSentTo}</strong>.
+      <div className="rounded-2xl border border-earth/15 bg-sand/60 p-8 text-center">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-earth text-cream">
+          <Mail className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <div className="mt-5 font-display text-3xl text-earth">Check your inbox</div>
+        <p className="mt-3 text-earth/80">
+          We&apos;ve sent a sign-in link to{" "}
+          <strong className="break-all text-earth">{linkSentTo}</strong>.
         </p>
-        <p className="mt-2 text-sm text-foreground/70">
-          Open it on this device to continue{nextPath.startsWith("/checkout") ? " to checkout" : ""}
-          . It expires in 10 minutes. Check spam if you don&apos;t see it.
+        <p className="mt-2 text-sm text-foreground/65">
+          Open it on this device to continue
+          {nextPath.startsWith("/checkout") ? " to checkout" : ""}. It expires in 10 minutes — check
+          spam if it isn&apos;t there.
         </p>
-        <button
-          type="button"
-          onClick={() => setLinkSentTo(null)}
-          className={`mt-6 text-sm text-earth/70 ${textBtn}`}
-        >
-          Use a different email
-        </button>
+        <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-earth/70">
+          <button
+            type="button"
+            onClick={handleMagicLink}
+            disabled={pending !== null}
+            className={textBtn}
+          >
+            {pending === "link" ? "Sending…" : "Send it again"}
+          </button>
+          <button type="button" onClick={() => setLinkSentTo(null)} className={textBtn}>
+            Use a different email
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-3xl bg-cream/60 border border-earth/15 p-6 md:p-8">
+    <div>
       <div
         role="tablist"
         aria-label="Account"
-        className="mb-6 grid grid-cols-2 rounded-full border border-earth/20 p-1"
+        className="relative grid grid-cols-2 rounded-full bg-sand p-1 ring-1 ring-earth/10"
       >
+        <span
+          aria-hidden="true"
+          className={`absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-earth shadow transition-transform duration-300 ${
+            mode === "signup" ? "translate-x-full" : ""
+          }`}
+        />
         {(
           [
             ["signin", "Sign in"],
@@ -182,8 +227,8 @@ export function SignInForm({
             role="tab"
             aria-selected={mode === value}
             onClick={() => switchMode(value)}
-            className={`rounded-full py-2.5 text-[11px] tracking-widest uppercase transition-colors ${
-              mode === value ? "bg-earth text-cream" : "text-earth/70 hover:text-earth"
+            className={`relative z-10 rounded-full py-3 text-[11px] tracking-widest uppercase transition-colors ${
+              mode === value ? "text-cream" : "text-earth/70 hover:text-earth"
             }`}
           >
             {label}
@@ -194,7 +239,7 @@ export function SignInForm({
       {notice && !error && (
         <p
           role="status"
-          className="mb-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+          className="mt-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
         >
           {notice}
         </p>
@@ -204,20 +249,15 @@ export function SignInForm({
         type="button"
         onClick={handleGoogle}
         disabled={pending !== null}
-        className="w-full inline-flex items-center justify-center gap-3 border border-earth/25 bg-background text-earth px-6 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors disabled:opacity-60"
+        className={`mt-6 ${secondaryBtn}`}
       >
-        <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M12.24 10.29v3.66h5.19c-.22 1.35-1.6 3.96-5.19 3.96-3.12 0-5.67-2.58-5.67-5.76s2.55-5.76 5.67-5.76c1.78 0 2.97.76 3.65 1.41l2.49-2.4C16.79 3.87 14.71 3 12.24 3 7.34 3 3.37 6.97 3.37 11.85s3.97 8.85 8.87 8.85c5.12 0 8.51-3.6 8.51-8.67 0-.58-.06-1.03-.14-1.47z"
-          />
-        </svg>
+        <GoogleMark />
         {pending === "google" ? "Redirecting…" : "Continue with Google"}
       </button>
 
       <div className="my-6 flex items-center gap-4">
         <span className="h-px flex-1 bg-earth/15" />
-        <span className="text-[11px] tracking-[0.3em] uppercase text-earth/50">or with email</span>
+        <span className="text-[10px] tracking-[0.3em] uppercase text-earth/45">or with email</span>
         <span className="h-px flex-1 bg-earth/15" />
       </div>
 
@@ -262,29 +302,30 @@ export function SignInForm({
           />
         </div>
 
-        <PasswordField
-          id="password"
-          label={mode === "signup" ? "Create a password" : "Password"}
-          value={password}
-          onChange={setPassword}
-          autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          showRules={mode === "signup"}
-        />
-
-        {mode === "signin" && (
-          <div className="-mt-2 text-right text-xs text-earth/70">
-            <Link href={forgotHref} className={textBtn}>
-              Forgot password?
-            </Link>
-          </div>
-        )}
+        <div>
+          <PasswordField
+            id="password"
+            label={mode === "signup" ? "Create a password" : "Password"}
+            value={password}
+            onChange={setPassword}
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            showRules={mode === "signup"}
+          />
+          {mode === "signin" && (
+            <div className="mt-2 text-right text-xs text-earth/65">
+              <Link href={forgotHref} className={textBtn}>
+                Forgot password?
+              </Link>
+            </div>
+          )}
+        </div>
 
         {exists && (
           <div
             role="alert"
             className="rounded-2xl border border-clay/30 bg-clay/5 px-4 py-3 text-sm text-earth"
           >
-            <p>An account with this email already exists.</p>
+            <p className="font-medium">You already have an account with this email.</p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-earth/80">
               <button type="button" onClick={() => switchMode("signin")} className={textBtn}>
                 Sign in instead
@@ -305,7 +346,7 @@ export function SignInForm({
         )}
 
         {error && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
           </p>
         )}
@@ -321,17 +362,32 @@ export function SignInForm({
         </button>
       </form>
 
-      <div className="mt-6 border-t border-earth/10 pt-5 text-center">
-        <p className="text-xs text-earth/60">Rather not use a password?</p>
+      <div className="mt-4">
         <button
           type="button"
           onClick={handleMagicLink}
           disabled={pending !== null}
-          className="mt-2 text-sm text-earth hover:text-clay underline underline-offset-4 disabled:opacity-60"
+          className={secondaryBtn}
         >
-          {pending === "link" ? "Sending link…" : "Email me a sign-in link"}
+          <Mail className="h-4 w-4" aria-hidden="true" />
+          {pending === "link" ? "Sending link…" : "Email me a sign-in link instead"}
         </button>
+        <p className="mt-2 text-center text-[11px] text-earth/50">
+          No password needed — we email you a one-tap link.
+        </p>
       </div>
+
+      <p className="mt-8 text-center text-[11px] leading-relaxed text-earth/50">
+        By continuing you agree to our{" "}
+        <Link href="/terms" className={textBtn}>
+          terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className={textBtn}>
+          privacy policy
+        </Link>
+        .
+      </p>
     </div>
   );
 }

@@ -33,8 +33,8 @@ export function proxy(request: NextRequest) {
 }
 
 /**
- * /checkout needs a session too, but is guarded in the page itself
- * (`requireUser("/checkout")`) and in `placeOrder`, which is enough.
+ * /checkout is deliberately absent: signed-out shoppers may view their basket
+ * there. Placing an order needs a session, which `placeOrder` enforces.
  */
 export const config = {
   matcher: ["/admin/:path*", "/account/:path*"],
