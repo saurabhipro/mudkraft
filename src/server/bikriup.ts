@@ -81,6 +81,16 @@ export interface BkProduct {
   specs?: Array<{ label: string; value: string }>;
   fulfilment?: "ship" | "local" | "pickup";
   images: Array<{ url: string; alt: string }>;
+  /** Search & sharing set in Bikriup (Product fields › SEO); only the filled-in parts are sent. */
+  seo?: BkSeo;
+}
+
+export interface BkSeo {
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  image?: string;
+  noindex?: boolean;
 }
 
 const FULFILMENT = { ship: "ship_nationwide", local: "local_delivery_only", pickup: "pickup_only" } as const;
@@ -146,6 +156,7 @@ export function toStoreProductShape(p: BkProduct) {
     specs: p.specs ?? [],
     care: p.care ?? [],
     images,
+    seo: p.seo ? { ...p.seo, ...(p.seo.image ? { image: mediaUrl(p.seo.image) } : {}) } : {},
   };
 }
 

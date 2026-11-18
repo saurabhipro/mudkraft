@@ -42,6 +42,22 @@ async function asPng(url: string): Promise<string | null> {
   }
 }
 
+async function sharePhoto(url: string): Promise<Buffer | null> {
+  const sharp = await loadSharp();
+  if (!sharp || !/^https:\/\//.test(url)) return null;
+  try {
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8000) });
+    if (!res.ok || !/^image\//.test(res.headers.get("content-type") ?? "")) return null;
+    return await sharp(Buffer.from(await res.arrayBuffer()))
+      .resize(size.width, size.height, { fit: "cover" })
+      .flatten({ background: "#ffffff" })
+      .jpeg({ quality: 84 })
+      .toBuffer();
+  } catch {
+    return null;
+  }
+}
+
 async function cormorant(): Promise<ArrayBuffer | null> {
   try {
     const css = await (
@@ -58,6 +74,14 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   const view = product ? toProductView(product) : null;
+
+  // A share photo picked in Bikriup is used as it is, cropped to the card size.
+  const own = product?.seo?.image ? await sharePhoto(product.seo.image) : null;
+  if (own) {
+    return new Response(new Uint8Array(own), {
+      headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=3600" },
+    });
+  }
 
   const [photo, font, logo] = await Promise.all([
     view && displayImage(view) ? asPng(displayImage(view)!) : null,

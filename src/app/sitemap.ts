@@ -39,11 +39,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly",
     priority: 0.9,
   }));
-  const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${BASE_URL}/shop/${product.slug}`,
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
+  // Items hidden from Google in Bikriup (Search & sharing) stay out of the sitemap too.
+  const productEntries: MetadataRoute.Sitemap = products
+    .filter((product) => !product.seo?.noindex)
+    .map((product) => ({
+      url: `${BASE_URL}/shop/${product.slug}`,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
 
   return [...staticEntries, ...categoryEntries, ...productEntries];
 }

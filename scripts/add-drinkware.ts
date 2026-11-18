@@ -50,7 +50,8 @@ interface Pack {
   code: string;
   pieces: 4 | 6;
   price: number;
-  photo: "glass-set" | "mug-set";
+  /** Photo in fixtures/drinkware/, showing as many pieces as the pack holds. */
+  photo: "glass-set4" | "glass-set" | "mug-set";
   note: string;
   dims: { length: number; width: number; height: number };
   weight_g: number;
@@ -63,7 +64,7 @@ const PACKS: Pack[] = [
     code: "MK011",
     pieces: 4,
     price: 600,
-    photo: "glass-set",
+    photo: "glass-set4",
     note: "A tumbler of cool earth",
     dims: { length: 180, width: 180, height: 120 },
     weight_g: 1000,
@@ -138,6 +139,10 @@ async function main() {
     photos.set(
       "glass-set",
       await uploadPhoto("glass-set", "Handmade clay glasses, a set of terracotta tumblers"),
+    );
+    photos.set(
+      "glass-set4",
+      await uploadPhoto("glass-set4", "Four handmade clay glasses, a set of terracotta tumblers"),
     );
     photos.set("mug-set", await uploadPhoto("mug-set", "Handmade clay coffee mugs with handles"));
   }

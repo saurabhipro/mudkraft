@@ -54,6 +54,17 @@ export interface StoreProduct {
   specs: Array<{ label: string; value: string }>;
   care: string[];
   images: StoreProductImage[];
+  /**
+   * The shop's own search & sharing from Bikriup. Each part is optional: whatever is missing is
+   * written by productSeo()/productKeywords() and the generated share card, as before.
+   */
+  seo?: {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+    image?: string;
+    noindex?: boolean;
+  };
 }
 
 function toStoreProduct(row: {

@@ -168,7 +168,7 @@ export function productDescription(p: ProductView): string {
 }
 
 /** Keyword-led title and description for a product page, built from its data so every size is distinct. */
-export function productSeo(p: ProductView): { title: string; description: string; label: string } {
+export function productSeo(p: ProductView): { title: string; description: string; seedDescription: string; label: string } {
   const size = p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? p.sizeLabel : "";
   const base = /^clay\b/i.test(p.name) ? p.name : `Clay ${p.name}`;
   const label = `${base}${size ? ` ${size}` : ""}`;
@@ -176,9 +176,12 @@ export function productSeo(p: ProductView): { title: string; description: string
   const hindi = HINDI_NAMES.find(([re]) => re.test(text))?.[1];
   const hindiPart = hindi && !base.toLowerCase().includes(hindi.toLowerCase()) ? ` ${hindi}` : "";
   const dims = p.widthCm && p.heightCm ? `, ${p.widthCm} × ${p.heightCm} cm` : "";
+  const piece = `Hand-thrown unglazed ${base.replace(/^clay /i, "clay ")}${size ? ` (${size}${dims})` : ""} from Khurja, wood-fired 48 hours and lab-tested.`;
   return {
     label,
     title: `${label} – Unglazed${hindiPart} | Mudkraft`,
-    description: `Hand-thrown unglazed ${base.replace(/^clay /i, "clay ")}${size ? ` (${size}${dims})` : ""} from Khurja, wood-fired 48 hours and lab-tested. ${p.price}. Doorstep delivery across India.`.slice(0, 158),
+    description: `${piece} ${p.price}. Doorstep delivery across India.`.slice(0, 158),
+    // Saved into Bikriup as the item's own summary, so it carries no price that could go stale.
+    seedDescription: `${piece} Doorstep delivery across India.`.slice(0, 158),
   };
 }
