@@ -887,8 +887,9 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
   const onePrice = prices.every((price) => price === prices[0]);
 
   return (
-    <article className="group relative flex flex-col rounded-[1.6rem] bg-sand p-2.5 transition-[transform,box-shadow] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:shadow-[0_34px_56px_-34px_rgba(59,42,34,0.55)]">
-      <div className="relative aspect-[5/4] overflow-hidden rounded-[1.2rem]">
+    <article className="group relative flex flex-col rounded-[1.6rem] border border-gold/30 bg-ivory p-2.5 transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:border-gold/60 hover:shadow-[0_34px_56px_-34px_oklch(0.31_0.1_21/0.5)]">
+      <div className="relative aspect-[5/4] overflow-hidden mk-arch">
+        <span aria-hidden="true" className="mk-arch-line opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
         <Link href={href} aria-label={`View ${name}`} className="absolute inset-0">
           <ClayPlinth product={p} />
         </Link>
@@ -898,7 +899,7 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
           </span>
         )}
         {p.discountPct > 0 && !soldOut && (
-          <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-clay px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-cream">
+          <span className="mk-tag pointer-events-none absolute bottom-3 right-3 px-2.5 py-1 text-[11px]">
             {p.discountPct}% off
           </span>
         )}
@@ -914,7 +915,7 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
 
       <div className="flex flex-1 flex-col gap-4 px-2 pb-1 pt-3.5">
         <div>
-          <p className="text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="text-[10.5px] uppercase tracking-[0.3em] text-gold-deep">
             {[p.category, "Khurja clay"].filter(Boolean).join(" · ")}
           </p>
           <div className="mt-1 flex items-baseline justify-between gap-3">
@@ -925,7 +926,7 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
             </h3>
             <div className="flex shrink-0 items-baseline gap-1.5">
               {onePrice ? (
-                p.compareAt && <span className="text-[12px] text-muted-foreground line-through">{p.compareAt}</span>
+                p.compareAt && <span className="text-[12px] text-gold-deep line-through">{p.compareAt}</span>
               ) : (
                 <span className="text-[12px] text-muted-foreground">from</span>
               )}
@@ -934,10 +935,10 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
               </span>
             </div>
           </div>
-          {p.note && <p className="font-hand text-[19px] leading-snug text-clay-deep">{p.note}</p>}
+          {p.note && <p className="font-display text-lg italic leading-snug text-clay">{p.note}</p>}
         </div>
 
-        <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
+        <div className="mt-auto flex items-center justify-between border-t border-gold/30 pt-3">
           <span className={`flex items-center gap-1.5 text-xs ${soldOut || few ? "font-semibold text-clay-deep" : "text-[oklch(0.45_0.08_130)]"}`}>
             <span aria-hidden="true" className={`h-[7px] w-[7px] rounded-full ${soldOut || few ? "bg-clay" : "bg-sage"}`} />
             {soldOut ? "Sold out" : "In stock · ships in 2–3 days"}

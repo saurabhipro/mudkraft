@@ -85,24 +85,24 @@ export function HeroPieces({
       onMouseLeave={() => setHovering(false)}
       onFocus={() => setHovering(true)}
       onBlur={() => setHovering(false)}
-      className="relative isolate overflow-hidden bg-[#1c110c] text-cream px-5 sm:px-6 md:px-10 pt-28 pb-10 md:pt-32 lg:pt-36 lg:pb-10"
+      className="relative isolate overflow-hidden bg-[#2a0a0d] text-cream px-5 sm:px-6 md:px-10 pt-28 pb-10 md:pt-32 lg:pt-36 lg:pb-10"
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[45%] -z-10 w-[980px] h-[980px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(180,90,53,0.34),transparent)]"
+        className="pointer-events-none absolute left-1/2 top-[45%] -z-10 w-[980px] h-[980px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(201,162,74,0.34),transparent)]"
       />
 
       <div className="max-w-7xl mx-auto grid gap-y-10 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)_minmax(0,19rem)] lg:gap-x-14 xl:gap-x-20 items-center">
         {/* Copy */}
         <div className="text-center lg:text-left">
-          <h1 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/[0.06] border border-white/[0.12] text-xs font-normal tracking-[0.08em] text-[#e0b08a]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e0b08a]" /> Handmade unglazed clay
+          <h1 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/[0.06] border border-white/[0.12] text-xs font-normal tracking-[0.08em] text-[#e2c77e]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e2c77e]" /> Handmade unglazed clay
             cookware from Khurja
           </h1>
           <h2 className="mt-5 font-display font-normal text-[clamp(2.75rem,6vw,4.75rem)] leading-[0.96]">
             {count} pieces.
             <br className="hidden lg:block" />{" "}
-            <em className="font-light text-[#e0b08a]">One wheel.</em>
+            <em className="font-light text-[#e2c77e]">One wheel.</em>
           </h2>
           <p className="mt-5 mx-auto lg:mx-0 max-w-md text-[17px] leading-relaxed text-cream/75">
             Pick a piece to see it up close. Each one is thrown by hand from lab-tested river clay
@@ -111,13 +111,13 @@ export function HeroPieces({
           <div className="mt-7 flex flex-wrap justify-center lg:justify-start gap-3">
             <a
               href="#collection"
-              className="inline-flex items-center h-[52px] px-6 rounded-full bg-[#a8442a] text-white text-xs tracking-[0.16em] uppercase font-medium hover:bg-clay-deep transition-colors"
+              className="inline-flex items-center h-[52px] px-6 rounded-full bg-[#7a1a22] text-gold-light text-xs tracking-[0.16em] uppercase font-medium hover:bg-clay-deep transition-colors"
             >
               Shop the collection
             </a>
             <Link
               href="/soil-report"
-              className="inline-flex items-center h-[52px] px-5 rounded-full border border-cream/30 text-xs tracking-[0.16em] uppercase hover:border-[#e0b08a] transition-colors"
+              className="inline-flex items-center h-[52px] px-5 rounded-full border border-cream/30 text-xs tracking-[0.16em] uppercase hover:border-[#e2c77e] transition-colors"
             >
               Soil report
             </Link>
@@ -128,7 +128,7 @@ export function HeroPieces({
                 key={t}
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5"
               >
-                <Check className="w-3.5 h-3.5 text-[#e0b08a]" />
+                <Check className="w-3.5 h-3.5 text-[#e2c77e]" />
                 {t}
               </li>
             ))}
@@ -149,10 +149,10 @@ export function HeroPieces({
           {/* Product photos come on a white ground, so the disc is lit like a studio sweep
               (near-white centre, warm rim) and the photo is multiplied onto it: the white
               melts into the disc and only the pot remains, standing on a soft ground shadow. */}
-          <div className="relative isolate w-[80%] aspect-square rounded-full overflow-hidden bg-[radial-gradient(circle_at_50%_42%,#fffdf9_0%,#f6ece0_46%,#e3cfb9_100%)] shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85),0_0_0_1px_rgba(224,176,138,0.25),inset_0_-30px_60px_-20px_rgba(120,70,40,0.25)]">
+          <div className="relative isolate w-[80%] aspect-square rounded-full overflow-hidden bg-[radial-gradient(circle_at_50%_42%,#fffdf9_0%,#f7eedf_46%,#e8d6b5_100%)] shadow-[0_50px_100px_-30px_rgba(0,0,0,0.85),0_0_0_1px_rgba(226,199,126,0.25),inset_0_-30px_60px_-20px_rgba(122,26,34,0.25)]">
             <span
               aria-hidden="true"
-              className="absolute left-1/2 bottom-[17%] w-[58%] h-[9%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(70,35,15,0.45),transparent)] blur-[6px]"
+              className="absolute left-1/2 bottom-[17%] w-[58%] h-[9%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(62,14,19,0.45),transparent)] blur-[6px]"
             />
             <div className="absolute inset-0 mix-blend-multiply animate-float">
               <PieceImage
@@ -163,14 +163,14 @@ export function HeroPieces({
               />
             </div>
           </div>
-          <span className="absolute right-[6%] top-[6%] px-3.5 py-2 rounded-full bg-[#1c110c]/70 border border-white/[0.12] backdrop-blur text-xs tracking-[0.14em] tabular-nums">
+          <span className="absolute right-[6%] top-[6%] px-3.5 py-2 rounded-full bg-[#2a0a0d]/70 border border-white/[0.12] backdrop-blur text-xs tracking-[0.14em] tabular-nums">
             {pad(i + 1)} / {pad(visible.length)}
           </span>
           <button
             type="button"
             onClick={() => go(i - 1)}
             aria-label="Previous piece"
-            className="lg:hidden absolute left-0 top-1/2 -translate-y-1/2 grid place-items-center w-11 h-11 rounded-full border border-cream/25 bg-[#1c110c]/75"
+            className="lg:hidden absolute left-0 top-1/2 -translate-y-1/2 grid place-items-center w-11 h-11 rounded-full border border-cream/25 bg-[#2a0a0d]/75"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -189,7 +189,7 @@ export function HeroPieces({
           aria-live="polite"
           className="w-full max-w-md mx-auto lg:max-w-none p-6 lg:p-7 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md"
         >
-          <span className="inline-block px-3 py-1.5 rounded-full bg-[#e0b08a]/15 text-[#e0b08a] text-[11px] tracking-[0.18em] uppercase">
+          <span className="inline-block px-3 py-1.5 rounded-full bg-[#e2c77e]/15 text-[#e2c77e] text-[11px] tracking-[0.18em] uppercase">
             {cur.category}
           </span>
           <h3 className="mt-4 font-display font-normal text-[2.6rem] lg:text-[3.25rem] leading-none">
@@ -199,11 +199,11 @@ export function HeroPieces({
           <div className="my-5 h-px bg-white/10" />
           <ul className="flex flex-col gap-2.5 text-sm text-cream/80">
             <li className="flex gap-2.5">
-              <Droplet className="w-4 h-4 mt-0.5 shrink-0 text-[#e0b08a]" />
+              <Droplet className="w-4 h-4 mt-0.5 shrink-0 text-[#e2c77e]" />
               {points[0]}
             </li>
             <li className="flex gap-2.5">
-              <Check className="w-4 h-4 mt-0.5 shrink-0 text-[#e0b08a]" />
+              <Check className="w-4 h-4 mt-0.5 shrink-0 text-[#e2c77e]" />
               {points[1]}
             </li>
           </ul>
@@ -240,11 +240,11 @@ export function HeroPieces({
                   aria-pressed={on}
                   className={`relative shrink-0 inline-flex items-center gap-2 h-12 pl-1.5 pr-3.5 rounded-full border overflow-hidden whitespace-nowrap text-[13px] transition-colors ${
                     on
-                      ? "bg-cream/[0.12] border-[#e0b08a]/60 text-cream"
+                      ? "bg-cream/[0.12] border-[#e2c77e]/60 text-cream"
                       : "border-white/[0.08] text-cream/70 hover:text-cream"
                   }`}
                 >
-                  <span className="isolate shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[radial-gradient(circle,#fffdf9,#ead9c6)]">
+                  <span className="isolate shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[radial-gradient(circle,#fffdf9,#efe2cb)]">
                     <img
                       src={displayImage(p)!}
                       alt={`Handmade clay ${p.name} by Mudkraft`}
@@ -255,7 +255,7 @@ export function HeroPieces({
                   {on && (
                     <span
                       key={`${tab}-${j}`}
-                      className="absolute left-0 right-0 bottom-0 h-0.5 bg-[#a8442a] animate-progress-fill"
+                      className="absolute left-0 right-0 bottom-0 h-0.5 bg-[#7a1a22] animate-progress-fill"
                       style={{
                         animationDuration: `${PIECE_MS}ms`,
                         animationPlayState: hovering ? "paused" : "running",
@@ -346,7 +346,7 @@ function TextRing({
           d={`M300,300 m-${radius},0 a${radius},${radius} 0 1,1 ${radius * 2},0 a${radius},${radius} 0 1,1 -${radius * 2},0`}
         />
       </defs>
-      <text fill="rgba(224,176,138,0.55)" fontSize={fontSize} letterSpacing={fontSize / 2.2}>
+      <text fill="rgba(226,199,126,0.55)" fontSize={fontSize} letterSpacing={fontSize / 2.2}>
         <textPath href={`#${id}`}>{text}</textPath>
       </text>
     </svg>

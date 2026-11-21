@@ -16,6 +16,9 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-deep: var(--gold-deep);
+  --color-ivory: var(--ivory);
   --color-sand: var(--sand);
   --color-ember: var(--ember);
   --color-kiln: var(--kiln);
@@ -31,26 +34,32 @@
 }
 
 :root {
-  --background: oklch(0.955 0.018 75);
-  --foreground: oklch(0.24 0.03 40);
-  --cream: oklch(0.955 0.018 75);
-  --clay: oklch(0.58 0.14 42);
-  --clay-deep: oklch(0.42 0.11 38);
-  --earth: oklch(0.28 0.04 40);
-  --ink: oklch(0.18 0.02 40);
-  --muted: oklch(0.9 0.02 70);
-  --muted-foreground: oklch(0.42 0.03 50);
-  --border: oklch(0.82 0.03 65);
-  --gold: oklch(0.72 0.11 75);
-  /* Revamp additions: card ground, kiln glow, the dark hero, and a water/wellness accent. */
-  --sand: oklch(0.9 0.03 75);
-  --ember: oklch(0.7 0.13 45);
-  --kiln: oklch(0.15 0.015 40);
+  /* Jharokha palette: ivory and parchment grounds, oxblood/maroon for type and
+     actions, temple gold for ornament. The clay itself supplies the terracotta. */
+  --background: oklch(0.952 0.022 81);
+  --foreground: oklch(0.249 0.075 19);
+  --cream: oklch(0.952 0.022 81);
+  --ivory: oklch(0.972 0.016 83);
+  --clay: oklch(0.384 0.13 22);
+  --clay-deep: oklch(0.311 0.104 21);
+  --earth: oklch(0.249 0.075 19);
+  --ink: oklch(0.201 0.053 18);
+  --muted: oklch(0.917 0.034 82);
+  --muted-foreground: oklch(0.43 0.035 30);
+  --border: oklch(0.84 0.06 84);
+  --gold: oklch(0.731 0.115 85);
+  --gold-light: oklch(0.836 0.097 90);
+  --gold-deep: oklch(0.6 0.1 81);
+  --sand: oklch(0.917 0.034 82);
+  --ember: oklch(0.8 0.11 82);
+  --kiln: oklch(0.201 0.053 18);
   --sage: oklch(0.6 0.05 125);
-  --gradient-warm: linear-gradient(135deg, oklch(0.955 0.018 75), oklch(0.88 0.05 65));
-  --gradient-clay: linear-gradient(180deg, oklch(0.58 0.14 42), oklch(0.42 0.11 38));
-  --shadow-soft: 0 30px 60px -30px oklch(0.28 0.04 40 / 0.35);
-  --shadow-glow: 0 0 80px -10px oklch(0.58 0.14 42 / 0.4);
+  --gradient-warm: linear-gradient(135deg, oklch(0.972 0.016 83), oklch(0.882 0.048 83));
+  --gradient-clay: linear-gradient(180deg, oklch(0.384 0.13 22), oklch(0.311 0.104 21));
+  --gradient-gold: linear-gradient(180deg, oklch(0.836 0.097 90), oklch(0.731 0.115 85) 55%, oklch(0.66 0.105 82));
+  --gradient-stage: radial-gradient(ellipse 80% 70% at 50% 28%, oklch(0.985 0.01 85), oklch(0.94 0.028 82) 55%, oklch(0.895 0.045 82));
+  --shadow-soft: 0 30px 60px -30px oklch(0.311 0.104 21 / 0.35);
+  --shadow-glow: 0 0 80px -10px oklch(0.731 0.115 85 / 0.4);
 }
 
 @layer base {
@@ -84,6 +93,12 @@
 }
 
 @utility text-balance { text-wrap: balance; }
+
+/* An arched window: round top, softly squared base. */
+@utility mk-arch { border-radius: 50% 50% 1.75rem 1.75rem / 34% 34% 1.75rem 1.75rem; }
+@utility mk-arch-sm { border-radius: 50% 50% 1rem 1rem / 40% 40% 1rem 1rem; }
+/* The lit ivory ground a piece stands in. */
+@utility mk-stage { background: var(--gradient-stage); }
 
 @keyframes float-slow {
   0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -182,12 +197,12 @@
     height: 6px;
     border-radius: 9999px;
     background: var(--ember);
-    box-shadow: 0 0 12px 3px oklch(0.7 0.13 45 / 0.6);
+    box-shadow: 0 0 12px 3px oklch(0.8 0.11 82 / 0.6);
     animation: ember-rise 9s linear infinite;
   }
 
   .mk-shimmer {
-    background-image: linear-gradient(110deg, var(--gold) 30%, oklch(0.9 0.07 85) 50%, var(--gold) 70%);
+    background-image: linear-gradient(110deg, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -236,13 +251,96 @@
 
   /* Manifesto lines fill with ink as they scroll through the viewport. */
   .mk-ink-fill {
-    background-image: linear-gradient(90deg, var(--earth) 50%, oklch(0.28 0.04 40 / 0.18) 50%);
+    background-image: linear-gradient(90deg, var(--earth) 50%, oklch(0.249 0.075 19 / 0.18) 50%);
     background-size: 200% 100%;
     background-position: 0 0;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
+
+  /* ── Jharokha pieces ─────────────────────────────────────────────── */
+
+  /* A gold hairline tracing the inside of an arch, fading out towards the base. */
+  .mk-arch-line {
+    position: absolute;
+    inset: 7% 5% 22% 5%;
+    border: 1px solid oklch(0.731 0.115 85 / 0.65);
+    border-bottom: 0;
+    border-radius: 50% 50% 0 0 / 42% 42% 0 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent);
+    pointer-events: none;
+  }
+  /* The gold "M" seal that sits on the arch. */
+  .mk-seal {
+    display: grid;
+    place-items: center;
+    border-radius: 9999px;
+    background: var(--gradient-gold);
+    color: var(--earth);
+    font-family: var(--font-display);
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px oklch(0.6 0.1 81 / 0.7), inset 0 0 0 4px oklch(0.836 0.097 90 / 0.6),
+      inset 0 0 0 5px oklch(0.6 0.1 81 / 0.5), 0 8px 18px -8px oklch(0.311 0.104 21 / 0.45);
+  }
+  /* Primary and secondary actions: maroon with gold type, and burnished gold. */
+  .mk-btn-maroon,
+  .mk-btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    border-radius: 3px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.26em;
+    transition: background-color 0.4s var(--ease-clay), filter 0.4s var(--ease-clay), transform 0.4s var(--ease-clay);
+  }
+  .mk-btn-maroon {
+    background: var(--clay);
+    color: var(--gold-light);
+    box-shadow: inset 0 0 0 1px oklch(0.731 0.115 85 / 0.35);
+  }
+  .mk-btn-maroon:not(:disabled):hover { background: var(--clay-deep); transform: translateY(-1px); }
+  .mk-btn-gold {
+    background: var(--gradient-gold);
+    color: var(--earth);
+    box-shadow: inset 0 0 0 1px oklch(0.6 0.1 81 / 0.55), 0 10px 22px -16px oklch(0.6 0.1 81 / 0.9);
+  }
+  .mk-btn-gold:not(:disabled):hover { filter: brightness(1.05) saturate(1.05); transform: translateY(-1px); }
+  /* "34% off": maroon tablet, gold letters, a gold keyline inside. */
+  .mk-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 2px;
+    background: var(--clay);
+    color: var(--gold-light);
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    box-shadow: inset 0 0 0 1px var(--clay), inset 0 0 0 2px oklch(0.731 0.115 85 / 0.7);
+  }
+  /* A gold rule with a diamond at its heart. */
+  .mk-ornament {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gold);
+  }
+  .mk-ornament::before,
+  .mk-ornament::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, currentColor);
+  }
+  .mk-ornament::after { background: linear-gradient(90deg, currentColor, transparent); }
+
+  /* On the dark maroon grounds, clay-coloured accents turn to gold so they stay legible. */
+  :is(.bg-earth, .bg-kiln, .bg-ink) :is(.text-clay, .text-clay-deep) { color: var(--gold-light); }
 
   /* Stats count up from zero. Set the target with style={{ "--num": 180 }}. */
   .mk-count { counter-reset: n var(--num); }
