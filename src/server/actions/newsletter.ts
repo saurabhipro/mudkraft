@@ -5,6 +5,7 @@ import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { bikriup, bikriupEnabled } from "../bikriup";
 import { db } from "../db";
 import { newsletterSubscriber } from "../db/schema";
 import { sendNewsletterStudioNote, sendNewsletterWelcomeEmail } from "../email/send";
@@ -24,6 +25,20 @@ const schema = z.object({
 });
 
 export type SubscribeResult = { ok: true; already: boolean } | { ok: false; error: string };
+
+/**
+ * Bikriup keeps a copy of the list so staff see subscribers in its desk and phone app.
+ * Best effort: a Bikriup hiccup never fails the visitor's sign-up; the copy script
+ * (npm run bikriup:subscribers) catches anything missed.
+ */
+async function tellBikriup(email: string, status: "subscribed" | "unsubscribed", source = "home") {
+  if (!bikriupEnabled()) return;
+  try {
+    await bikriup("/subscribers", { method: "POST", body: { email, status, source, at: new Date().toISOString() } });
+  } catch (error) {
+    console.error("[newsletter] Bikriup copy failed:", error);
+  }
+}
 
 // A few tries per address per hour is plenty.
 const tooMany = createLimiter({ windowMs: 60 * 60 * 1000, max: 8 });
@@ -61,7 +76,7 @@ export async function subscribeNewsletter(input: unknown): Promise<SubscribeResu
         .onConflictDoNothing({ target: newsletterSubscriber.email });
     }
 
-    await Promise.all([sendNewsletterWelcomeEmail(email, token), sendNewsletterStudioNote(email)]);
+    await Promise.all([sendNewsletterWelcomeEmail(email, token), sendNewsletterStudioNote(email), tellBikriup(email, "subscribed")]);
     return { ok: true, already: false };
   } catch (error) {
     console.error("[newsletter] subscribe failed:", error);
@@ -74,10 +89,12 @@ export async function unsubscribeNewsletter(token: string): Promise<{ ok: boolea
   const t = String(token || "").slice(0, 100);
   if (!t) return { ok: false };
   try {
-    await db
+    const [gone] = await db
       .update(newsletterSubscriber)
       .set({ unsubscribedAt: new Date() })
-      .where(eq(newsletterSubscriber.unsubscribeToken, t));
+      .where(eq(newsletterSubscriber.unsubscribeToken, t))
+      .returning({ email: newsletterSubscriber.email });
+    if (gone) await tellBikriup(gone.email, "unsubscribed");
     return { ok: true };
   } catch (error) {
     console.error("[newsletter] unsubscribe failed:", error);
