@@ -28,9 +28,9 @@ import stepOil from "@/assets/step-oil.jpg";
 
 // Delivery promises from /shipping-returns, shown beside the photographs.
 const PERKS = [
-  { text: "24-hour delivery in Delhi NCR, tracking on WhatsApp", icon:"M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a1.5 1.5 0 1 0 0-.01M17 19a1.5 1.5 0 1 0 0-.01" },
-  { text: "Breakage cover, free replacement or refund", icon: "M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" },
-  { text: "Hand packed in a double-walled carton", icon: "M4 8l8-4 8 4-8 4zM4 8v8l8 4 8-4V8" },
+  { text: "24-hour delivery in Delhi NCR, tracking on WhatsApp" },
+  { text: "Breakage cover, free replacement or refund" },
+  { text: "Hand packed in a double-walled carton" },
 ];
 
 // A short version of /care/season-your-handi, shown on cookware pages.
@@ -179,19 +179,8 @@ export function ProductDetail({
     <ul className="flex flex-col justify-center gap-2 text-[13px] text-muted-foreground">
       {PERKS.map((perk) => (
         <li key={perk.text}>
-          <Link href="/shipping-returns" className="flex items-center gap-2.5 transition-colors hover:text-earth">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0 text-clay-deep"
-            >
-              <path d={perk.icon} />
-            </svg>
+          <Link href="/shipping-returns" className="flex items-start gap-2 transition-colors hover:text-earth">
+            <span aria-hidden="true" className="mt-px shrink-0 text-gold-deep">✦</span>
             {perk.text}
           </Link>
         </li>
@@ -208,40 +197,45 @@ export function ProductDetail({
 
       <nav
         aria-label="Breadcrumb"
-        className="max-w-7xl mx-auto px-6 md:px-10 pt-28 md:pt-32 text-xs tracking-widest uppercase text-muted-foreground animate-fade-up"
+        className="max-w-7xl mx-auto px-6 md:px-10 pt-28 md:pt-32 text-xs tracking-[0.25em] uppercase text-clay animate-fade-up"
       >
         <Link href="/" className="mk-link hover:text-earth">
           Home
         </Link>
-        <span className="mx-2" aria-hidden="true">
-          /
+        <span className="mx-2.5 text-gold" aria-hidden="true">
+          ✦
         </span>
         <Link href="/#collection" className="mk-link hover:text-earth">
           Collection
         </Link>
-        <span className="mx-2" aria-hidden="true">
-          /
+        <span className="mx-2.5 text-gold" aria-hidden="true">
+          ✦
         </span>
         <span className="text-earth">{p.name}</span>
       </nav>
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-20 md:pt-10 md:pb-28 grid grid-cols-1 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-10 md:gap-16 items-start">
         <div className="md:sticky md:top-28">
-          <div className="group relative aspect-square overflow-hidden rounded-[2rem] animate-fade-up">
+          <div className="group relative aspect-[10/11] overflow-hidden mk-arch shadow-[0_40px_70px_-45px_oklch(0.31_0.1_21/0.45)] animate-fade-up">
             <ClayPlinth
               product={p}
               src={shots[shot] ?? null}
               alt={p.imageAlts[shots[shot] ?? ""] || `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`}
               priority
+              low
             />
-            <div className="pointer-events-none absolute left-5 right-[104px] top-5 flex flex-col gap-0.5 md:left-6 md:right-[120px] md:top-6">
-              <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+            <span aria-hidden="true" className="mk-arch-line" />
+            <span aria-hidden="true" className="mk-seal absolute left-1/2 top-[7%] h-12 w-12 -translate-x-1/2 -translate-y-1/2 text-xl md:h-14 md:w-14 md:text-2xl">
+              M
+            </span>
+            <div className="pointer-events-none absolute inset-x-[18%] top-[19%] flex flex-col items-center gap-1 text-center">
+              <span className="text-[10.5px] uppercase tracking-[0.35em] text-gold-deep">
                 {p.category || p.tag}
               </span>
-              {p.note && <span className="font-display text-xl italic text-clay-deep md:text-2xl">{p.note}</span>}
+              {p.note && <span className="font-display text-xl italic text-clay md:text-[1.75rem]">{p.note}</span>}
             </div>
             {/\d/.test(p.sizeLabel) && (
-              <HoldsBadge size={p.sizeLabel} className="right-5 top-5 h-[72px] w-[72px] text-[26px] md:h-20 md:w-20" />
+              <HoldsBadge size={p.sizeLabel} className="right-[7%] top-[17%] h-[72px] w-[72px] text-[26px] md:h-[88px] md:w-[88px] md:text-[30px]" />
             )}
             {shots.length > 1 && (
               <div className="absolute inset-x-0 bottom-5 flex justify-center gap-2" role="tablist" aria-label="Product photographs">
@@ -256,7 +250,7 @@ export function ProductDetail({
                     className="grid h-6 place-items-center px-0.5"
                   >
                     <span
-                      className={`block h-2 rounded-full transition-[width,background-color] duration-500 ease-[var(--ease-clay)] ${i === shot ? "w-7 bg-earth" : "w-2 bg-earth/25"}`}
+                      className={`block h-2 rounded-full transition-[width,background-color] duration-500 ease-[var(--ease-clay)] ${i === shot ? "w-7 bg-clay" : "w-2 bg-gold/45"}`}
                     />
                   </button>
                 ))}
@@ -272,10 +266,10 @@ export function ProductDetail({
                   aria-label={`Show photograph ${i + 1}`}
                   aria-pressed={i === shot}
                   onClick={() => setShot(i)}
-                  className={`group relative h-[88px] w-[88px] overflow-hidden rounded-[1.25rem] transition-opacity duration-300 ${i === shot ? "" : "opacity-80 hover:opacity-100"}`}
+                  className={`group relative h-[96px] w-[88px] overflow-hidden mk-arch-sm transition-opacity duration-300 ${i === shot ? "" : "opacity-80 hover:opacity-100"}`}
                 >
                   <ClayPlinth product={p} src={src} />
-                  {i === shot && <span aria-hidden="true" className="absolute inset-0 rounded-[1.25rem] ring-2 ring-inset ring-earth" />}
+                  {i === shot && <span aria-hidden="true" className="absolute inset-0 mk-arch-sm border-2 border-clay" />}
                 </button>
               ))}
             <div className="hidden min-w-[220px] flex-1 pl-2 md:flex">{perks}</div>
@@ -283,10 +277,7 @@ export function ProductDetail({
         </div>
 
         <div>
-          <p className="font-hand text-clay-deep text-2xl md:text-[1.65rem] animate-fade-up">
-            {p.note}
-          </p>
-          <div className="mt-1 text-[11px] tracking-[0.35em] uppercase text-clay-deep">
+          <div className="mt-2 text-[11px] tracking-[0.4em] uppercase text-gold-deep animate-fade-up">
             {[p.category, CATALOGUE_CODES[catalogueSlug(p) ?? ""]].filter(Boolean).join(" · ")}
           </div>
           <h1 className="mt-2 font-display font-normal text-[clamp(3.5rem,8vw,6rem)] text-earth leading-[0.9]">
@@ -295,6 +286,11 @@ export function ProductDetail({
             </span>
             <span className="sr-only">{p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? ` ${p.sizeLabel}` : ""} – unglazed clay</span>
           </h1>
+          {p.note && (
+            <p className="mt-2 font-display text-2xl italic text-clay md:text-[1.9rem] animate-fade-up [animation-delay:0.1s]">
+              {p.note}
+            </p>
+          )}
 
           {(() => {
             const s = reviewSummary;
@@ -324,18 +320,23 @@ export function ProductDetail({
             );
           })()}
 
-          <div className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-2 animate-fade-up [animation-delay:0.15s]">
-            <div className="font-display text-4xl text-earth">{p.price}</div>
+          <div aria-hidden="true" className="mk-ornament mt-7 max-w-md text-[10px]">◆</div>
+
+          <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 animate-fade-up [animation-delay:0.15s]">
+            <div className="font-display text-5xl font-medium text-earth">{p.price}</div>
             {p.compareAt && (
-              <div className="font-display text-xl text-muted-foreground line-through">
+              <div className="font-display text-xl text-gold-deep line-through decoration-1">
                 {p.compareAt}
               </div>
             )}
-            <div className="text-xs tracking-widest uppercase text-muted-foreground">
-              {p.fulfilmentMode === "pickup_only"
-                ? "Studio pickup · incl. taxes"
-                : "Incl. taxes & delivery"}
-            </div>
+            {p.discountPct > 0 && (
+              <span className="mk-tag px-3 py-1.5 text-[11px]">{p.discountPct}% off</span>
+            )}
+          </div>
+          <div className="mt-2 text-[11px] tracking-[0.3em] uppercase text-muted-foreground">
+            {p.fulfilmentMode === "pickup_only"
+              ? "Studio pickup · incl. taxes"
+              : "Incl. taxes & delivery"}
           </div>
 
           <p className="mt-7 text-lg leading-relaxed text-foreground/85 animate-fade-up [animation-delay:0.25s]">
@@ -352,7 +353,7 @@ export function ProductDetail({
               {quickFacts.map((s) => (
                 <div
                   key={s.label}
-                  className="flex flex-col-reverse px-4 py-3.5 rounded-2xl bg-sand"
+                  className="flex flex-col-reverse px-4 py-3.5 rounded-md border border-gold/40 bg-ivory"
                 >
                   <dt className="text-[11px] tracking-[0.14em] uppercase text-muted-foreground">
                     {s.label}
@@ -416,7 +417,7 @@ export function ProductDetail({
             {["Handmade, no moulds", "Lab-tested food safe", "No chemical glaze"].map((chip) => (
               <li
                 key={chip}
-                className="px-3.5 py-2 rounded-full border border-border text-[13px] text-earth"
+                className="px-4 py-2.5 rounded-[3px] border border-gold/60 bg-ivory text-[13px] text-earth"
               >
                 {chip === "Lab-tested food safe" ? (
                   <Link href="/soil-report" className="hover:text-clay-deep transition-colors">
@@ -430,11 +431,11 @@ export function ProductDetail({
           </ul>
 
           <div className="mt-8 flex flex-wrap items-center gap-3 animate-fade-up [animation-delay:0.45s]">
-            <div className="inline-flex items-center rounded-full border border-earth/25">
+            <div className="inline-flex items-center rounded-[3px] border border-gold/60 bg-ivory">
               <button
                 type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="w-12 h-[60px] rounded-l-full text-xl text-earth hover:bg-sand transition-colors"
+                className="w-12 h-[60px] text-xl text-earth hover:bg-sand transition-colors"
                 aria-label="Decrease quantity"
               >
                 −
@@ -450,7 +451,7 @@ export function ProductDetail({
                 type="button"
                 onClick={() => setQty((q) => Math.min(q + 1, Math.max(1, p.stockQty)))}
                 disabled={soldOut || qty >= p.stockQty}
-                className="w-12 h-[60px] rounded-r-full text-xl text-earth hover:bg-sand transition-colors disabled:opacity-35 disabled:hover:bg-transparent"
+                className="w-12 h-[60px] text-xl text-earth hover:bg-sand transition-colors disabled:opacity-35 disabled:hover:bg-transparent"
                 aria-label="Increase quantity"
               >
                 +
@@ -462,12 +463,8 @@ export function ProductDetail({
               type="button"
               onClick={handleAdd}
               disabled={soldOut}
-              className={`flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[60px] px-7 rounded-full text-cream text-base font-medium transition-[background-color,transform] duration-500 ease-[var(--ease-clay)] ${
-                soldOut
-                  ? "bg-earth/35 cursor-not-allowed"
-                  : added
-                    ? "bg-sage hover:-translate-y-0.5 active:scale-[0.98]"
-                    : "bg-clay hover:bg-clay-deep hover:-translate-y-0.5 active:scale-[0.98]"
+              className={`mk-btn-maroon flex-1 min-w-[200px] min-h-[60px] px-7 text-[15px] active:scale-[0.98] ${
+                soldOut ? "opacity-45 cursor-not-allowed" : added ? "bg-sage! text-cream!" : ""
               }`}
             >
               {added && (
@@ -493,7 +490,7 @@ export function ProductDetail({
             <button
               type="button"
               onClick={handleBuyNow}
-              className="mt-3 w-full min-h-[58px] rounded-full bg-earth px-7 text-base font-medium text-cream transition-[background-color,transform] duration-500 ease-[var(--ease-clay)] hover:-translate-y-0.5 hover:bg-earth/90 active:scale-[0.98]"
+              className="mk-btn-gold mt-3 w-full min-h-[58px] px-7 text-[15px] active:scale-[0.98]"
             >
               Buy now · {formatPaise(p.pricePaise * qty)}
             </button>
@@ -513,7 +510,7 @@ export function ProductDetail({
               onClick={() => track("generate_lead", { method: "whatsapp", item_id: p.slug })}
               target="_blank"
               rel="noopener noreferrer"
-              className="mk-btn-fill flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[58px] px-6 rounded-full border-[1.5px] border-earth text-earth text-base font-medium"
+              className="mk-btn-fill flex-1 min-w-[200px] inline-flex items-center justify-center gap-2.5 min-h-[58px] px-6 rounded-[3px] border-[1.5px] border-earth text-earth text-base font-medium"
             >
               <WhatsAppIcon className="w-4 h-4" />
               Ask on WhatsApp
@@ -523,6 +520,7 @@ export function ProductDetail({
               text={p.description.slice(0, 120)}
               url={`${SITE_URL}/shop/${p.slug}`}
               label="Share"
+              buttonClassName="inline-flex min-h-[58px] items-center gap-2 rounded-[3px] border border-gold/60 px-7 font-display text-sm font-semibold uppercase tracking-[0.26em] text-earth transition-colors hover:bg-earth hover:text-gold-light"
             />
           </div>
 
@@ -568,7 +566,7 @@ export function ProductDetail({
                         {panel.title}
                         <span
                           aria-hidden="true"
-                          className={`grid place-items-center w-8 h-8 rounded-full bg-sand font-sans text-lg transition-transform duration-500 ease-[var(--ease-clay)] ${
+                          className={`grid place-items-center w-8 h-8 rounded-full border border-gold/60 text-gold-deep font-sans text-lg transition-transform duration-500 ease-[var(--ease-clay)] ${
                             isOpen ? "rotate-45" : ""
                           }`}
                         >
@@ -686,7 +684,7 @@ export function ProductDetail({
             type="button"
             onClick={handleBuyNow}
             tabIndex={barOn && !soldOut ? 0 : -1}
-            className="min-h-[48px] shrink-0 rounded-full bg-clay px-7 text-base font-medium text-cream active:scale-[0.97]"
+            className="mk-btn-gold min-h-[48px] shrink-0 px-6 text-sm active:scale-[0.97]"
           >
             Buy now
           </button>
@@ -721,8 +719,8 @@ function RelatedCard({ family }: { family: ProductFamily }) {
   };
 
   return (
-    <article className="group relative flex min-w-0 flex-col gap-3 rounded-[1.6rem] bg-[oklch(0.925_0.025_75)] p-2.5 transition-[background-color,box-shadow] duration-500 hover:bg-white hover:shadow-[0_24px_40px_-28px_rgba(59,42,34,0.4)] sm:flex-row sm:gap-5">
-      <div className="relative h-[190px] w-full shrink-0 overflow-hidden rounded-[1.2rem] sm:h-[238px] sm:w-[180px]">
+    <article className="group relative flex min-w-0 flex-col gap-3 rounded-[1.6rem] border border-gold/30 bg-ivory p-2.5 transition-[background-color,box-shadow,border-color] duration-500 hover:border-gold/60 hover:bg-white hover:shadow-[0_24px_40px_-28px_oklch(0.31_0.1_21/0.4)] sm:flex-row sm:gap-5">
+      <div className="relative h-[190px] w-full shrink-0 overflow-hidden rounded-[1.2rem] sm:mk-arch-sm sm:h-[238px] sm:w-[180px]">
         <Link href={href} aria-label={`View ${p.name} ${p.sizeLabel}`.trim()} className="absolute inset-0">
           <ClayPlinth product={p} />
         </Link>
@@ -812,7 +810,7 @@ function RelatedCard({ family }: { family: ProductFamily }) {
               disabled={soldOut}
               onClick={add}
               aria-label={soldOut ? `${p.name} ${p.sizeLabel} is sold out` : `Add ${p.name} ${p.sizeLabel} to basket`}
-              className="flex min-h-11 items-center gap-1.5 rounded-full bg-clay-deep px-[18px] text-[13px] font-semibold text-cream transition-colors hover:bg-earth disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground disabled:ring-1 disabled:ring-border"
+              className="mk-btn-maroon min-h-11 gap-1.5! px-[18px] text-[12px] tracking-[0.18em]! disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground disabled:ring-1 disabled:ring-border"
             >
               {soldOut ? (
                 "Sold out"

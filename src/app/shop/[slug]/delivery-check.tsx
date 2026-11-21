@@ -32,7 +32,7 @@ export function DeliveryCheck({ slug }: { slug: string }) {
     <form onSubmit={check} className="mt-4">
       <label
         htmlFor="delivery-pin"
-        className="block text-xs tracking-widest uppercase text-earth/70"
+        className="block text-[11px] tracking-[0.3em] uppercase text-earth/70"
       >
         Check delivery to your door
       </label>
@@ -45,12 +45,12 @@ export function DeliveryCheck({ slug }: { slug: string }) {
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
           placeholder="Your PIN code"
-          className="min-w-0 flex-1 rounded-2xl border border-earth/25 bg-background px-4 py-2.5 text-earth placeholder:text-earth/40 focus:outline-none focus:ring-2 focus:ring-earth/40"
+          className="min-h-[52px] min-w-0 flex-1 rounded-[3px] border border-gold/60 bg-ivory px-4 py-2.5 text-earth placeholder:text-earth/45 focus:outline-none focus:ring-2 focus:ring-gold/50"
         />
         <button
           type="submit"
           disabled={busy || pin.length !== 6}
-          className="shrink-0 rounded-full bg-earth px-5 text-xs tracking-widest uppercase text-cream hover:bg-clay transition-colors disabled:opacity-50"
+          className="shrink-0 rounded-[3px] border-[1.5px] border-earth px-6 font-display text-sm font-semibold tracking-[0.26em] uppercase text-earth hover:bg-earth hover:text-gold-light transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-earth"
         >
           {busy ? "Checking…" : "Check"}
         </button>

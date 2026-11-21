@@ -12,6 +12,8 @@ type Props = {
   compact?: boolean;
   /** Just the icon, styled by the caller (a round button on a product card). */
   icon?: string;
+  /** Replaces the default button style, keeping the label. */
+  buttonClassName?: string;
 };
 
 function getShareUrl(url?: string) {
@@ -28,6 +30,7 @@ export function ShareButton({
   className = "",
   compact = false,
   icon,
+  buttonClassName,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -105,6 +108,8 @@ export function ShareButton({
         className={
           icon
             ? icon
+            : buttonClassName
+            ? buttonClassName
             : compact
             ? "inline-flex items-center gap-1.5 text-xs tracking-widest uppercase text-earth/80 hover:text-earth transition-colors"
             : "inline-flex items-center gap-2 border border-earth/30 text-earth px-5 py-3 rounded-full text-xs tracking-widest uppercase hover:bg-earth hover:text-cream transition-colors"
