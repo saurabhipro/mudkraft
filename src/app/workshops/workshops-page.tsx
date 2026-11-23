@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { OrdersEnquiries } from "@/components/OrdersEnquiries";
+import { StudioStories, WorkshopGallery } from "@/components/HomeMedia";
 import { Field, inputCls } from "@/components/form-bits";
 import { SALES_EMAIL } from "@/lib/catalogue";
 import handsClay from "@/assets/hands-clay.jpg";
@@ -216,6 +217,10 @@ export function WorkshopsPage() {
       </section>
 
 
+
+      <WorkshopGallery />
+
+      <StudioStories />
 
       {/* SOIL REPORT — teaser; the full tables are on /soil-report */}
       <section id="soil" className="relative py-24 md:py-28 grain overflow-hidden bg-earth">

@@ -216,46 +216,49 @@ export function ProductDetail({
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-20 md:pt-10 md:pb-28 grid grid-cols-1 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-10 md:gap-16 items-start">
         <div className="md:sticky md:top-28">
-          <div className="group relative aspect-[10/11] overflow-hidden mk-arch shadow-[0_40px_70px_-45px_oklch(0.31_0.1_21/0.45)] animate-fade-up">
-            <ClayPlinth
-              product={p}
-              src={shots[shot] ?? null}
-              alt={p.imageAlts[shots[shot] ?? ""] || `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`}
-              priority
-              low
-            />
-            <span aria-hidden="true" className="mk-arch-line" />
-            <span aria-hidden="true" className="mk-seal absolute left-1/2 top-[7%] h-12 w-12 -translate-x-1/2 -translate-y-1/2 text-xl md:h-14 md:w-14 md:text-2xl">
-              M
-            </span>
-            <div className="pointer-events-none absolute inset-x-[18%] top-[19%] flex flex-col items-center gap-1 text-center">
-              <span className="text-[10.5px] uppercase tracking-[0.35em] text-gold-deep">
-                {p.category || p.tag}
-              </span>
-              {p.note && <span className="font-display text-xl italic text-clay md:text-[1.75rem]">{p.note}</span>}
-            </div>
-            {/\d/.test(p.sizeLabel) && (
-              <HoldsBadge size={p.sizeLabel} className="right-[7%] top-[17%] h-[72px] w-[72px] text-[26px] md:h-[88px] md:w-[88px] md:text-[30px]" />
-            )}
-            {shots.length > 1 && (
-              <div className="absolute inset-x-0 bottom-5 flex justify-center gap-2" role="tablist" aria-label="Product photographs">
-                {shots.map((src, i) => (
-                  <button
-                    key={src}
-                    type="button"
-                    role="tab"
-                    aria-selected={i === shot}
-                    aria-label={`Photograph ${i + 1} of ${shots.length}`}
-                    onClick={() => setShot(i)}
-                    className="grid h-6 place-items-center px-0.5"
-                  >
-                    <span
-                      className={`block h-2 rounded-full transition-[width,background-color] duration-500 ease-[var(--ease-clay)] ${i === shot ? "w-7 bg-clay" : "w-2 bg-gold/45"}`}
-                    />
-                  </button>
-                ))}
+          <div className="relative animate-fade-up">
+            {/* Jharokha frame: a maroon arch, a gold keyline, then the lit ivory stage. */}
+            <div className="mk-arch-top bg-earth p-3 shadow-[0_44px_70px_-40px_oklch(0.2_0.05_18/0.65)] md:p-[18px]">
+              <div className="mk-arch-top border-[1.5px] border-gold/80 p-1 md:p-1.5">
+                <div className="group relative aspect-[10/11] overflow-hidden mk-arch-top">
+                  <ClayPlinth
+                    product={p}
+                    src={shots[shot] ?? null}
+                    alt={p.imageAlts[shots[shot] ?? ""] || `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`}
+                    priority
+                    low
+                  />
+                  {p.note && (
+                    <p className="pointer-events-none absolute inset-x-[14%] top-[17%] text-center font-display text-xl italic text-clay md:text-[1.75rem]">
+                      {p.note}
+                    </p>
+                  )}
+                  {shots.length > 1 && (
+                    <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2" role="tablist" aria-label="Product photographs">
+                      {shots.map((src, i) => (
+                        <button
+                          key={src}
+                          type="button"
+                          role="tab"
+                          aria-selected={i === shot}
+                          aria-label={`Photograph ${i + 1} of ${shots.length}`}
+                          onClick={() => setShot(i)}
+                          className="grid h-6 place-items-center px-0.5"
+                        >
+                          <span
+                            className={`block h-2 rounded-full transition-[width,background-color] duration-500 ease-[var(--ease-clay)] ${i === shot ? "w-7 bg-clay" : "w-2 bg-gold/45"}`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
+            <HoldsBadge
+              size={p.sizeLabel}
+              className="right-0 top-[36%] h-[72px] w-[72px] translate-x-[30%] text-[26px] ring-2 ring-gold md:h-[88px] md:w-[88px] md:translate-x-1/2 md:text-[30px]"
+            />
           </div>
           <div className="mt-4 flex flex-wrap items-stretch gap-3">
             {shots.length > 1 &&
@@ -266,10 +269,13 @@ export function ProductDetail({
                   aria-label={`Show photograph ${i + 1}`}
                   aria-pressed={i === shot}
                   onClick={() => setShot(i)}
-                  className={`group relative h-[96px] w-[88px] overflow-hidden mk-arch-sm transition-opacity duration-300 ${i === shot ? "" : "opacity-80 hover:opacity-100"}`}
+                  className={`group relative h-[96px] w-[84px] overflow-hidden mk-arch-top transition-opacity duration-300 ${i === shot ? "" : "opacity-75 hover:opacity-100"}`}
                 >
                   <ClayPlinth product={p} src={src} />
-                  {i === shot && <span aria-hidden="true" className="absolute inset-0 mk-arch-sm border-2 border-clay" />}
+                  <span
+                    aria-hidden="true"
+                    className={`absolute inset-0 mk-arch-top ${i === shot ? "border-2 border-gold-deep" : "border border-gold/50"}`}
+                  />
                 </button>
               ))}
             <div className="hidden min-w-[220px] flex-1 pl-2 md:flex">{perks}</div>
@@ -339,9 +345,11 @@ export function ProductDetail({
               : "Incl. taxes & delivery"}
           </div>
 
-          <p className="mt-7 text-lg leading-relaxed text-foreground/85 animate-fade-up [animation-delay:0.25s]">
-            {p.description}
-          </p>
+          {p.description && p.description.trim() !== p.note?.trim() && (
+            <p className="mt-7 text-lg leading-relaxed text-foreground/85 animate-fade-up [animation-delay:0.25s]">
+              {p.description}
+            </p>
+          )}
           {p.story && (
             <p className="mt-4 font-display italic text-earth/80 text-xl animate-fade-up [animation-delay:0.3s]">
               &ldquo;{p.story}&rdquo;
@@ -724,7 +732,7 @@ function RelatedCard({ family }: { family: ProductFamily }) {
         <Link href={href} aria-label={`View ${p.name} ${p.sizeLabel}`.trim()} className="absolute inset-0">
           <ClayPlinth product={p} />
         </Link>
-        {/\d/.test(p.sizeLabel) && <HoldsBadge size={p.sizeLabel} className="left-2.5 top-2.5 h-12 w-12 text-base" />}
+        <HoldsBadge size={p.sizeLabel} className="left-2.5 top-2.5 h-12 w-12 text-base" />
         {few && (
           <span className="pointer-events-none absolute bottom-2.5 left-2.5 rounded-full bg-clay-deep px-2 py-0.5 text-[11px] font-semibold text-cream">
             Only {p.stockQty} left

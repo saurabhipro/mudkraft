@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
- * Photo and video sections for the home page: the film band under the hero,
- * the "made by hand" and kitchen mosaics, the workshop gallery and the studio
- * stories rail. Files live in /public/media.
+ * Photo and video sections: the "made by hand" and kitchen mosaics on the home
+ * page, and the workshop gallery and studio stories rail on /workshops.
+ * Files live in /public/media.
  */
 
 const M = "/media";
@@ -58,132 +58,6 @@ function Tile({
         {caption}
       </figcaption>
     </figure>
-  );
-}
-
-/** Full-width looping film right under the hero. Muted until the visitor asks for sound. */
-export function HomeFilm() {
-  const ref = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
-  const [paused, setPaused] = useState(false);
-  const pausedByUser = useRef(false);
-
-  useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      pausedByUser.current = true;
-      v.pause();
-      return;
-    }
-    // Only play while on screen, so it costs nothing once scrolled past.
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (pausedByUser.current) return;
-        if (e.isIntersecting) void v.play().catch(() => {});
-        else v.pause();
-      },
-      { threshold: 0.25 },
-    );
-    io.observe(v);
-    return () => io.disconnect();
-  }, []);
-
-  const toggleSound = () => {
-    const v = ref.current;
-    if (!v) return;
-    v.muted = !v.muted;
-    setMuted(v.muted);
-  };
-
-  const togglePlay = () => {
-    const v = ref.current;
-    if (!v) return;
-    if (v.paused) {
-      pausedByUser.current = false;
-      void v.play().catch(() => {});
-    } else {
-      pausedByUser.current = true;
-      v.pause();
-    }
-  };
-
-  const btn =
-    "inline-flex items-center justify-center gap-2.5 h-11 rounded-full bg-cream/92 text-earth text-[13px] font-medium backdrop-blur transition-transform hover:scale-105";
-
-  return (
-    <section
-      aria-label="Watch it made"
-      data-no-motion
-      className="relative h-[78svh] min-h-[540px] max-h-[860px] overflow-hidden bg-kiln"
-    >
-      <video
-        ref={ref}
-        src={`${M}/film.mp4`}
-        poster={`${M}/film-poster.jpg`}
-        muted
-        loop
-        playsInline
-        preload="none"
-        onPlay={() => setPaused(false)}
-        onPause={() => setPaused(true)}
-        aria-label="Dal simmering in a Mudkraft clay handi on the stove"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-kiln/45 to-transparent" />
-
-      <div className="absolute inset-x-3 bottom-3 md:inset-x-auto md:left-10 md:bottom-10 md:w-[26rem] rounded-3xl bg-kiln/55 backdrop-blur-md px-6 py-6 md:px-8 md:py-7 text-cream">
-        <Eyebrow tone="dark">Watch it made</Eyebrow>
-        <h2 className="mt-4 font-display font-normal text-[2rem] md:text-[2.75rem] leading-none">
-          From the wheel <em className="font-light text-gold">to your stove.</em>
-        </h2>
-        <p className="mt-3.5 text-[13px] md:text-[15px] leading-relaxed text-cream/80">
-          Real clay, a real kitchen, no tricks. Handmade, food-safe, no chemical glaze.
-        </p>
-      </div>
-
-      <div className="absolute right-3 top-3 md:right-10 md:top-auto md:bottom-10 flex items-center gap-2.5">
-        <button
-          type="button"
-          onClick={toggleSound}
-          aria-label={muted ? "Turn sound on" : "Turn sound off"}
-          className={`${btn} w-11 md:w-auto md:px-5`}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className="w-[18px] h-[18px]"
-          >
-            <path d="M11 5 6 9H3v6h3l5 4z" />
-            {muted ? <path d="m16 9 5 6m0-6-5 6" /> : <path d="M16 9a4 4 0 0 1 0 6" />}
-          </svg>
-          <span className="hidden md:inline">{muted ? "Sound on" : "Sound off"}</span>
-        </button>
-        <button
-          type="button"
-          onClick={togglePlay}
-          aria-label={paused ? "Play video" : "Pause video"}
-          className={`${btn} w-11 hidden md:inline-flex`}
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-4 h-4">
-            {paused ? (
-              <path d="M8 5v14l11-7z" />
-            ) : (
-              <>
-                <rect x="6" y="5" width="4" height="14" rx="1" />
-                <rect x="14" y="5" width="4" height="14" rx="1" />
-              </>
-            )}
-          </svg>
-        </button>
-      </div>
-    </section>
   );
 }
 
@@ -270,10 +144,10 @@ export function InYourKitchen() {
   );
 }
 
-/** Photo strip that continues the existing workshops card. */
+/** Workshop photos, on /workshops. */
 export function WorkshopGallery() {
   return (
-    <section aria-label="Workshop photos" className="px-6 md:px-10 pb-12 md:pb-16 -mt-12 md:-mt-24">
+    <section aria-label="Workshop photos" className="px-6 md:px-10 pb-16 md:pb-24">
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         <Tile
           src="ws-hands.jpg"
@@ -314,7 +188,7 @@ export function WorkshopGallery() {
       </div>
       <div className="max-w-7xl mx-auto mt-6 text-center">
         <Link
-          href="/workshops"
+          href="#book"
           className="mk-btn-fill inline-flex items-center gap-3 min-h-[54px] px-8 rounded-full border border-earth/25 text-earth text-xs tracking-[0.16em] uppercase"
         >
           Book a workshop

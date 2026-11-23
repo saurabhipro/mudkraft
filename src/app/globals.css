@@ -96,6 +96,8 @@
 
 /* An arched window: round top, softly squared base. */
 @utility mk-arch { border-radius: 50% 50% 1.75rem 1.75rem / 34% 34% 1.75rem 1.75rem; }
+/* A true semicircle over any width: oversized top radii are scaled down to half the width. */
+@utility mk-arch-top { border-radius: 640px 640px 1.25rem 1.25rem; }
 @utility mk-arch-sm { border-radius: 50% 50% 1rem 1rem / 40% 40% 1rem 1rem; }
 /* The lit ivory ground a piece stands in. */
 @utility mk-stage { background: var(--gradient-stage); }

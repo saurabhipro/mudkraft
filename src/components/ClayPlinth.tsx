@@ -56,15 +56,30 @@ export function ClayPlinth({
   );
 }
 
-/** "4 L / holds" — the round capacity badge in the corner of the plinth. */
+/**
+ * What the round badge says for a size label: a capacity ("4 L" → 4 L / holds),
+ * a set ("Set of 6" → 6 / pieces) or a short size. Long labels get no badge: a
+ * circle cannot hold them.
+ */
+export function badgeFor(size: string): { value: string; label: string } | null {
+  const label = size.trim();
+  const set = label.match(/^(?:set\s+of\s+)?(\d+)\s*(?:pcs?|pieces?)?$/i) ?? label.match(/^set\s+of\s+(\d+)\b/i);
+  if (set) return { value: set[1], label: /set/i.test(label) ? "in a set" : "pieces" };
+  const volume = label.match(/^(\d+(?:\.\d+)?)\s*(l|ltr|litres?|liters?|ml)$/i);
+  if (volume) return { value: `${volume[1]} ${/^ml$/i.test(volume[2]) ? "ml" : "L"}`, label: "holds" };
+  return /\d/.test(label) && label.length <= 5 ? { value: label, label: "size" } : null;
+}
+
+/** The round size badge in the corner of the plinth: "4 L / holds", "6 / in a set". */
 export function HoldsBadge({ size, className = "" }: { size: string; className?: string }) {
-  if (!size) return null;
+  const badge = badgeFor(size);
+  if (!badge) return null;
   return (
     <span
       className={`pointer-events-none absolute flex flex-col items-center justify-center rounded-full bg-earth text-gold-light leading-none shadow-[0_10px_24px_-10px_oklch(0.2_0.05_18/0.7),inset_0_0_0_1px_oklch(0.73_0.115_85/0.35)] ${className}`}
     >
-      <span className="font-display font-medium">{size}</span>
-      <span className="mt-[3px] text-[8px] uppercase tracking-[0.18em] text-gold">holds</span>
+      <span className={`whitespace-nowrap font-display font-medium ${badge.value.length > 4 ? "text-[0.8em]" : ""}`}>{badge.value}</span>
+      <span className="mt-[3px] whitespace-nowrap text-[8px] uppercase tracking-[0.18em] text-gold">{badge.label}</span>
     </span>
   );
 }
