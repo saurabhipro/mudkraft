@@ -20,6 +20,8 @@ export type DeliveryQuote =
       onePrice?: boolean;
       /** What the shop charges for delivery when not on live courier prices (0 = nothing). */
       deliveryPaise?: number;
+      /** The applied coupon includes delivery (say "Included", never "Free"). */
+      included?: boolean;
     }
   | {
       mode: "live";
@@ -70,6 +72,7 @@ interface BkQuote {
   place?: { city: string; state: string } | null;
   cod?: { available: boolean; fee: number; delivery: number; total: number };
   price_display?: "one" | "breakup";
+  delivery_included?: boolean;
 }
 
 export async function deliveryQuote(input: unknown): Promise<DeliveryQuote> {
@@ -93,6 +96,7 @@ export async function deliveryQuote(input: unknown): Promise<DeliveryQuote> {
         place,
         onePrice: q.price_display === "one",
         deliveryPaise: paise(q.delivery),
+        included: Boolean(q.delivery_included),
       };
     return {
       mode: "live",

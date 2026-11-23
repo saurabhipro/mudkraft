@@ -857,7 +857,8 @@ export function CheckoutForm({
           <div className="flex justify-between text-earth">
             <span>Delivery{ready ? ` to ${pin}` : ""}</span>
             <span className="font-medium">
-              {one && live?.serviceable !== false
+              {(one && live?.serviceable !== false) ||
+              (delivery.mode === "flat" && delivery.included)
                 ? "Included"
                 : ready
                   ? formatPaise(ready.deliveryPaise)
