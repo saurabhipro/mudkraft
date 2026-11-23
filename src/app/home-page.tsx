@@ -6,13 +6,7 @@ import { useState, type CSSProperties } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { HeroPieces } from "@/components/HeroPieces";
-import {
-  HomeFilm,
-  InYourKitchen,
-  MadeByHand,
-  StudioStories,
-  WorkshopGallery,
-} from "@/components/HomeMedia";
+import { InYourKitchen, MadeByHand } from "@/components/HomeMedia";
 import { ClayPlinth } from "@/components/ClayPlinth";
 import { ShareButton } from "@/components/ShareButton";
 import { NewsletterForm } from "@/components/NewsletterForm";
@@ -175,9 +169,6 @@ export function HomePage({
 
       {/* HERO — pick a piece on the wheel */}
       <HeroPieces products={products} boxes={boxes} />
-
-      {/* FILM — looping video under the hero */}
-      <HomeFilm />
 
       {/* CROSSED TAPES */}
       <section aria-label="How we make" className="relative h-[170px] md:h-[210px] overflow-hidden">
@@ -542,41 +533,6 @@ export function HomePage({
         </div>
       </section>
 
-      {/* WORKSHOPS */}
-      <section id="workshops" className="px-6 md:px-10 pb-24 md:pb-36">
-        <div className="mk-reveal max-w-7xl mx-auto rounded-[2.5rem] bg-sand overflow-hidden grid md:grid-cols-2">
-          <div className="p-9 sm:p-14 lg:p-20 flex flex-col justify-center">
-            <p className="font-hand text-[1.65rem] text-clay-deep mb-3">get your hands muddy</p>
-            <h2 className="font-display font-normal text-[clamp(2.5rem,4.5vw,4.25rem)] leading-none text-earth">
-              Sit at <em className="font-light text-clay">the wheel.</em>
-            </h2>
-            <p className="mt-6 max-w-md text-[17px] leading-relaxed text-muted-foreground">
-              Pottery workshops at the studio. Centre the clay, pull your first wall, and take home
-              a piece you made.
-            </p>
-            <div className="mt-9">
-              <Link
-                href="/workshops"
-                className="mk-btn-fill inline-flex items-center gap-3 min-h-[54px] px-7 rounded-full bg-earth text-cream text-xs tracking-[0.16em] uppercase"
-              >
-                See workshops
-                <Arrow className="mk-arrow" />
-              </Link>
-            </div>
-          </div>
-          <div className="group relative min-h-[360px] md:min-h-[480px] overflow-hidden">
-            <img
-              src="/media/ws-potters.jpg"
-              alt="A Mudkraft potter guiding a student at the wheel in the studio"
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1800ms] ease-[var(--ease-clay)] group-hover:scale-[1.06]"
-            />
-          </div>
-        </div>
-      </section>
-
-      <WorkshopGallery />
-
       {/* STORY — the potter family, in numbers, and how a pot is made */}
       <section id="story" className="px-6 md:px-10 pb-16 md:pb-24">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-14 lg:gap-20 items-center">
@@ -714,8 +670,6 @@ export function HomePage({
           </div>
         </section>
       )}
-
-      <StudioStories />
 
       {/* NEWSLETTER */}
       <section id="journal" className="px-4 sm:px-6 md:px-10 pb-16">
@@ -885,71 +839,78 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
   // One price when every size costs the same; otherwise the cheapest, as "from".
   const prices = family.sizes.map((size) => size.pricePaise);
   const onePrice = prices.every((price) => price === prices[0]);
+  const category = p.category ? `${p.category} · Khurja` : "Khurja clay";
 
+  // A Jharokha window: the whole card is an arch, traced inside by a gold keyline.
   return (
-    <article className="group relative flex flex-col rounded-[1.6rem] border border-gold/30 bg-ivory p-2.5 transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:border-gold/60 hover:shadow-[0_34px_56px_-34px_oklch(0.31_0.1_21/0.5)]">
-      <div className="relative aspect-[5/4] overflow-hidden mk-arch">
-        <span aria-hidden="true" className="mk-arch-line opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+    <article className="group relative flex flex-col mk-arch-top border border-gold/45 bg-ivory px-3 pb-4 pt-3 shadow-[0_24px_48px_-36px_oklch(0.31_0.1_21/0.45)] transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:border-gold/80 hover:shadow-[0_36px_60px_-36px_oklch(0.31_0.1_21/0.55)]">
+      <span aria-hidden="true" className="pointer-events-none absolute inset-[7px] mk-arch-top border border-gold/60" />
+      {/* The crown: a short gold arc with a maroon diamond at its peak. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 120 26"
+        className="pointer-events-none absolute left-1/2 top-[18px] w-[34%] -translate-x-1/2 text-gold-deep"
+      >
+        <path d="M4 25 Q60 2 116 25" fill="none" stroke="currentColor" strokeWidth="1" />
+        <path d="M60 3 L64 10 L60 17 L56 10 Z" className="fill-clay" />
+      </svg>
+
+      <div className="relative mx-[6%] mt-[16%] aspect-[4/5] overflow-hidden mk-arch-top">
         <Link href={href} aria-label={`View ${name}`} className="absolute inset-0">
           <ClayPlinth product={p} />
         </Link>
-        {few && (
-          <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-clay-deep px-2.5 py-1 text-[11.5px] font-semibold text-cream">
-            Only {p.stockQty} left
-          </span>
-        )}
-        {p.discountPct > 0 && !soldOut && (
-          <span className="mk-tag pointer-events-none absolute bottom-3 right-3 px-2.5 py-1 text-[11px]">
-            {p.discountPct}% off
-          </span>
-        )}
         <ShareButton
           title={name}
           text={p.note || "Handcrafted clay from Mudkraft."}
           url={`${SITE_URL}${href}`}
           label={`Share ${name}`}
-          icon="grid h-11 w-11 place-items-center rounded-full bg-cream/95 text-earth transition-colors hover:bg-earth hover:text-cream"
-          className="absolute! right-3 top-3"
+          icon="grid h-10 w-10 place-items-center rounded-full border border-gold/60 bg-ivory/80 text-earth backdrop-blur transition-colors hover:bg-earth hover:text-gold-light"
+          className="absolute! right-[8%] top-[22%]"
         />
+        {p.discountPct > 0 && !soldOut && (
+          <span className="mk-tag pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 text-[11px]">
+            {p.discountPct}% off
+          </span>
+        )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 px-2 pb-1 pt-3.5">
-        <div>
-          <p className="text-[10.5px] uppercase tracking-[0.3em] text-gold-deep">
-            {[p.category, "Khurja clay"].filter(Boolean).join(" · ")}
-          </p>
-          <div className="mt-1 flex items-baseline justify-between gap-3">
-            <h3 className="min-w-0 truncate font-display text-[1.75rem] leading-tight text-earth">
-              <Link href={href} className="transition-colors hover:text-clay-deep">
-                {name}
-              </Link>
-            </h3>
-            <div className="flex shrink-0 items-baseline gap-1.5">
-              {onePrice ? (
-                p.compareAt && <span className="text-[12px] text-gold-deep line-through">{p.compareAt}</span>
-              ) : (
-                <span className="text-[12px] text-muted-foreground">from</span>
-              )}
-              <span className="font-display text-[1.5rem] text-earth">
-                {onePrice ? p.price : formatPaise(Math.min(...prices))}
-              </span>
-            </div>
-          </div>
-          {p.note && <p className="font-display text-lg italic leading-snug text-clay">{p.note}</p>}
-        </div>
-
-        <div className="mt-auto flex items-center justify-between border-t border-gold/30 pt-3">
-          <span className={`flex items-center gap-1.5 text-xs ${soldOut || few ? "font-semibold text-clay-deep" : "text-[oklch(0.45_0.08_130)]"}`}>
-            <span aria-hidden="true" className={`h-[7px] w-[7px] rounded-full ${soldOut || few ? "bg-clay" : "bg-sage"}`} />
-            {soldOut ? "Sold out" : "In stock · ships in 2–3 days"}
-          </span>
-          <Link
-            href={href}
-            className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-earth transition-[gap,color] hover:text-clay-deep group-hover:gap-2.5"
-          >
-            View <Arrow />
+      <div className="relative flex flex-1 flex-col items-center px-3 pt-5 text-center">
+        <p className="text-[10.5px] uppercase tracking-[0.3em] text-gold-deep">{category}</p>
+        <h3 className="mt-2 font-display text-[1.85rem] leading-tight text-earth">
+          <Link href={href} className="transition-colors hover:text-clay">
+            {name}
           </Link>
+        </h3>
+        {p.note && <p className="mt-0.5 font-display text-[1.05rem] italic leading-snug text-clay">{p.note}</p>}
+
+        <div className="mt-4 flex w-full items-center gap-3">
+          <span aria-hidden="true" className="h-px flex-1 bg-gradient-to-r from-transparent to-gold/70" />
+          <span className="flex items-baseline gap-2 font-display text-earth">
+            {onePrice ? (
+              <>
+                {p.compareAt && <s className="text-sm text-gold-deep">{p.compareAt}</s>}
+                <span className="text-[1.6rem]">{p.price}</span>
+              </>
+            ) : (
+              <span className="text-[1.6rem]">from {formatPaise(Math.min(...prices))}</span>
+            )}
+          </span>
+          <span aria-hidden="true" className="h-px flex-1 bg-gradient-to-l from-transparent to-gold/70" />
         </div>
+        {(soldOut || few) && (
+          <p className="mt-1 text-xs font-semibold text-clay">{soldOut ? "Sold out" : `Only ${p.stockQty} left`}</p>
+        )}
+
+        <Link
+          href={href}
+          className="mt-auto w-full pt-4"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          <span className="flex min-h-12 w-full items-center justify-center rounded-[3px] bg-earth px-4 font-display text-[13px] font-semibold uppercase tracking-[0.28em] text-gold-light transition-colors group-hover:bg-clay">
+            View the piece
+          </span>
+        </Link>
       </div>
     </article>
   );
@@ -1001,7 +962,7 @@ export function SortableFamilyGrid({ families }: { families: ProductFamily[] }) 
       <div className="mb-6 flex justify-end">
         <SortPills value={sort} onChange={setSort} />
       </div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {sortFamilies(families, sort).map((f) => (
           <FamilyCard key={f.key} family={f} />
         ))}
