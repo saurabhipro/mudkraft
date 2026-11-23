@@ -18,6 +18,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { DeliveryCheck } from "./delivery-check";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { NeedHelpBand, ProductStorySections } from "@/components/ProductStory";
+import { SEASONING_STEPS } from "@/lib/product-stories";
 import { SITE_URL } from "@/lib/seo";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -33,23 +34,8 @@ const PERKS = [
 ];
 
 // A short version of /care/season-your-handi, shown on cookware pages.
-const SEASONING = [
-  {
-    title: "Soak in water",
-    img: stepSoak.src,
-    body: "Submerge it completely, lid too, so the clay drinks into every pore.",
-  },
-  {
-    title: "Dry in the shade",
-    img: stepDry.src,
-    body: "Upside-down on a cloth, out of direct sun, until it is one even colour.",
-  },
-  {
-    title: "Oil the inside",
-    img: stepOil.src,
-    body: "A thin layer of mustard or coconut oil forms the first seasoning.",
-  },
-];
+const STEP_IMAGES = [stepSoak.src, stepDry.src, stepOil.src];
+const SEASONING = SEASONING_STEPS.map((step, i) => ({ ...step, img: STEP_IMAGES[i] }));
 
 function whatsappBuyNow(p: ProductView, qty: number) {
   return whatsappLink([

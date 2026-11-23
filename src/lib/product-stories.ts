@@ -310,6 +310,38 @@ const STORIES: Array<{ match: RegExp; story: ProductStory }> = [
   },
 ];
 
+/** The seasoning steps cookware pages show before first use; also Bikriup's default care text. */
+export const SEASONING_STEPS = [
+  {
+    title: "Soak in water",
+    body: "Submerge it completely, lid too, so the clay drinks into every pore.",
+  },
+  {
+    title: "Dry in the shade",
+    body: "Upside-down on a cloth, out of direct sun, until it is one even colour.",
+  },
+  {
+    title: "Oil the inside",
+    body: "A thin layer of mustard or coconut oil forms the first seasoning.",
+  },
+] as const;
+
+/**
+ * What the product page shows when Bikriup's story and care are empty, as plain text the back
+ * office can offer as a default: the potter's one rule as the story, the seasoning steps as care.
+ */
+export function siteDefaults(p: { name: string; tag: string; category: string }): {
+  story: string;
+  care: string;
+} {
+  const story = storyFor(p);
+  const cookware = p.category.trim().toLowerCase() === "cookware";
+  return {
+    story: story?.rule?.en ?? "",
+    care: cookware ? SEASONING_STEPS.map((s) => `${s.title}: ${s.body}`).join("\n") : "",
+  };
+}
+
 export function storyFor(p: Pick<ProductView, "tag" | "name">): ProductStory | null {
   const text = `${p.tag} ${p.name}`;
   return STORIES.find((s) => s.match.test(text))?.story ?? null;
