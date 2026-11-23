@@ -18,7 +18,6 @@ import { ShareButton } from "@/components/ShareButton";
 import { DeliveryCheck } from "./delivery-check";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { NeedHelpBand, ProductStorySections } from "@/components/ProductStory";
-import { storyFor } from "@/lib/product-stories";
 import { SITE_URL } from "@/lib/seo";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -79,7 +78,7 @@ export function ProductDetail({
 }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [openPanel, setOpenPanel] = useState<string | null>("specs");
+  const [openPanel, setOpenPanel] = useState<string | null>(null);
   const cartCount = useCartCount();
   // The cutout leads (it stands on the plinth best), then every photograph.
   const shots = [...new Set([p.cutout, ...p.gallery, p.img].filter((x): x is string => Boolean(x)))];
@@ -128,28 +127,7 @@ export function ProductDetail({
   const oneName = sizes.every((s) => s.name === p.name);
   const isCookware = p.category?.toLowerCase() === "cookware";
   const quickFacts = p.specs.slice(0, 3);
-  // The story adds the rows Bikriup does not hold (what it cooks on, what is in the box).
-  const shopLabels = new Set(p.specs.map((s) => s.label.toLowerCase()));
-  const specs = [...p.specs, ...(storyFor(p)?.details ?? []).filter((d) => !shopLabels.has(d.label.toLowerCase()))];
   const panels: Array<{ id: string; title: string; body: ReactNode }> = [];
-  if (specs.length > 0)
-    panels.push({
-      id: "specs",
-      title: "Specifications",
-      body: (
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
-          {specs.map((s) => (
-            <div
-              key={s.label}
-              className="flex justify-between gap-4 border-b border-border/60 pb-2"
-            >
-              <dt className="text-sm text-muted-foreground">{s.label}</dt>
-              <dd className="text-sm text-earth font-medium text-right">{s.value}</dd>
-            </div>
-          ))}
-        </dl>
-      ),
-    });
   if (p.care.length > 0)
     panels.push({
       id: "care",
