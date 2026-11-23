@@ -855,23 +855,26 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
         <path d="M60 3 L64 10 L60 17 L56 10 Z" className="fill-clay" />
       </svg>
 
-      <div className="relative mx-[6%] mt-[16%] aspect-[4/5] overflow-hidden mk-arch-top">
-        <Link href={href} aria-label={`View ${name}`} className="absolute inset-0">
-          <ClayPlinth product={p} />
-        </Link>
+      <div className="relative mx-[6%] mt-[14%]">
+        <div className="relative aspect-[1/1] overflow-hidden mk-arch-top">
+          <Link href={href} aria-label={`View ${name}`} className="absolute inset-0">
+            <ClayPlinth product={p} />
+          </Link>
+          {p.discountPct > 0 && !soldOut && (
+            <span className="mk-tag pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 text-[11px]">
+              {p.discountPct}% off
+            </span>
+          )}
+        </div>
+        {/* Sits on the arch's right shoulder, half over the stage, so the stage can stay short. */}
         <ShareButton
           title={name}
           text={p.note || "Handcrafted clay from Mudkraft."}
           url={`${SITE_URL}${href}`}
           label={`Share ${name}`}
-          icon="grid h-10 w-10 place-items-center rounded-full border border-gold/60 bg-ivory/80 text-earth backdrop-blur transition-colors hover:bg-earth hover:text-gold-light"
-          className="absolute! right-[8%] top-[22%]"
+          icon="grid h-10 w-10 place-items-center rounded-full border border-gold/60 bg-ivory/90 text-earth shadow-sm backdrop-blur transition-colors hover:bg-earth hover:text-gold-light"
+          className="absolute! -right-2 top-[26%] z-10"
         />
-        {p.discountPct > 0 && !soldOut && (
-          <span className="mk-tag pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 text-[11px]">
-            {p.discountPct}% off
-          </span>
-        )}
       </div>
 
       <div className="relative flex flex-1 flex-col items-center px-3 pt-5 text-center">
