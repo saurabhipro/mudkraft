@@ -15,6 +15,7 @@ import { productSeo } from "@/lib/categories";
 import { POLICY } from "@/lib/policy";
 import { toItem, track } from "@/lib/analytics";
 import { ShareButton } from "@/components/ShareButton";
+import { ZoomLens } from "@/components/ZoomLens";
 import { DeliveryCheck } from "./delivery-check";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { NeedHelpBand, ProductStorySections } from "@/components/ProductStory";
@@ -181,43 +182,45 @@ export function ProductDetail({
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-20 md:pt-10 md:pb-28 grid grid-cols-1 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-10 md:gap-16 items-start">
         <div className="md:sticky md:top-28">
           <div className="relative animate-fade-up">
-            {/* A plain lit ivory arch with a soft shadow. */}
-            <div className="group relative aspect-[10/11] overflow-hidden mk-arch-top shadow-[0_40px_70px_-44px_oklch(0.31_0.1_21/0.45)]">
-              <ClayPlinth
-                product={p}
-                src={shots[shot] ?? null}
-                alt={p.imageAlts[shots[shot] ?? ""] || `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`}
-                priority
-                low
-              />
-              {p.note && (
-                <div className="pointer-events-none absolute inset-x-[14%] top-[17%] text-center">
-                  {p.category && (
-                    <p className="text-[10px] uppercase tracking-[0.4em] text-gold-deep md:text-[11px]">{p.category}</p>
-                  )}
-                  <p className="mt-1.5 font-display text-xl italic text-clay md:text-[1.75rem]">{p.note}</p>
-                </div>
-              )}
-              {shots.length > 1 && (
-                <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2" role="tablist" aria-label="Product photographs">
-                  {shots.map((src, i) => (
-                    <button
-                      key={src}
-                      type="button"
-                      role="tab"
-                      aria-selected={i === shot}
-                      aria-label={`Photograph ${i + 1} of ${shots.length}`}
-                      onClick={() => setShot(i)}
-                      className="grid h-6 place-items-center px-0.5"
-                    >
-                      <span
-                        className={`block h-2 rounded-full transition-[width,background-color] duration-500 ease-[var(--ease-clay)] ${i === shot ? "w-7 bg-clay" : "w-2 bg-gold/45"}`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* A plain lit ivory arch with a soft shadow; a lens zooms the piece under the mouse. */}
+            <ZoomLens src={shots[shot] ?? null} blend={(shots[shot] ?? null) !== p.cutout}>
+              <div className="group relative aspect-[10/11] overflow-hidden mk-arch-top shadow-[0_40px_70px_-44px_oklch(0.31_0.1_21/0.45)]">
+                <ClayPlinth
+                  product={p}
+                  src={shots[shot] ?? null}
+                  alt={p.imageAlts[shots[shot] ?? ""] || `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`}
+                  priority
+                  low
+                />
+                {p.note && (
+                  <div className="pointer-events-none absolute inset-x-[14%] top-[17%] text-center">
+                    {p.category && (
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-gold-deep md:text-[11px]">{p.category}</p>
+                    )}
+                    <p className="mt-1.5 font-display text-xl italic text-clay md:text-[1.75rem]">{p.note}</p>
+                  </div>
+                )}
+                {shots.length > 1 && (
+                  <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2" role="tablist" aria-label="Product photographs">
+                    {shots.map((src, i) => (
+                      <button
+                        key={src}
+                        type="button"
+                        role="tab"
+                        aria-selected={i === shot}
+                        aria-label={`Photograph ${i + 1} of ${shots.length}`}
+                        onClick={() => setShot(i)}
+                        className="grid h-6 place-items-center px-0.5"
+                      >
+                        <span
+                          className={`block h-2 rounded-full transition-[width,background-color] duration-500 ease-[var(--ease-clay)] ${i === shot ? "w-7 bg-clay" : "w-2 bg-gold/45"}`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </ZoomLens>
             <HoldsBadge
               size={p.sizeLabel}
               className="right-[8%] top-[11%] h-[64px] w-[64px] text-[22px] md:h-[76px] md:w-[76px] md:text-[26px]"

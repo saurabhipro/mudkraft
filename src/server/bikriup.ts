@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { serverEnv } from "./env";
+import { isCutout } from "@/lib/product-view";
 
 /**
  * Bikriup is the shop's back office: the catalogue, stock, orders, reviews and
@@ -127,7 +128,7 @@ export function toStoreProductShape(p: BkProduct) {
     .filter((x) => x.ref)
     .map(({ img, ref }) => ({ ...ref!, alt: img.alt, width: null, height: null, isPrimary: false }));
   // The cover is the first styled photo; cutouts are found by name, as before.
-  const cover = images.find((i) => !i.publicId.endsWith("-cutout")) ?? images[0];
+  const cover = images.find((i) => !isCutout(i.publicId)) ?? images[0];
   if (cover) cover.isPrimary = true;
   const description = p.description ?? "";
   return {
