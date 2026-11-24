@@ -20,6 +20,8 @@ export type TemplateButton =
 export interface TemplateDef {
   name: string;
   category: "UTILITY" | "MARKETING";
+  /** A PDF sent above the body, its link given per message. Meta reviews it with a sample file. */
+  header?: { type: "document" };
   body: string;
   /** One example per {{n}} in the body, in order. Meta reviews the template with these. */
   example: string[];
@@ -162,6 +164,15 @@ export const TEMPLATES = {
     body: "Hi {{1}}, we have refunded {{2}} for order {{3}}. It can take 5–7 working days to show in your account.",
     example: ["Asha", "₹1,200", "MK-1024"],
     button: ORDER_PAGE,
+  },
+  // Bikriup › Orders › Documents: the invoice or shipping slip PDF, to the buyer or anyone the
+  // studio sends it to (a courier, a delivery partner). {{2}} is "invoice" or "shipping slip".
+  document: {
+    name: "mk_order_document",
+    category: "UTILITY",
+    header: { type: "document" },
+    body: "Hi {{1}}, here is the {{2}} for order {{3}} from Mudkraft.",
+    example: ["Asha", "invoice", "MK-1024"],
   },
   // Bikriup › Customers › WhatsApp: the shop writes first. Bikriup shows the same words (chats.js HELLO).
   hello: {

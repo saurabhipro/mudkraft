@@ -17,6 +17,8 @@ export const CACHE_TAGS = {
   reviews: (productSlug: string) => `reviews:${productSlug}`,
   /** The active pricing assumptions. */
   pricingConfig: "pricing-config",
+  /** The signup popup's offer (Bikriup › Grow › Coupons › Signup popup). */
+  welcomeOffer: "bikriup-welcome-offer",
 } as const;
 
 /**

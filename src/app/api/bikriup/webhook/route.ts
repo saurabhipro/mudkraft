@@ -19,9 +19,9 @@ import { appBaseUrl } from "@/server/email/templates";
 import { CACHE_TAGS } from "@/server/store/tags";
 import { importMessenger, productTemplate, sendSocialRaw, syncProfiles } from "@/server/social";
 import { getProductBySlug, type StoreProduct } from "@/server/store/products";
-import { chatStatus, sendRaw, sendWhatsApp } from "@/server/whatsapp";
+import { chatStatus, sendRaw, sendWhatsApp, type SendResult } from "@/server/whatsapp";
 import { orderStepMessage } from "@/server/whatsapp/orders";
-import { TEMPLATE_LANGUAGE, TEMPLATES } from "@/server/whatsapp/templates";
+import { TEMPLATE_LANGUAGE, TEMPLATES, type TemplateDef } from "@/server/whatsapp/templates";
 
 /**
  * Bikriup tells the site when something changed, so cached pages refresh at
@@ -34,11 +34,13 @@ import { TEMPLATE_LANGUAGE, TEMPLATES } from "@/server/whatsapp/templates";
  *                     with tracking, …; server/whatsapp/orders.ts lists them)
  *   chat.reply      — the studio answered a chat in Bikriup › People › Chats
  *                     (WhatsApp, Instagram or Messenger; text and/or product
- *                     cards): send it and report back
+ *                     cards), or sent an order's invoice / shipping slip PDF or
+ *                     tracking to any number from Orders: send it and report back
  *   chat.config     — Your shops › Chats changed: push the first questions to Meta
  *   chat.import     — bring in the Page's earlier Messenger chats
  *   broadcast.send  — Grow › Broadcasts: a batch of people for WhatsApp / email
  *   reminder.send   — People › Udhaar: one payment reminder with the pay link
+ *   welcome.changed — Grow › Coupons › Signup popup changed: drop the cached popup offer
  */
 
 const IMMEDIATELY = { expire: 0 } as const;
@@ -169,6 +171,78 @@ interface ChatReply {
   /** WhatsApp, shop writes first: an approved template ("hello") with its {{n}} values. */
   template?: string;
   params?: string[];
+  /** template "document": the PDF to attach (Bikriup › Orders › Documents › Share). */
+  document?: { url?: string; filename?: string };
+  /** template "shipped": the order whose tracking is sent (to the buyer or anyone else). */
+  order?: {
+    order_no?: string;
+    phone?: string;
+    customer_name?: string;
+    courier?: string;
+    tracking_no?: string;
+    tracking_url?: string;
+  };
+}
+
+// Meta refuses a parameter with a newline, a tab or more than four spaces in a row, or an empty one.
+const param = (text: unknown, max = 200) =>
+  String(text ?? "")
+    .replace(/[\n\t]+/g, " ")
+    .replace(/ {4,}/g, "   ")
+    .trim()
+    .slice(0, max) || "-";
+
+/** The studio sent an order document or its tracking from Bikriup, to any number: a template. */
+async function sendOrderTemplate(r: ChatReply): Promise<SendResult> {
+  if (r.template === "document") {
+    const url = r.document?.url ?? "";
+    if (!/^https:\/\//.test(url)) return { ok: false, error: "The document link must be https" };
+    const def = TEMPLATES.document;
+    return sendRaw(r.phone!, {
+      type: "template",
+      template: {
+        name: def.name,
+        language: { code: TEMPLATE_LANGUAGE },
+        components: [
+          {
+            type: "header",
+            parameters: [
+              {
+                type: "document",
+                document: { link: url, filename: param(r.document?.filename, 120) },
+              },
+            ],
+          },
+          {
+            type: "body",
+            parameters: (r.params ?? [])
+              .slice(0, 3)
+              .map((text) => ({ type: "text", text: param(text, 60) })),
+          },
+        ],
+      },
+    });
+  }
+  // "shipped": the same message the buyer gets when the order ships; its button opens the order.
+  const o = r.order ?? {};
+  const message = orderStepMessage({ ...o, status: "shipped" });
+  if (!message) return { ok: false, error: "Order details missing" };
+  const def: TemplateDef = TEMPLATES[message.template];
+  const components: unknown[] = [
+    { type: "body", parameters: message.body.map((text) => ({ type: "text", text: param(text) })) },
+  ];
+  if (message.button && def.button?.type === "url") {
+    components.push({
+      type: "button",
+      sub_type: "url",
+      index: "0",
+      parameters: [{ type: "text", text: message.button }],
+    });
+  }
+  return sendRaw(r.phone!, {
+    type: "template",
+    template: { name: def.name, language: { code: TEMPLATE_LANGUAGE }, components },
+  });
 }
 
 /** A reply typed in Bikriup › People › Chats: text, product cards, or both. */
@@ -202,6 +276,15 @@ async function sendChatReply(r: ChatReply | undefined) {
   }
 
   if (!r.phone) return;
+  if (r.template === "document" || r.template === "shipped") {
+    const sent = await sendOrderTemplate(r);
+    await chatStatus(
+      sent.ok
+        ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
+        : { message_id: r.message_id, status: "failed", error: sent.error },
+    );
+    return;
+  }
   if (r.template === "hello") {
     const def = TEMPLATES.hello;
     const sent = await sendRaw(r.phone, {
@@ -303,6 +386,10 @@ export async function POST(request: Request) {
 
   if (body.event === "chat.reply") {
     await sendChatReply(body.data as ChatReply | undefined);
+  }
+
+  if (body.event === "welcome.changed") {
+    revalidateTag(CACHE_TAGS.welcomeOffer, IMMEDIATELY);
   }
 
   if (body.event === "chat.config") {
