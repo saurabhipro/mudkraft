@@ -8,12 +8,14 @@ import { toProductView } from "@/lib/product-view";
 
 import { BikriupError, bikriup, bikriupEnabled } from "../bikriup";
 import { getActiveProducts } from "../store/products";
+import { CACHE_TAGS } from "../store/tags";
 import { sendWhatsApp } from "../whatsapp";
 
 /**
  * The welcome popup: a visitor's name, mobile and email go into Bikriup's customers
  * book (the same one the studio bills from), and they get the shop's welcome code.
- * The offer and the code are set in Bikriup › Website & API › Welcome offer.
+ * The offer and the code are picked in Bikriup › Grow › Coupons › Signup popup. Bikriup's
+ * welcome.changed webhook drops this cache at once, so the popup never shows a stale offer.
  */
 
 export type WelcomeOffer = {
@@ -24,9 +26,11 @@ export type WelcomeOffer = {
 } | null;
 
 const readOffer = unstable_cache(
-  async () => (await bikriup<{ welcome?: { percent: number; once: boolean } | null }>("/shop")).welcome ?? null,
+  async () =>
+    (await bikriup<{ welcome?: { percent: number; once: boolean } | null }>("/shop")).welcome ??
+    null,
   ["bikriup-welcome-offer"],
-  { revalidate: 600 },
+  { revalidate: 600, tags: [CACHE_TAGS.welcomeOffer] },
 );
 
 /** Whether there is an offer to show; the popup stays away when there is none. */
@@ -58,7 +62,10 @@ const joinSchema = z.object({
     .string()
     .transform((v) => v.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, ""))
     .refine((v) => /^[6-9]\d{9}$/.test(v), "Enter a 10-digit mobile number"),
-  email: z.union([z.literal(""), z.string().trim().toLowerCase().email("That email doesn't look right").max(80)]),
+  email: z.union([
+    z.literal(""),
+    z.string().trim().toLowerCase().email("That email doesn't look right").max(80),
+  ]),
   optIn: z.boolean().default(false),
   /** Honeypot: people never see this field, bots fill it. */
   website: z.string().max(200).default(""),
@@ -78,14 +85,14 @@ export async function joinWelcome(input: unknown): Promise<JoinResult> {
   }
   const d = parsed.data;
   try {
-    const out = await bikriup<{ coupon: { code: string; percent: number } | null; coupon_used: boolean }>(
-      "/customers",
-      {
-        method: "POST",
-        body: { name: d.name, phone: d.phone, email: d.email, opt_in: d.optIn, website: d.website },
-        forwardedFor: (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim(),
-      },
-    );
+    const out = await bikriup<{
+      coupon: { code: string; percent: number } | null;
+      coupon_used: boolean;
+    }>("/customers", {
+      method: "POST",
+      body: { name: d.name, phone: d.phone, email: d.email, opt_in: d.optIn, website: d.website },
+      forwardedFor: (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim(),
+    });
     // The code on WhatsApp too, so it is still there at checkout. A MARKETING message:
     // only for people who ticked the opt-in, and never twice for a used code.
     if (d.optIn && out.coupon && !out.coupon_used) {
@@ -95,12 +102,18 @@ export async function joinWelcome(input: unknown): Promise<JoinResult> {
         button: out.coupon.code,
       });
     }
-    return { ok: true, code: out.coupon?.code ?? null, percent: out.coupon?.percent ?? 0, alreadyUsed: out.coupon_used };
+    return {
+      ok: true,
+      code: out.coupon?.code ?? null,
+      percent: out.coupon?.percent ?? 0,
+      alreadyUsed: out.coupon_used,
+    };
   } catch (error) {
     if (error instanceof BikriupError && error.status === 429) {
       return { ok: false, error: "Too many tries from here. Please try again in a while." };
     }
-    if (error instanceof BikriupError && error.status < 500) return { ok: false, error: error.message };
+    if (error instanceof BikriupError && error.status < 500)
+      return { ok: false, error: error.message };
     console.error("[bikriup] welcome signup failed:", error);
     return { ok: false, error: "We couldn't save that just now. Please try again in a minute." };
   }
@@ -110,7 +123,12 @@ const couponSchema = z.object({
   code: z.string().trim().min(1).max(40),
   phone: z.string().max(20).default(""),
   items: z
-    .array(z.object({ slug: z.string().trim().min(1).max(200), qty: z.coerce.number().int().min(1).max(50) }))
+    .array(
+      z.object({
+        slug: z.string().trim().min(1).max(200),
+        qty: z.coerce.number().int().min(1).max(50),
+      }),
+    )
     .min(1)
     .max(50),
 });
@@ -137,7 +155,8 @@ export async function checkCoupon(input: unknown): Promise<CouponResult> {
       totalPaise: Math.round(q.total * 100),
     };
   } catch (error) {
-    if (error instanceof BikriupError && error.status < 500) return { ok: false, error: error.message };
+    if (error instanceof BikriupError && error.status < 500)
+      return { ok: false, error: error.message };
     console.error("[bikriup] coupon check failed:", error);
     return { ok: false, error: "We couldn't check that code just now." };
   }

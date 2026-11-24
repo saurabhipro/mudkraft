@@ -398,10 +398,13 @@ async function placeBikriupOrder(
       postalCode: d.postalCode,
     },
   });
-  await sendWhatsApp(
-    d.phone,
-    orderReceived(d.name, created.order_no, Math.round(created.total * 100), token),
-  );
+  // A COD order comes back already confirmed (Bikriup confirms it at once), and the confirmed
+  // message with the invoice follows from the webhook: no separate "received" message then.
+  if (created.status === "placed")
+    await sendWhatsApp(
+      d.phone,
+      orderReceived(d.name, created.order_no, Math.round(created.total * 100), token),
+    );
   if (chatRef) {
     await bikriup("/chats/link", {
       method: "POST",
