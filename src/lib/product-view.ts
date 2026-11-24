@@ -81,11 +81,13 @@ interface SourceProduct {
 }
 
 /**
- * Cutouts are stored beside their original under the same name with this
- * suffix — see scripts/import-product-images.ts. The convention lives here so
- * only one place needs changing if it ever moves to a column.
+ * Cutouts are stored beside their original under the same name with a "-cutout"
+ * suffix — see scripts/import-product-images.ts, and Bikriup's Import from photos
+ * › Clean up. The convention lives here so only one place needs changing if it
+ * ever moves to a column. A Cloudinary public id has no extension ("…-cutout");
+ * a photo hosted by Bikriup arrives as its full address ("…-cutout.png").
  */
-const CUTOUT_SUFFIX = "-cutout";
+export const isCutout = (publicId: string) => /-cutout(\.[a-z0-9]{2,4})?(\?.*)?$/i.test(publicId);
 
 /** Sizes are capacities: Bikriup may hold a bare "4" or "1.5", which means litres. */
 export function withUnit(label: string): string {
@@ -97,7 +99,7 @@ const toCm = (mm: number | null | undefined) => (mm && mm > 0 ? Math.round(mm / 
 
 export function toProductView(product: SourceProduct): ProductView {
   const primary = product.images.find((image) => image.isPrimary) ?? product.images[0] ?? null;
-  const cutout = product.images.find((image) => image.publicId.endsWith(CUTOUT_SUFFIX)) ?? null;
+  const cutout = product.images.find((image) => isCutout(image.publicId)) ?? null;
 
   return {
     slug: product.slug,
@@ -115,7 +117,7 @@ export function toProductView(product: SourceProduct): ProductView {
     img: primary ? cloudinaryUrl({ publicId: primary.publicId, version: primary.version }) : null,
     cutout: cutout ? cloudinaryUrl({ publicId: cutout.publicId, version: cutout.version }) : null,
     gallery: product.images
-      .filter((image) => !image.publicId.endsWith(CUTOUT_SUFFIX))
+      .filter((image) => !isCutout(image.publicId))
       .map((image) => cloudinaryUrl({ publicId: image.publicId, version: image.version })),
     imageAlts: Object.fromEntries(
       product.images
