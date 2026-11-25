@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { Gem, Globe, Hand, Leaf, MapPin } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { HeroPieces } from "@/components/HeroPieces";
 import { InYourKitchen, MadeByHand } from "@/components/HomeMedia";
-import { ClayPlinth } from "@/components/ClayPlinth";
+import { ArchCrown, ClayPlinth } from "@/components/ClayPlinth";
 import { ShareButton } from "@/components/ShareButton";
 import { NewsletterForm } from "@/components/NewsletterForm";
 import { SITE_URL } from "@/lib/seo";
@@ -23,19 +24,12 @@ import {
   type ProductFamily,
   type ProductView,
 } from "@/lib/product-view";
-import {
-  useCart,
-  updateQty as updateQtyStore,
-  removeItem as removeItemStore,
-} from "@/lib/cart";
+import { useCart, updateQty as updateQtyStore, removeItem as removeItemStore } from "@/lib/cart";
 import { VideoCard } from "@/components/VideoCard";
 import { PromiseCarousel } from "@/components/PromiseCarousel";
 import { RangePhoto } from "@/components/RangePhoto";
 import { TrustStrip } from "@/components/TrustStrip";
 import { type YouTubeVideo } from "@/lib/youtube";
-
-const TAPE_FRONT = ["River clay", "Wood fired", "Hand thrown", "Slow made"];
-const TAPE_BACK = ["earth born", "seven generations", "no moulds", "no machines"];
 
 const ELEMENTS = [
   {
@@ -96,6 +90,64 @@ const RIVER_TO_TABLE = [
   },
 ];
 
+const FEATURES = [
+  { icon: Leaf, text: "100% Natural" },
+  { icon: Globe, text: "Eco-Friendly" },
+  { icon: Hand, text: "Handcrafted by Skilled Artisans" },
+  { icon: Gem, text: "Premium Export Quality" },
+  { icon: MapPin, text: "Made in India" },
+];
+
+/** The collection's promises: a column beside the grid on wide screens, a row above it otherwise. */
+function FeatureRail() {
+  return (
+    <ul className="mb-8 grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-5 xl:mb-0 xl:grid-cols-1 xl:content-start xl:gap-y-8 xl:border-r xl:border-gold/40 xl:pr-6 xl:pt-24">
+      {FEATURES.map(({ icon: Icon, text }) => (
+        <li key={text} className="flex flex-col items-center gap-2 text-center">
+          <span className="grid h-11 w-11 place-items-center rounded-full border border-gold/50 text-clay">
+            <Icon className="h-5 w-5" strokeWidth={1.4} aria-hidden="true" />
+          </span>
+          <span className="text-[11.5px] leading-snug text-earth/85">{text}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** A soft sage leaf sprig for the collection panel's corners. */
+function LeafSprig({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 200 120"
+      className={`pointer-events-none text-sage/45 ${className}`}
+    >
+      <path d="M6 112 C60 92 110 60 192 10" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      {[
+        [40, 96, -30],
+        [70, 80, -40],
+        [100, 62, -45],
+        [130, 44, -50],
+        [158, 28, -55],
+      ].map(([x, y, r], i) => (
+        <g key={i} transform={`translate(${x} ${y})`}>
+          <path
+            d="M0 0 C8 -22 30 -30 44 -26 C38 -10 18 2 0 0Z"
+            fill="currentColor"
+            transform={`rotate(${r})`}
+          />
+          <path
+            d="M0 0 C4 20 22 30 38 30 C34 16 18 4 0 0Z"
+            fill="currentColor"
+            opacity="0.8"
+            transform={`rotate(${r + 20})`}
+          />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 function Eyebrow({ children, tone = "light" }: { children: string; tone?: "light" | "dark" }) {
   return (
     <div className="flex items-center gap-3.5">
@@ -150,7 +202,9 @@ export function HomePage({
   const filterOptions = liveCategories.length > 1 ? ["All", ...liveCategories] : [];
   const [sort, setSort] = useState<SortKey>("featured");
   const visibleFamilies = sortFamilies(
-    activeCategory === "All" ? families : families.filter((f) => f.categories.includes(activeCategory)),
+    activeCategory === "All"
+      ? families
+      : families.filter((f) => f.categories.includes(activeCategory)),
     sort,
   );
 
@@ -162,45 +216,10 @@ export function HomePage({
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <SiteHeader
-        cartCount={count}
-        onCartOpen={() => setOpen(true)}
-      />
+      <SiteHeader cartCount={count} onCartOpen={() => setOpen(true)} />
 
       {/* HERO — pick a piece on the wheel */}
       <HeroPieces products={products} boxes={boxes} />
-
-      {/* CROSSED TAPES */}
-      <section aria-label="How we make" className="relative h-[170px] md:h-[210px] overflow-hidden">
-        <div className="absolute -left-[5%] -right-[5%] top-9 md:top-12 rotate-[2.5deg] bg-earth py-4 md:py-5 overflow-hidden">
-          <div className="flex w-max animate-marquee-rev whitespace-nowrap font-display italic text-2xl md:text-3xl text-cream/55">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex gap-12 pr-12" aria-hidden={i > 0}>
-                {TAPE_BACK.map((w) => (
-                  <span key={w} className="flex gap-12">
-                    <span>{w}</span>
-                    <span>✦</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="absolute -left-[5%] -right-[5%] top-14 md:top-[70px] -rotate-2 bg-clay py-4 md:py-[22px] overflow-hidden shadow-[0_20px_40px_-20px_oklch(0.42_0.11_38/0.6)]">
-          <div className="flex w-max animate-marquee whitespace-nowrap font-display text-[1.75rem] md:text-[2.15rem] text-cream">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex gap-12 pr-12" aria-hidden={i > 0}>
-                {TAPE_FRONT.map((w) => (
-                  <span key={w} className="flex gap-12">
-                    <span>{w}</span>
-                    <span className="text-gold">●</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* MANIFESTO — lines fill with ink as they scroll past */}
       <section className="px-6 md:px-10 pt-14 md:pt-20">
@@ -219,43 +238,77 @@ export function HomePage({
       </section>
 
       {/* COLLECTION */}
-      <section id="collection" className="px-6 md:px-10 pt-10 md:pt-12 pb-24 md:pb-32">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="sr-only">The collection</h2>
-          <div className="flex flex-wrap-reverse items-center justify-between gap-x-8 gap-y-4 mb-10 md:mb-12">
-            <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
-              {filterOptions.map((c) => {
-                const n =
-                  c === "All" ? families.length : families.filter((f) => f.categories.includes(c)).length;
-                const isActive = activeCategory === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setActiveCategory(c)}
-                    aria-pressed={isActive}
-                    className={`min-h-[44px] px-5 rounded-full border text-[13px] font-medium transition-all duration-400 ease-[var(--ease-clay)] hover:-translate-y-0.5 ${
-                      isActive
-                        ? "bg-earth text-cream border-earth"
-                        : "bg-transparent text-earth border-earth/25 hover:border-clay"
-                    }`}
-                  >
-                    {c} <span className="ml-0.5 text-[11px] opacity-60">{n}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <SortPills value={sort} onChange={setSort} />
-          </div>
+      <section id="collection" className="px-4 sm:px-6 md:px-10 pt-10 md:pt-12 pb-24 md:pb-32">
+        <div className="relative max-w-[88rem] mx-auto overflow-hidden rounded-[2rem] bg-[radial-gradient(ellipse_at_top,oklch(0.985_0.012_80),oklch(0.95_0.025_78)_70%)] px-4 sm:px-8 md:px-12 pt-12 md:pt-16 pb-12 md:pb-16">
+          <LeafSprig className="absolute -left-6 -top-4 w-40 md:w-56 -rotate-12" />
+          <LeafSprig className="absolute -right-6 -top-4 w-36 md:w-52 scale-x-[-1] rotate-12" />
+          <LeafSprig className="absolute -right-8 -bottom-6 w-36 md:w-48 scale-x-[-1] rotate-[200deg] opacity-70" />
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {visibleFamilies.map((f) => (
-              <FamilyCard key={f.key} family={f} />
-            ))}
+          <header className="relative text-center">
+            <p className="text-[11px] tracking-[0.4em] uppercase font-medium text-gold-deep">
+              Water · Dining · Living
+            </p>
+            <h2 className="mt-3 font-display font-normal text-[clamp(2.25rem,4.6vw,3.9rem)] leading-[1.05] text-earth">
+              Timeless Terracotta Collection
+            </h2>
+            <div className="mt-3 flex items-center justify-center gap-4">
+              <span
+                aria-hidden="true"
+                className="h-px w-12 sm:w-24 bg-gradient-to-r from-transparent to-gold"
+              />
+              <p className="font-display italic text-[clamp(1.15rem,1.8vw,1.5rem)] text-clay">
+                Tradition. Wellness. Elegance.
+              </p>
+              <span
+                aria-hidden="true"
+                className="h-px w-12 sm:w-24 bg-gradient-to-l from-transparent to-gold"
+              />
+            </div>
+          </header>
+
+          <div className="relative mt-10 md:mt-12 xl:grid xl:grid-cols-[112px_1fr] xl:gap-8">
+            <FeatureRail />
+            <div>
+              <div className="flex flex-wrap-reverse items-center justify-between gap-x-8 gap-y-4 mb-8 md:mb-10">
+                <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
+                  {filterOptions.map((c) => {
+                    const n =
+                      c === "All"
+                        ? families.length
+                        : families.filter((f) => f.categories.includes(c)).length;
+                    const isActive = activeCategory === c;
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setActiveCategory(c)}
+                        aria-pressed={isActive}
+                        className={`min-h-[44px] px-5 rounded-full border text-[13px] font-medium transition-all duration-400 ease-[var(--ease-clay)] hover:-translate-y-0.5 ${
+                          isActive
+                            ? "bg-earth text-cream border-earth"
+                            : "bg-transparent text-earth border-earth/25 hover:border-clay"
+                        }`}
+                      >
+                        {c} <span className="ml-0.5 text-[11px] opacity-60">{n}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <SortPills value={sort} onChange={setSort} />
+              </div>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                {visibleFamilies.map((f) => (
+                  <FamilyCard key={f.key} family={f} />
+                ))}
+              </div>
+              <p className="mt-6 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
+                Prices incl. taxes &amp; delivery
+              </p>
+            </div>
           </div>
-          <p className="mt-6 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
-            Prices incl. taxes &amp; delivery
-          </p>
+        </div>
+        <div className="max-w-7xl mx-auto">
           <TrustStrip className="mt-8" />
         </div>
       </section>
@@ -467,7 +520,8 @@ export function HomePage({
               <div className="absolute left-7 right-7 bottom-7">
                 <h3 className="font-display text-4xl">Naturally cool</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-cream/85">
-                  Porous walls breathe, so water stays cooler than the room as it evaporates, with no fridge needed.
+                  Porous walls breathe, so water stays cooler than the room as it evaporates, with
+                  no fridge needed.
                 </p>
               </div>
             </Link>
@@ -633,9 +687,9 @@ export function HomePage({
             <circle cx="32" cy="32" r="6" fill="var(--clay)" />
           </svg>
           <p className="mk-reveal font-display italic text-[clamp(1.75rem,3.8vw,3.4rem)] leading-[1.2] text-earth text-balance">
-            &ldquo;<span className="not-italic mr-[0.12em]">Mudkraft</span> is the craft of earth in your hands.
-            We think of every home that keeps our clay as another quiet birth — of stillness, of
-            ritual, of a slower way to hold what matters.&rdquo;
+            &ldquo;<span className="not-italic mr-[0.12em]">Mudkraft</span> is the craft of earth in
+            your hands. We think of every home that keeps our clay as another quiet birth — of
+            stillness, of ritual, of a slower way to hold what matters.&rdquo;
           </p>
           <p className="mt-10 text-[11px] tracking-[0.24em] uppercase text-muted-foreground">
             Handmade in Khurja, India · A slow craft studio from the banks of the Ganges
@@ -843,17 +897,12 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
 
   // A Jharokha window: the whole card is an arch, traced inside by a gold keyline.
   return (
-    <article className="group relative flex flex-col mk-arch-top border border-gold/45 bg-ivory px-3 pb-4 pt-3 shadow-[0_24px_48px_-36px_oklch(0.31_0.1_21/0.45)] transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:border-gold/80 hover:shadow-[0_36px_60px_-36px_oklch(0.31_0.1_21/0.55)]">
-      <span aria-hidden="true" className="pointer-events-none absolute inset-[7px] mk-arch-top border border-gold/60" />
-      {/* The crown: a short gold arc with a maroon diamond at its peak. */}
-      <svg
+    <article className="group relative flex flex-col mk-arch-top border border-[oklch(0.88_0.03_80)] bg-[linear-gradient(to_bottom,oklch(0.965_0.02_80),oklch(0.99_0.006_80)_55%)] px-3 pb-4 pt-3 shadow-[0_22px_44px_-30px_oklch(0.31_0.1_21/0.5)] transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-clay)] hover:-translate-y-1 hover:border-gold/60 hover:shadow-[0_32px_56px_-30px_oklch(0.31_0.1_21/0.6)]">
+      <span
         aria-hidden="true"
-        viewBox="0 0 120 26"
-        className="pointer-events-none absolute left-1/2 top-[18px] w-[34%] -translate-x-1/2 text-gold-deep"
-      >
-        <path d="M4 25 Q60 2 116 25" fill="none" stroke="currentColor" strokeWidth="1" />
-        <path d="M60 3 L64 10 L60 17 L56 10 Z" className="fill-clay" />
-      </svg>
+        className="pointer-events-none absolute inset-[7px] mk-arch-top border border-gold/25"
+      />
+      <ArchCrown className="top-[18px] w-[34%]" />
 
       <div className="relative mx-[6%] mt-[14%]">
         <div className="relative aspect-[1/1] overflow-hidden mk-arch-top">
@@ -872,7 +921,7 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
           text={p.note || "Handcrafted clay from Mudkraft."}
           url={`${SITE_URL}${href}`}
           label={`Share ${name}`}
-          icon="grid h-10 w-10 place-items-center rounded-full border border-gold/60 bg-ivory/90 text-earth shadow-sm backdrop-blur transition-colors hover:bg-earth hover:text-gold-light"
+          icon="grid h-10 w-10 place-items-center rounded-full bg-white/95 text-earth shadow-[0_4px_12px_-4px_oklch(0.31_0.1_21/0.35)] backdrop-blur transition-colors hover:bg-earth hover:text-gold-light"
           className="absolute! -right-2 top-[26%] z-10"
         />
       </div>
@@ -884,10 +933,17 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
             {name}
           </Link>
         </h3>
-        {p.note && <p className="mt-0.5 font-display text-[1.05rem] italic leading-snug text-clay">{p.note}</p>}
+        {p.note && (
+          <p className="mt-0.5 font-display text-[1.05rem] italic leading-snug text-clay">
+            {p.note}
+          </p>
+        )}
 
         <div className="mt-4 flex w-full items-center gap-3">
-          <span aria-hidden="true" className="h-px flex-1 bg-gradient-to-r from-transparent to-gold/70" />
+          <span
+            aria-hidden="true"
+            className="h-px flex-1 bg-gradient-to-r from-transparent to-gold/70"
+          />
           <span className="flex items-baseline gap-2 font-display text-earth">
             {onePrice ? (
               <>
@@ -898,20 +954,20 @@ export function FamilyCard({ family }: { family: ProductFamily }) {
               <span className="text-[1.6rem]">from {formatPaise(Math.min(...prices))}</span>
             )}
           </span>
-          <span aria-hidden="true" className="h-px flex-1 bg-gradient-to-l from-transparent to-gold/70" />
+          <span
+            aria-hidden="true"
+            className="h-px flex-1 bg-gradient-to-l from-transparent to-gold/70"
+          />
         </div>
         {(soldOut || few) && (
-          <p className="mt-1 text-xs font-semibold text-clay">{soldOut ? "Sold out" : `Only ${p.stockQty} left`}</p>
+          <p className="mt-1 text-xs font-semibold text-clay">
+            {soldOut ? "Sold out" : `Only ${p.stockQty} left`}
+          </p>
         )}
 
-        <Link
-          href={href}
-          className="mt-auto w-full pt-4"
-          tabIndex={-1}
-          aria-hidden="true"
-        >
-          <span className="flex min-h-12 w-full items-center justify-center rounded-[3px] bg-earth px-4 font-display text-[13px] font-semibold uppercase tracking-[0.28em] text-gold-light transition-colors group-hover:bg-clay">
-            View the piece
+        <Link href={href} className="mt-auto w-full pt-4" tabIndex={-1} aria-hidden="true">
+          <span className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-earth px-4 text-[11.5px] font-semibold uppercase tracking-[0.24em] text-cream shadow-[0_8px_18px_-10px_oklch(0.25_0.075_19/0.8)] transition-colors group-hover:bg-clay">
+            View details <Arrow className="mk-arrow h-3.5 w-3.5" />
           </span>
         </Link>
       </div>
@@ -936,10 +992,18 @@ export function sortFamilies(families: ProductFamily[], sort: SortKey): ProductF
   return [...families].sort((a, b) => sign * (fromPaise(a) - fromPaise(b)));
 }
 
-export function SortPills({ value, onChange }: { value: SortKey; onChange: (key: SortKey) => void }) {
+export function SortPills({
+  value,
+  onChange,
+}: {
+  value: SortKey;
+  onChange: (key: SortKey) => void;
+}) {
   return (
     <div role="group" aria-label="Sort" className="flex flex-wrap items-center gap-2">
-      <span className="mr-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Sort</span>
+      <span className="mr-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+        Sort
+      </span>
       {SORTS.map((s) => (
         <button
           key={s.key}
@@ -947,7 +1011,9 @@ export function SortPills({ value, onChange }: { value: SortKey; onChange: (key:
           onClick={() => onChange(s.key)}
           aria-pressed={value === s.key}
           className={`min-h-[40px] rounded-full border px-4 text-[12.5px] font-medium transition-colors ${
-            value === s.key ? "border-earth bg-earth text-cream" : "border-earth/25 text-earth hover:border-clay"
+            value === s.key
+              ? "border-earth bg-earth text-cream"
+              : "border-earth/25 text-earth hover:border-clay"
           }`}
         >
           {s.label}

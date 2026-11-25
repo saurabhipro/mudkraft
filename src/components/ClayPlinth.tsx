@@ -41,7 +41,14 @@ export function ClayPlinth({
         <img
           key={image}
           src={image}
-          alt={alt || product.imageAlts[image] || `${product.name} ${product.sizeLabel} – unglazed clay, handmade in Khurja`.replace(/\s+/g, " ")}
+          alt={
+            alt ||
+            product.imageAlts[image] ||
+            `${product.name} ${product.sizeLabel} – unglazed clay, handmade in Khurja`.replace(
+              /\s+/g,
+              " ",
+            )
+          }
           loading={priority ? "eager" : "lazy"}
           className={`absolute left-[14%] ${low ? "top-[30%] h-[56%]" : "top-[16%] h-[68%]"} w-[72%] object-contain object-bottom transition-transform duration-1000 ease-[var(--ease-clay)] group-hover:-translate-y-2 group-hover:scale-[1.04] ${
             cutout ? "" : "mix-blend-multiply brightness-[1.06] contrast-[1.06]"
@@ -63,10 +70,13 @@ export function ClayPlinth({
  */
 export function badgeFor(size: string): { value: string; label: string } | null {
   const label = size.trim();
-  const set = label.match(/^(?:set\s+of\s+)?(\d+)\s*(?:pcs?|pieces?)?$/i) ?? label.match(/^set\s+of\s+(\d+)\b/i);
+  const set =
+    label.match(/^(?:set\s+of\s+)?(\d+)\s*(?:pcs?|pieces?)?$/i) ??
+    label.match(/^set\s+of\s+(\d+)\b/i);
   if (set) return { value: set[1], label: /set/i.test(label) ? "in a set" : "pieces" };
   const volume = label.match(/^(\d+(?:\.\d+)?)\s*(l|ltr|litres?|liters?|ml)$/i);
-  if (volume) return { value: `${volume[1]} ${/^ml$/i.test(volume[2]) ? "ml" : "L"}`, label: "holds" };
+  if (volume)
+    return { value: `${volume[1]} ${/^ml$/i.test(volume[2]) ? "ml" : "L"}`, label: "holds" };
   return /\d/.test(label) && label.length <= 5 ? { value: label, label: "size" } : null;
 }
 
@@ -78,8 +88,31 @@ export function HoldsBadge({ size, className = "" }: { size: string; className?:
     <span
       className={`pointer-events-none absolute flex flex-col items-center justify-center rounded-full bg-earth text-gold-light leading-none shadow-[0_10px_24px_-10px_oklch(0.2_0.05_18/0.7),inset_0_0_0_1px_oklch(0.73_0.115_85/0.35)] ${className}`}
     >
-      <span className={`whitespace-nowrap font-display font-medium ${badge.value.length > 4 ? "text-[0.8em]" : ""}`}>{badge.value}</span>
-      <span className="mt-[3px] whitespace-nowrap text-[8px] uppercase tracking-[0.18em] text-gold">{badge.label}</span>
+      <span
+        className={`whitespace-nowrap font-display font-medium ${badge.value.length > 4 ? "text-[0.8em]" : ""}`}
+      >
+        {badge.value}
+      </span>
+      <span className="mt-[3px] whitespace-nowrap text-[8px] uppercase tracking-[0.18em] text-gold">
+        {badge.label}
+      </span>
     </span>
+  );
+}
+
+/**
+ * The Jharokha crown: a short gold arc with a maroon diamond at its peak, set at the
+ * top of an arched frame. Position and size it with `className`.
+ */
+export function ArchCrown({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 120 26"
+      className={`pointer-events-none absolute left-1/2 z-[1] -translate-x-1/2 text-gold-deep ${className}`}
+    >
+      <path d="M4 25 Q60 2 116 25" fill="none" stroke="currentColor" strokeWidth="1" />
+      <path d="M60 3 L64 10 L60 17 L56 10 Z" className="fill-clay" />
+    </svg>
   );
 }
