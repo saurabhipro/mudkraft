@@ -1,7 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { serverEnv } from "./env";
-import { isCutout } from "@/lib/product-view";
 
 /**
  * Bikriup is the shop's back office: the catalogue, stock, orders, reviews and
@@ -94,16 +93,29 @@ export interface BkSeo {
   noindex?: boolean;
 }
 
-const FULFILMENT = { ship: "ship_nationwide", local: "local_delivery_only", pickup: "pickup_only" } as const;
+const FULFILMENT = {
+  ship: "ship_nationwide",
+  local: "local_delivery_only",
+  pickup: "pickup_only",
+} as const;
 
 /**
  * Bikriup stores the plain Cloudinary URL; the site keeps building its own
  * transformations from the public id, as before.
  */
-export function cloudinaryRef(url: string): { publicId: string; version: string | null; resourceType: "image" | "video" } | null {
-  const m = /res\.cloudinary\.com\/[^/]+\/(image|video)\/upload\/(?:[^/]*,[^/]*\/)?(?:v(\d+)\/)?(.+)$/.exec(url);
+export function cloudinaryRef(
+  url: string,
+): { publicId: string; version: string | null; resourceType: "image" | "video" } | null {
+  const m =
+    /res\.cloudinary\.com\/[^/]+\/(image|video)\/upload\/(?:[^/]*,[^/]*\/)?(?:v(\d+)\/)?(.+)$/.exec(
+      url,
+    );
   if (!m) return null;
-  return { resourceType: m[1] as "image" | "video", version: m[2] ?? null, publicId: m[3].replace(/\.[a-z0-9]{2,4}$/i, "") };
+  return {
+    resourceType: m[1] as "image" | "video",
+    version: m[2] ?? null,
+    publicId: m[3].replace(/\.[a-z0-9]{2,4}$/i, ""),
+  };
 }
 
 /**
@@ -114,9 +126,15 @@ export function cloudinaryRef(url: string): { publicId: string; version: string 
 function mediaUrl(url: string): string {
   const explicit = serverEnv.BIKRIUP_MEDIA_URL;
   let u: URL;
-  try { u = new URL(url); } catch { return url; }
+  try {
+    u = new URL(url);
+  } catch {
+    return url;
+  }
   const loopback = u.hostname === "127.0.0.1";
-  const base = explicit ?? (loopback && serverEnv.BIKRIUP_ADMIN_URL ? new URL(serverEnv.BIKRIUP_ADMIN_URL).origin : null);
+  const base =
+    explicit ??
+    (loopback && serverEnv.BIKRIUP_ADMIN_URL ? new URL(serverEnv.BIKRIUP_ADMIN_URL).origin : null);
   return base ? `${base.replace(/\/$/, "")}${u.pathname}${u.search}` : url;
 }
 
@@ -124,11 +142,25 @@ const rupeesToPaise = (n: number | undefined) => Math.round((n ?? 0) * 100);
 
 export function toStoreProductShape(p: BkProduct) {
   const images = p.images
-    .map((img) => ({ img, ref: cloudinaryRef(img.url) ?? (/^https?:\/\//.test(img.url) ? { publicId: mediaUrl(img.url), version: null, resourceType: "image" as const } : null) }))
+    .map((img) => ({
+      img,
+      ref:
+        cloudinaryRef(img.url) ??
+        (/^https?:\/\//.test(img.url)
+          ? { publicId: mediaUrl(img.url), version: null, resourceType: "image" as const }
+          : null),
+    }))
     .filter((x) => x.ref)
-    .map(({ img, ref }) => ({ ...ref!, alt: img.alt, width: null, height: null, isPrimary: false }));
-  // The cover is the first styled photo; cutouts are found by name, as before.
-  const cover = images.find((i) => !isCutout(i.publicId)) ?? images[0];
+    .map(({ img, ref }) => ({
+      ...ref!,
+      alt: img.alt,
+      width: null,
+      height: null,
+      isPrimary: false,
+    }));
+  // The cover is the first photo, the one the shop starred in Bikriup. Its cutout, if it has one,
+  // is matched by name in toProductView; cutouts of other photos are ignored.
+  const cover = images[0];
   if (cover) cover.isPrimary = true;
   const description = p.description ?? "";
   return {
@@ -203,7 +235,15 @@ export interface BkOrder {
   /** The order number is the invoice number; empty until the studio confirms the order. */
   invoice_url?: string;
   credit_notes?: Array<{ order_no: string; total: number; refund_status: string }>;
-  items: Array<{ product_id: number; slug?: string; name: string; size: string; qty: number; price: number; line_total: number }>;
+  items: Array<{
+    product_id: number;
+    slug?: string;
+    name: string;
+    size: string;
+    qty: number;
+    price: number;
+    line_total: number;
+  }>;
 }
 
 /**
@@ -216,7 +256,9 @@ function sign(payload: string, key: string = serverEnv.BIKRIUP_SECRET_KEY ?? "")
 }
 
 export function orderToken(orderNo: string, phone: string): string {
-  const payload = Buffer.from(`${orderNo}.${phone.replace(/\D/g, "").slice(-10)}`).toString("base64url");
+  const payload = Buffer.from(`${orderNo}.${phone.replace(/\D/g, "").slice(-10)}`).toString(
+    "base64url",
+  );
   return `${payload}.${sign(payload)}`;
 }
 
@@ -226,7 +268,9 @@ export function readOrderToken(token: string): { orderNo: string; phone: string 
   const got = Buffer.from(mac);
   // Links made here are signed with the secret key; links the desk sends (WhatsApp / SMS when an
   // order ships) are signed with the webhook secret both sides already share.
-  const keys = [serverEnv.BIKRIUP_SECRET_KEY, serverEnv.BIKRIUP_WEBHOOK_SECRET].filter(Boolean) as string[];
+  const keys = [serverEnv.BIKRIUP_SECRET_KEY, serverEnv.BIKRIUP_WEBHOOK_SECRET].filter(
+    Boolean,
+  ) as string[];
   const valid = keys.some((key) => {
     const want = Buffer.from(sign(payload, key));
     return want.length === got.length && timingSafeEqual(want, got);
@@ -282,10 +326,14 @@ export function sitePaymentProvider(o: BkOrder): string {
 export function verifyBikriupSignature(rawBody: string, header: string | null): boolean {
   const secret = serverEnv.BIKRIUP_WEBHOOK_SECRET;
   if (!secret || !header) return false;
-  const parts = Object.fromEntries(header.split(",").map((kv) => kv.split("=") as [string, string]));
+  const parts = Object.fromEntries(
+    header.split(",").map((kv) => kv.split("=") as [string, string]),
+  );
   const t = Number(parts.t);
   if (!t || Math.abs(Date.now() / 1000 - t) > 600) return false;
-  const want = Buffer.from(createHmac("sha256", secret).update(`${parts.t}.${rawBody}`).digest("hex"));
+  const want = Buffer.from(
+    createHmac("sha256", secret).update(`${parts.t}.${rawBody}`).digest("hex"),
+  );
   const got = Buffer.from(parts.v1 ?? "");
   return want.length === got.length && timingSafeEqual(want, got);
 }
