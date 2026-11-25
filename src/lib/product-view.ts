@@ -89,6 +89,30 @@ interface SourceProduct {
  */
 export const isCutout = (publicId: string) => /-cutout(\.[a-z0-9]{2,4})?(\?.*)?$/i.test(publicId);
 
+/** A photo's name without its extension, query or "-cutout" suffix: what a cutout and its original share. */
+const stemOf = (publicId: string) =>
+  publicId
+    .replace(/\?.*$/, "")
+    .replace(/\.[a-z0-9]{2,4}$/i, "")
+    .replace(/-cutout$/i, "");
+
+/**
+ * The cutout that belongs to the cover, or none. The cover is what the shop chose, so an old
+ * cutout of some other photo must not stand in for it: it counts only when it is the cover
+ * itself, or was made from the cover (same name plus "-cutout").
+ */
+export function coverCutout<T extends { publicId: string }>(
+  cover: T | null,
+  images: T[],
+): T | null {
+  if (!cover) return null;
+  if (isCutout(cover.publicId)) return cover;
+  const stem = stemOf(cover.publicId);
+  return (
+    images.find((image) => isCutout(image.publicId) && stemOf(image.publicId) === stem) ?? null
+  );
+}
+
 /** Sizes are capacities: Bikriup may hold a bare "4" or "1.5", which means litres. */
 export function withUnit(label: string): string {
   const t = label.trim();
@@ -99,7 +123,7 @@ const toCm = (mm: number | null | undefined) => (mm && mm > 0 ? Math.round(mm / 
 
 export function toProductView(product: SourceProduct): ProductView {
   const primary = product.images.find((image) => image.isPrimary) ?? product.images[0] ?? null;
-  const cutout = product.images.find((image) => isCutout(image.publicId)) ?? null;
+  const cutout = coverCutout(primary, product.images);
 
   return {
     slug: product.slug,
@@ -123,8 +147,15 @@ export function toProductView(product: SourceProduct): ProductView {
       product.images
         // Bikriup fills a photo's alt with the product name when the shop wrote none; that says
         // less than the keyword fallback the pages use, so only a deliberate description counts.
-        .filter((image) => image.alt?.trim() && image.alt.trim().toLowerCase() !== product.name.trim().toLowerCase())
-        .map((image) => [cloudinaryUrl({ publicId: image.publicId, version: image.version }), image.alt!.trim()]),
+        .filter(
+          (image) =>
+            image.alt?.trim() &&
+            image.alt.trim().toLowerCase() !== product.name.trim().toLowerCase(),
+        )
+        .map((image) => [
+          cloudinaryUrl({ publicId: image.publicId, version: image.version }),
+          image.alt!.trim(),
+        ]),
     ),
     category: product.categoryName,
     sizeLabel: withUnit(product.sizeLabel),
@@ -178,17 +209,27 @@ export function groupFamilies(products: ProductView[]): ProductFamily[] {
   const families = new Map<string, ProductFamily>();
   for (const p of products) {
     const type = p.tag.trim();
-    const key = type ? `type::${type.toLowerCase()}` : `name::${p.category ?? ""}::${p.name.toLowerCase()}`;
+    const key = type
+      ? `type::${type.toLowerCase()}`
+      : `name::${p.category ?? ""}::${p.name.toLowerCase()}`;
     const family = families.get(key);
     if (family) {
       family.sizes.push(p);
       if (p.category && !family.categories.includes(p.category)) family.categories.push(p.category);
     } else {
-      families.set(key, { key, name: type || p.name, category: p.category, categories: p.category ? [p.category] : [], sizes: [p] });
+      families.set(key, {
+        key,
+        name: type || p.name,
+        category: p.category,
+        categories: p.category ? [p.category] : [],
+        sizes: [p],
+      });
     }
   }
   for (const family of families.values()) {
-    family.sizes.sort((a, b) => a.name.localeCompare(b.name) || sizeInGrams(a.sizeLabel) - sizeInGrams(b.sizeLabel));
+    family.sizes.sort(
+      (a, b) => a.name.localeCompare(b.name) || sizeInGrams(a.sizeLabel) - sizeInGrams(b.sizeLabel),
+    );
   }
   return [...families.values()];
 }
