@@ -193,10 +193,16 @@ export function ProductDetail({
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-20 md:pt-10 md:pb-28 grid grid-cols-1 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-10 md:gap-16 items-start">
         <div className="md:sticky md:top-28">
-          <div className="relative animate-fade-up">
-            {/* A plain lit ivory arch with a soft shadow; a lens zooms the piece under the mouse. */}
+          {/* The same Jharokha frame as the collection cards: an arched card with a gold keyline
+              and the crown at its peak, holding the lit ivory arch. A lens zooms the piece. */}
+          <div className="relative animate-fade-up mk-arch-top border border-[oklch(0.88_0.03_80)] bg-[linear-gradient(to_bottom,oklch(0.965_0.02_80),oklch(0.99_0.006_80)_55%)] px-[3.5%] pb-[3.5%] pt-[12%] shadow-[0_40px_70px_-44px_oklch(0.31_0.1_21/0.45)]">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-[9px] mk-arch-top border border-gold/25"
+            />
+            <ArchCrown className="top-[3.2%] w-[24%]" />
             <ZoomLens src={shots[shot] ?? null} blend={(shots[shot] ?? null) !== p.cutout}>
-              <div className="group relative aspect-[10/11] overflow-hidden mk-arch-top shadow-[0_40px_70px_-44px_oklch(0.31_0.1_21/0.45)]">
+              <div className="group relative aspect-[10/11] overflow-hidden mk-arch-top">
                 <ClayPlinth
                   product={p}
                   src={shots[shot] ?? null}
@@ -207,7 +213,6 @@ export function ProductDetail({
                   priority
                   low
                 />
-                <ArchCrown className="top-[7%] w-[26%]" />
                 {p.note && (
                   <div className="pointer-events-none absolute inset-x-[14%] top-[17%] text-center">
                     {p.category && (
@@ -247,7 +252,7 @@ export function ProductDetail({
             </ZoomLens>
             <HoldsBadge
               size={p.sizeLabel}
-              className="right-[8%] top-[11%] h-[64px] w-[64px] text-[22px] md:h-[76px] md:w-[76px] md:text-[26px]"
+              className="right-[9%] top-[19%] z-[2] h-[64px] w-[64px] text-[22px] md:h-[76px] md:w-[76px] md:text-[26px]"
             />
           </div>
           <div className="mt-4 flex flex-wrap items-stretch gap-3">
