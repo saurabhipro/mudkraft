@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
-import { ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
+import { ArchCrown, ClayPlinth, HoldsBadge } from "@/components/ClayPlinth";
 import { variantLabel, type ProductFamily, type ProductView } from "@/lib/product-view";
 import { formatPaise } from "@/lib/money";
 import { CATALOGUE_CODES, catalogueSlug } from "@/lib/catalogue";
@@ -68,7 +68,9 @@ export function ProductDetail({
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const cartCount = useCartCount();
   // The cutout leads (it stands on the plinth best), then every photograph.
-  const shots = [...new Set([p.cutout, ...p.gallery, p.img].filter((x): x is string => Boolean(x)))];
+  const shots = [
+    ...new Set([p.cutout, ...p.gallery, p.img].filter((x): x is string => Boolean(x))),
+  ];
   // Another size is another page: it opens on its first photograph.
   const [picked, setPicked] = useState({ slug: p.slug, i: 0 });
   const shot = picked.slug === p.slug ? Math.min(picked.i, Math.max(shots.length - 1, 0)) : 0;
@@ -86,7 +88,11 @@ export function ProductDetail({
   const handleAdd = () => {
     const n = addToCart(p, qty);
     if (!n) return;
-    track("add_to_cart", { currency: "INR", value: (p.pricePaise * n) / 100, items: [toItem(p, n)] });
+    track("add_to_cart", {
+      currency: "INR",
+      value: (p.pricePaise * n) / 100,
+      items: [toItem(p, n)],
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 2200);
   };
@@ -96,7 +102,11 @@ export function ProductDetail({
   const handleBuyNow = () => {
     const n = addToCart(p, qty);
     if (!n) return;
-    track("add_to_cart", { currency: "INR", value: (p.pricePaise * n) / 100, items: [toItem(p, n)] });
+    track("add_to_cart", {
+      currency: "INR",
+      value: (p.pricePaise * n) / 100,
+      items: [toItem(p, n)],
+    });
     router.push("/checkout");
   };
 
@@ -144,8 +154,13 @@ export function ProductDetail({
     <ul className="flex flex-col justify-center gap-2 text-[13px] text-muted-foreground">
       {PERKS.map((perk) => (
         <li key={perk.text}>
-          <Link href="/shipping-returns" className="flex items-start gap-2 transition-colors hover:text-earth">
-            <span aria-hidden="true" className="mt-px shrink-0 text-gold-deep">✦</span>
+          <Link
+            href="/shipping-returns"
+            className="flex items-start gap-2 transition-colors hover:text-earth"
+          >
+            <span aria-hidden="true" className="mt-px shrink-0 text-gold-deep">
+              ✦
+            </span>
             {perk.text}
           </Link>
         </li>
@@ -155,10 +170,7 @@ export function ProductDetail({
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <SiteHeader
-        cartCount={cartCount}
-        cartHref={cartCount > 0 ? "/checkout" : "/#collection"}
-      />
+      <SiteHeader cartCount={cartCount} cartHref={cartCount > 0 ? "/checkout" : "/#collection"} />
 
       <nav
         aria-label="Breadcrumb"
@@ -188,20 +200,32 @@ export function ProductDetail({
                 <ClayPlinth
                   product={p}
                   src={shots[shot] ?? null}
-                  alt={p.imageAlts[shots[shot] ?? ""] || `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`}
+                  alt={
+                    p.imageAlts[shots[shot] ?? ""] ||
+                    `${productSeo(p).label} – unglazed clay, handmade in Khurja (photo ${shot + 1})`
+                  }
                   priority
                   low
                 />
+                <ArchCrown className="top-[7%] w-[26%]" />
                 {p.note && (
                   <div className="pointer-events-none absolute inset-x-[14%] top-[17%] text-center">
                     {p.category && (
-                      <p className="text-[10px] uppercase tracking-[0.4em] text-gold-deep md:text-[11px]">{p.category}</p>
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-gold-deep md:text-[11px]">
+                        {p.category}
+                      </p>
                     )}
-                    <p className="mt-1.5 font-display text-xl italic text-clay md:text-[1.75rem]">{p.note}</p>
+                    <p className="mt-1.5 font-display text-xl italic text-clay md:text-[1.75rem]">
+                      {p.note}
+                    </p>
                   </div>
                 )}
                 {shots.length > 1 && (
-                  <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2" role="tablist" aria-label="Product photographs">
+                  <div
+                    className="absolute inset-x-0 bottom-4 flex justify-center gap-2"
+                    role="tablist"
+                    aria-label="Product photographs"
+                  >
                     {shots.map((src, i) => (
                       <button
                         key={src}
@@ -238,6 +262,7 @@ export function ProductDetail({
                   className={`group relative h-[96px] w-[84px] overflow-hidden mk-arch-top transition-opacity duration-300 ${i === shot ? "" : "opacity-75 hover:opacity-100"}`}
                 >
                   <ClayPlinth product={p} src={src} />
+                  <ArchCrown className="top-[9%] w-[46%]" />
                   <span
                     aria-hidden="true"
                     className={`absolute inset-0 mk-arch-top ${i === shot ? "border-2 border-gold-deep" : "border border-gold/50"}`}
@@ -256,7 +281,10 @@ export function ProductDetail({
             <span className="mk-line">
               <span style={{ animationDelay: "0.1s" }}>{p.name}</span>
             </span>
-            <span className="sr-only">{p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? ` ${p.sizeLabel}` : ""} – unglazed clay</span>
+            <span className="sr-only">
+              {p.sizeLabel && !/^one size$/i.test(p.sizeLabel) ? ` ${p.sizeLabel}` : ""} – unglazed
+              clay
+            </span>
           </h1>
           {p.note && (
             <p className="mt-2 font-display text-2xl italic text-clay md:text-[1.9rem] animate-fade-up [animation-delay:0.1s]">
@@ -292,7 +320,9 @@ export function ProductDetail({
             );
           })()}
 
-          <div aria-hidden="true" className="mk-ornament mt-7 max-w-md text-[10px]">◆</div>
+          <div aria-hidden="true" className="mk-ornament mt-7 max-w-md text-[10px]">
+            ◆
+          </div>
 
           <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 animate-fade-up [animation-delay:0.15s]">
             <div className="font-display text-5xl font-medium text-earth">{p.price}</div>
@@ -509,7 +539,17 @@ export function ProductDetail({
             className="mt-2 inline-flex items-center gap-2 text-[13px] text-clay-deep underline underline-offset-2 decoration-clay/40 hover:decoration-clay"
           >
             Buying for a café, hotel or gifting? Bulk &amp; custom orders
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" className="w-3.5 h-3.5"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              aria-hidden="true"
+              className="w-3.5 h-3.5"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
           </Link>
 
           {added && (
@@ -618,7 +658,9 @@ export function ProductDetail({
           <div className="max-w-7xl mx-auto px-6 md:px-10">
             <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
               <div>
-                <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-clay-deep">From the same kiln</p>
+                <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-clay-deep">
+                  From the same kiln
+                </p>
                 <h2 className="font-display font-normal text-[clamp(2.25rem,4vw,3.5rem)] leading-none text-earth">
                   Keeps good <em className="font-light text-clay">company.</em>
                 </h2>
@@ -682,7 +724,9 @@ function RelatedCard({ family }: { family: ProductFamily }) {
   const href = `/shop/${p.slug}`;
   const labels = family.sizes.map((size) => size.sizeLabel || "One size");
   const chip = (size: ProductView, i: number) =>
-    labels.indexOf(labels[i]) === labels.lastIndexOf(labels[i]) ? labels[i] : variantLabel(size, family.sizes);
+    labels.indexOf(labels[i]) === labels.lastIndexOf(labels[i])
+      ? labels[i]
+      : variantLabel(size, family.sizes);
 
   const add = () => {
     const n = addToCart(p, 1);
@@ -695,9 +739,14 @@ function RelatedCard({ family }: { family: ProductFamily }) {
   return (
     <article className="group relative flex min-w-0 flex-col gap-3 rounded-[1.6rem] border border-gold/30 bg-ivory p-2.5 transition-[background-color,box-shadow,border-color] duration-500 hover:border-gold/60 hover:bg-white hover:shadow-[0_24px_40px_-28px_oklch(0.31_0.1_21/0.4)] sm:flex-row sm:gap-5">
       <div className="relative h-[190px] w-full shrink-0 overflow-hidden rounded-[1.2rem] sm:mk-arch-sm sm:h-[238px] sm:w-[180px]">
-        <Link href={href} aria-label={`View ${p.name} ${p.sizeLabel}`.trim()} className="absolute inset-0">
+        <Link
+          href={href}
+          aria-label={`View ${p.name} ${p.sizeLabel}`.trim()}
+          className="absolute inset-0"
+        >
           <ClayPlinth product={p} />
         </Link>
+        <ArchCrown className="top-[6%] w-[34%] sm:top-[8%] sm:w-[42%]" />
         {/* Bottom-right: the arch's curved top would clip a corner badge. */}
         <HoldsBadge size={p.sizeLabel} className="bottom-2.5 right-2.5 h-12 w-12 text-base" />
         {few && (
@@ -773,8 +822,18 @@ function RelatedCard({ family }: { family: ProductFamily }) {
             Breakage cover
           </span>
           {added ? (
-            <span role="status" className="flex min-h-11 items-center gap-1.5 rounded-full bg-earth px-4 text-[13px] font-semibold text-cream">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true" className="h-4 w-4">
+            <span
+              role="status"
+              className="flex min-h-11 items-center gap-1.5 rounded-full bg-earth px-4 text-[13px] font-semibold text-cream"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                aria-hidden="true"
+                className="h-4 w-4"
+              >
                 <path d="M5 12.5l4.5 4.5L19 7" />
               </svg>
               Added
@@ -784,14 +843,25 @@ function RelatedCard({ family }: { family: ProductFamily }) {
               type="button"
               disabled={soldOut}
               onClick={add}
-              aria-label={soldOut ? `${p.name} ${p.sizeLabel} is sold out` : `Add ${p.name} ${p.sizeLabel} to basket`}
+              aria-label={
+                soldOut
+                  ? `${p.name} ${p.sizeLabel} is sold out`
+                  : `Add ${p.name} ${p.sizeLabel} to basket`
+              }
               className="mk-btn-maroon min-h-11 gap-1.5! px-[18px] text-[12px] tracking-[0.18em]! disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground disabled:ring-1 disabled:ring-border"
             >
               {soldOut ? (
                 "Sold out"
               ) : (
                 <>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" className="h-4 w-4">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    aria-hidden="true"
+                    className="h-4 w-4"
+                  >
                     <path d="M12 5v14M5 12h14" />
                   </svg>
                   Add

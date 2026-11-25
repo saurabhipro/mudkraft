@@ -98,6 +98,8 @@
 @utility mk-arch { border-radius: 50% 50% 1.75rem 1.75rem / 34% 34% 1.75rem 1.75rem; }
 /* A true semicircle over any width: oversized top radii are scaled down to half the width. */
 @utility mk-arch-top { border-radius: 640px 640px 1.25rem 1.25rem; }
+/* A gentle shoulder arch, the same curve at any card height. */
+@utility mk-arch-soft { border-radius: 50% 50% 1.25rem 1.25rem / 7rem 7rem 1.25rem 1.25rem; }
 @utility mk-arch-sm { border-radius: 50% 50% 1rem 1rem / 40% 40% 1rem 1rem; }
 /* The lit ivory ground a piece stands in. */
 @utility mk-stage { background: var(--gradient-stage); }
@@ -113,14 +115,6 @@
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
-}
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-@keyframes marquee-rev {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
 }
 @keyframes line-rise {
   from { transform: translateY(110%) rotate(3deg); }
@@ -173,8 +167,6 @@
 
 @utility animate-float { animation: float-slow 8s ease-in-out infinite; }
 @utility animate-fade-up { animation: fade-up 1s var(--ease-clay) both; }
-@utility animate-marquee { animation: marquee 40s linear infinite; }
-@utility animate-marquee-rev { animation: marquee-rev 46s linear infinite; }
 @utility animate-spin-slow { animation: spin-wheel 48s linear infinite; }
 @utility animate-spin-slower { animation: spin-wheel 64s linear infinite reverse; }
 @utility animate-spin-mid { animation: spin-wheel 22s linear infinite; }
