@@ -2,6 +2,8 @@
  * Browser analytics (GA4 + Google Ads). The IDs are public by design and baked in at build time,
  * so they must be set before `next build`. With no ID set every call below does nothing.
  */
+import { sendHit } from "./site-hits";
+
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
 export const ADS_ID = process.env.NEXT_PUBLIC_GADS_ID ?? "";
 export const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "";
@@ -86,9 +88,34 @@ function sendToMeta(event: string, params: Record<string, unknown> = {}) {
   }
 }
 
-/** Sends an event to GA4 and the Meta Pixel; safe on the server, in dev, and before either has loaded. */
+/** The shop events Bikriup › Analytics counts, from the GA4 event of the same moment. */
+function sendToBikriup(event: string, params: Record<string, unknown> = {}) {
+  const items = ((params.items as AnalyticsItem[] | undefined) ?? []).map((i) => ({
+    slug: i.item_id,
+    qty: i.quantity ?? 1,
+    price: i.price,
+  }));
+  const value = typeof params.value === "number" ? params.value : undefined;
+  switch (event) {
+    case "add_to_cart":
+      sendHit("add_to_cart", { value, items });
+      break;
+    case "begin_checkout":
+      sendHit("begin_checkout", { value, items });
+      break;
+    case "purchase":
+      sendHit("purchase", { value, items, order_no: String(params.transaction_id ?? "") });
+      break;
+    case "generate_lead":
+      sendHit("lead", { items: params.item_id ? [{ slug: String(params.item_id) }] : [] });
+      break;
+  }
+}
+
+/** Sends an event to GA4, the Meta Pixel and Bikriup; safe on the server, in dev, and before either has loaded. */
 export function track(event: string, params?: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
+  sendToBikriup(event, params);
   if (GA_ID) ensureGtag()("event", event, params);
   if (PIXEL_ID) sendToMeta(event, params);
 }

@@ -7,12 +7,24 @@ import { orderToken, verifyBikriupSignature } from "@/server/bikriup";
 import {
   sendBroadcast,
   sendPaymentReminder,
+  sendProspectBrochure,
+  sendQuotationEmail,
   type BroadcastEvent,
+  type ProspectEmailEvent,
+  type QuoteEmailEvent,
   type ReminderEvent,
 } from "@/server/bikriup-messages";
 import { sendOrderUpdateEmail } from "@/server/email/send";
 import { describeError } from "@/server/redact";
 import { claimWebhookEvent } from "@/server/webhook-events";
+import {
+  cancelBikriupPayLink,
+  checkBikriupPayLink,
+  createBikriupPayLink,
+  emailBikriupPayLink,
+  type PayLinkCreateEvent,
+  type PayLinkEmailEvent,
+} from "@/server/bikriup-paylinks";
 import { pingIndexNow } from "@/server/indexnow";
 import { pushCatalogPrices } from "@/server/meta-catalog";
 import { appBaseUrl } from "@/server/email/templates";
@@ -40,6 +52,10 @@ import { TEMPLATE_LANGUAGE, TEMPLATES, type TemplateDef } from "@/server/whatsap
  *   chat.import     — bring in the Page's earlier Messenger chats
  *   broadcast.send  — Grow › Broadcasts: a batch of people for WhatsApp / email
  *   reminder.send   — People › Udhaar: one payment reminder with the pay link
+ *   quote.email     — People › Leads: a quotation emailed with its PDF attached
+ *   prospect.email  — People › Prospects: the brochure emailed to one business (sent once per delivery id)
+ *   paylink.create / .cancel / .check / .email — Orders › Payment link: a Razorpay link for what
+ *                     is due on an order (server/bikriup-paylinks.ts); WhatsApp goes as chat.reply
  *   welcome.changed — Grow › Coupons › Signup popup changed: drop the cached popup offer
  */
 
@@ -171,7 +187,9 @@ interface ChatReply {
   /** WhatsApp, shop writes first: an approved template ("hello") with its {{n}} values. */
   template?: string;
   params?: string[];
-  /** template "document": the PDF to attach (Bikriup › Orders › Documents › Share). */
+  /** template "payment_link": the Razorpay payment link id for the Pay now button. */
+  button?: string;
+  /** template "document" / "quotation": the PDF to attach (Orders › Documents, Leads › Quotations). */
   document?: { url?: string; filename?: string };
   /** template "shipped": the order whose tracking is sent (to the buyer or anyone else). */
   order?: {
@@ -194,10 +212,10 @@ const param = (text: unknown, max = 200) =>
 
 /** The studio sent an order document or its tracking from Bikriup, to any number: a template. */
 async function sendOrderTemplate(r: ChatReply): Promise<SendResult> {
-  if (r.template === "document") {
+  if (r.template === "document" || r.template === "quotation") {
     const url = r.document?.url ?? "";
     if (!/^https:\/\//.test(url)) return { ok: false, error: "The document link must be https" };
-    const def = TEMPLATES.document;
+    const def = r.template === "quotation" ? TEMPLATES.quotation : TEMPLATES.document;
     return sendRaw(r.phone!, {
       type: "template",
       template: {
@@ -276,8 +294,41 @@ async function sendChatReply(r: ChatReply | undefined) {
   }
 
   if (!r.phone) return;
-  if (r.template === "document" || r.template === "shipped") {
+  if (r.template === "document" || r.template === "quotation" || r.template === "shipped") {
     const sent = await sendOrderTemplate(r);
+    await chatStatus(
+      sent.ok
+        ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
+        : { message_id: r.message_id, status: "failed", error: sent.error },
+    );
+    return;
+  }
+  if (r.template === "payment_link") {
+    const def = TEMPLATES.payment_link;
+    const id = r.button ?? "";
+    const sent = /^plink_[A-Za-z0-9]+$/.test(id)
+      ? await sendRaw(r.phone, {
+          type: "template",
+          template: {
+            name: def.name,
+            language: { code: TEMPLATE_LANGUAGE },
+            components: [
+              {
+                type: "body",
+                parameters: (r.params ?? [])
+                  .slice(0, 3)
+                  .map((text) => ({ type: "text", text: param(text, 60) })),
+              },
+              {
+                type: "button",
+                sub_type: "url",
+                index: "0",
+                parameters: [{ type: "text", text: id }],
+              },
+            ],
+          },
+        })
+      : ({ ok: false, error: "The payment link is missing" } as SendResult);
     await chatStatus(
       sent.ok
         ? { message_id: r.message_id, wa_id: sent.id, status: "sent" }
@@ -409,6 +460,39 @@ export async function POST(request: Request) {
   if (body.event === "broadcast.send") {
     void sendBroadcast(body.data as unknown as BroadcastEvent).catch((error) => {
       console.error("[broadcast] send failed:", error);
+    });
+  }
+
+  // A cold email must go once: a resent delivery (slow answer) is ignored.
+  if (body.event === "prospect.email" && (await firstDelivery(request, body))) {
+    void sendProspectBrochure(body.data as unknown as ProspectEmailEvent).catch((error) => {
+      console.error("[prospect] email failed:", error);
+    });
+  }
+
+  if (body.event === "quote.email") {
+    void sendQuotationEmail(body.data as unknown as QuoteEmailEvent).catch((error) => {
+      console.error("[quote] email failed:", error);
+    });
+  }
+
+  // Razorpay calls take a moment: answered now, done after (Bikriup waits 8 s, then resends).
+  const payLinkJobs: Record<string, (data: unknown) => Promise<void>> = {
+    "paylink.create": (d) => createBikriupPayLink(d as PayLinkCreateEvent),
+    "paylink.cancel": (d) => cancelBikriupPayLink(d as { link_id?: number; ext_id?: string }),
+    "paylink.check": (d) => checkBikriupPayLink(d as { link_id?: number; ext_id?: string }),
+    "paylink.email": (d) => emailBikriupPayLink(d as PayLinkEmailEvent),
+  };
+  const payLinkJob = body.event ? payLinkJobs[body.event] : undefined;
+  // A resent create or email must not make a second link or a second mail.
+  if (
+    payLinkJob &&
+    (body.event === "paylink.cancel" ||
+      body.event === "paylink.check" ||
+      (await firstDelivery(request, body)))
+  ) {
+    void payLinkJob(body.data).catch((error) => {
+      console.error(`[paylink] ${body.event} failed:`, error);
     });
   }
 

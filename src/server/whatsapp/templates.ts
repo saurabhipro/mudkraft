@@ -174,6 +174,30 @@ export const TEMPLATES = {
     body: "Hi {{1}}, here is the {{2}} for order {{3}} from Mudkraft.",
     example: ["Asha", "invoice", "MK-1024"],
   },
+  // Bikriup › Orders › Payment link: a Razorpay link for what is due on an order (a COD order paid
+  // ahead, a trade order paid later). The button opens /paylink/<plink id> here, which forwards to
+  // Razorpay's page while the link is open, and to the order page once it is paid.
+  payment_link: {
+    name: "mk_payment_link",
+    category: "UTILITY",
+    body: "Hi {{1}}, here is the payment link for {{2}} on your order {{3}} from Mudkraft. Tap below to pay securely by UPI, card or net banking.",
+    example: ["Asha", "₹1,200", "MK260012"],
+    button: {
+      type: "url",
+      text: "Pay now",
+      path: "/paylink/{{1}}",
+      example: "plink_PJxHaZ1b2c3d4e",
+    },
+  },
+  // Bikriup › People › Leads › Quotations: the quotation PDF to a trade buyer who asked for rates.
+  // {{2}} is the quotation number, {{3}} what it is for ("Terracotta Handi with Lid, 1,500 pcs").
+  quotation: {
+    name: "mk_quotation",
+    category: "UTILITY",
+    header: { type: "document" },
+    body: "Hi {{1}}, thank you for your enquiry. Please find our quotation {{2}} for {{3}} attached. Reply here with any questions or to confirm your order.",
+    example: ["Asha", "MK/SSG/2026/001", "Terracotta Handi with Lid, 1,500 pcs"],
+  },
   // Bikriup › Customers › WhatsApp: the shop writes first. Bikriup shows the same words (chats.js HELLO).
   hello: {
     name: "mk_hello",

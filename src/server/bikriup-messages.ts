@@ -1,7 +1,12 @@
 import { SITE_URL } from "@/lib/seo";
 import { bikriup, bikriupEnabled } from "@/server/bikriup";
 import { sendEmail } from "@/server/email/client";
-import { broadcastEmail, paymentReminderEmail } from "@/server/email/templates";
+import {
+  broadcastEmail,
+  brochureEmail,
+  paymentReminderEmail,
+  quotationEmail,
+} from "@/server/email/templates";
 import { sendRaw, type SendResult } from "@/server/whatsapp";
 import { TEMPLATE_LANGUAGE, TEMPLATES, type TemplateDef } from "@/server/whatsapp/templates";
 
@@ -12,6 +17,9 @@ import { TEMPLATE_LANGUAGE, TEMPLATES, type TemplateDef } from "@/server/whatsap
  *                    (mk_new_stock / mk_offer) or email. Every person is reported back.
  *   reminder.send  — People › Udhaar: one payment reminder (mk_payment_reminder + email) with
  *                    the customer's pay link.
+ *   prospect.email — People › Prospects: the brochure emailed to one business, PDF attached
+ *   quote.email    — People › Leads: a quotation emailed with its PDF attached (the WhatsApp copy
+ *                    comes as a chat.reply with template "quotation").
  *
  * Both run after the webhook has answered (Bikriup waits 8 s and would send the batch again).
  * WhatsApp's later delivered / read receipts reach Bikriup through the chat status forwarding
@@ -212,5 +220,145 @@ export async function sendPaymentReminder(r: ReminderEvent | undefined) {
     await bikriup("/reminders/status", { method: "POST", body });
   } catch (error) {
     console.error("[remind] status report failed:", error);
+  }
+}
+
+export interface QuoteEmailEvent {
+  quote_id: number;
+  to: string;
+  first_name: string;
+  quote_no: string;
+  valid_till: string;
+  items: Array<{
+    name: string;
+    capacity: string;
+    qty: number;
+    rate_text: string;
+    amount_text: string;
+    optional: boolean;
+  }>;
+  total_label: string;
+  total_text: string;
+  grand_label: string;
+  grand_text: string;
+  message: string;
+  pdf_url: string;
+  filename: string;
+  reply_to: string;
+}
+
+const ddmmyyyy = (iso: string) => (iso || "").split("-").reverse().join("-");
+
+/** People › Prospects: the brochure for one business, from Bikriup's prospect.email event. */
+export interface ProspectEmailEvent {
+  prospect_id?: number;
+  send_id?: number;
+  to?: string;
+  company?: string;
+  first_name?: string;
+  subject?: string;
+  message?: string;
+  pdf_url?: string;
+  filename?: string;
+  shop?: string;
+  reply_to?: string;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export async function sendProspectBrochure(e: ProspectEmailEvent | undefined) {
+  if (!e?.send_id || !e.to) return;
+  let sent = false;
+  let error = "";
+  if (!EMAIL_RE.test(e.to)) error = "Not an email address";
+  else if (!/^https:\/\//.test(e.pdf_url ?? "")) error = "The brochure link must be https";
+  else {
+    const mail = brochureEmail({
+      subject: (e.subject || `Our brochure for ${e.company ?? "you"}`).slice(0, 200),
+      message: (e.message ?? "").slice(0, 4000),
+      pdfUrl: e.pdf_url!,
+      company: e.company ?? "",
+    });
+    sent = await sendEmail({
+      to: e.to,
+      subject: mail.subject,
+      html: mail.html,
+      replyTo: e.reply_to && EMAIL_RE.test(e.reply_to) ? e.reply_to : undefined,
+      attachments: [
+        {
+          filename: e.filename || "Brochure.pdf",
+          href: e.pdf_url!,
+          contentType: "application/pdf",
+        },
+      ],
+    });
+    if (!sent) error = "The mail server did not take it";
+  }
+  if (!bikriupEnabled()) return;
+  try {
+    await bikriup("/prospects/status", {
+      method: "POST",
+      body: sent
+        ? { send_id: e.send_id, status: "sent" }
+        : { send_id: e.send_id, status: "failed", error },
+    });
+  } catch (err) {
+    console.error("[prospect] status report failed:", err);
+  }
+}
+
+export async function sendQuotationEmail(q: QuoteEmailEvent | undefined) {
+  if (!q?.quote_id || !q.to) return;
+  let sent = false;
+  if (/^https:\/\//.test(q.pdf_url ?? "")) {
+    const mail = quotationEmail({
+      firstName: q.first_name || "there",
+      quoteNo: q.quote_no,
+      validTill: ddmmyyyy(q.valid_till),
+      items: (q.items ?? []).map((it) => ({
+        name: it.name,
+        capacity: it.capacity,
+        qty: Number(it.qty) || 0,
+        rateText: it.rate_text,
+        amountText: it.amount_text,
+        optional: Boolean(it.optional),
+      })),
+      totalLabel: q.total_label,
+      totalText: q.total_text,
+      grandLabel: q.grand_label,
+      grandText: q.grand_text,
+      message: q.message ?? "",
+      pdfUrl: q.pdf_url,
+    });
+    sent = await sendEmail({
+      to: q.to,
+      subject: mail.subject,
+      html: mail.html,
+      replyTo: q.reply_to || undefined,
+      attachments: [
+        {
+          filename: q.filename || "Quotation.pdf",
+          href: q.pdf_url,
+          contentType: "application/pdf",
+        },
+      ],
+    });
+  }
+  if (!bikriupEnabled()) return;
+  try {
+    await bikriup("/quotes/status", {
+      method: "POST",
+      body: sent
+        ? { quote_id: q.quote_id, status: "sent" }
+        : {
+            quote_id: q.quote_id,
+            status: "failed",
+            error: /^https:\/\//.test(q.pdf_url ?? "")
+              ? "The mail server did not take it"
+              : "The quotation link must be https",
+          },
+    });
+  } catch (error) {
+    console.error("[quote] status report failed:", error);
   }
 }

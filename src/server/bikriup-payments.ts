@@ -74,7 +74,9 @@ export async function settleBikriupPayment(params: {
   let payment = fetched;
   const orderNo = gw.receipt ?? "";
 
-  if (!orderNo) return { ok: false, error: "Payment verification failed.", reason: "not_ours" };
+  // No receipt, or a payment link's (PL<id>-<order no>): settled by payment_link.paid instead.
+  if (!orderNo || /^PL\d+-/.test(orderNo))
+    return { ok: false, error: "Payment verification failed.", reason: "not_ours" };
   if ((params.orderNo && params.orderNo !== orderNo) || payment.order_id !== gw.id) {
     return { ok: false, error: "Payment verification failed.", reason: "verification" };
   }
@@ -169,7 +171,8 @@ export async function reportBikriupPaymentFailed(
   payment: GatewayPayment,
 ): Promise<PaymentAnswer | null> {
   const gw = await fetchGatewayOrder(payment.order_id);
-  if (!gw.receipt) return null;
+  // A payment link's failed try: the link stays open, and a COD order must not turn "failed".
+  if (!gw.receipt || /^PL\d+-/.test(gw.receipt)) return null;
   try {
     return await reportPayment(gw.receipt, {
       status: "failed",
@@ -194,8 +197,10 @@ export async function reportBikriupRefund(
 ): Promise<PaymentAnswer | null> {
   const gw = await fetchGatewayOrder(payment.order_id);
   if (!gw.receipt) return null;
+  // A payment link's refund belongs to its order ("PL12-MK260012" → "MK260012").
+  const orderNo = /^PL\d+-(.+)$/.exec(gw.receipt)?.[1] ?? gw.receipt;
   try {
-    return await reportPayment(gw.receipt, {
+    return await reportPayment(orderNo, {
       status: "refunded",
       provider: "razorpay",
       ref: refund.payment_id,
