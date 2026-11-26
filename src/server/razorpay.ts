@@ -185,9 +185,11 @@ export function describePaymentMethod(payment: GatewayPayment): string | null {
     case "upi":
       return payment.vpa ?? "upi";
     case "card":
-      return [payment.card?.network, payment.card?.last4 && `•••• ${payment.card.last4}`]
-        .filter(Boolean)
-        .join(" ") || "card";
+      return (
+        [payment.card?.network, payment.card?.last4 && `•••• ${payment.card.last4}`]
+          .filter(Boolean)
+          .join(" ") || "card"
+      );
     case "netbanking":
       return payment.bank ?? "netbanking";
     case "wallet":
@@ -229,4 +231,84 @@ export function verifyWebhookSignature(rawBody: string, signature: string): bool
     .update(rawBody)
     .digest("hex");
   return safeEqualHex(expected, signature);
+}
+
+/* ---------- Payment links (Bikriup › Orders › Payment link) ---------- */
+
+/** The subset of Razorpay's payment link entity the app reads. */
+export interface GatewayPaymentLink {
+  id: string;
+  short_url: string;
+  /** `created` (open), `partially_paid`, `paid`, `expired` or `cancelled`. */
+  status: string;
+  amount: number;
+  amount_paid: number;
+  reference_id: string | null;
+  notes: Record<string, string>;
+}
+
+function normaliseLink(link: unknown): GatewayPaymentLink {
+  const l = link as Record<string, unknown>;
+  return {
+    id: String(l.id ?? ""),
+    short_url: String(l.short_url ?? ""),
+    status: String(l.status ?? ""),
+    amount: Number(l.amount ?? 0),
+    amount_paid: Number(l.amount_paid ?? 0),
+    reference_id: typeof l.reference_id === "string" && l.reference_id ? l.reference_id : null,
+    notes:
+      l.notes && typeof l.notes === "object" && !Array.isArray(l.notes)
+        ? (l.notes as Record<string, string>)
+        : {},
+  };
+}
+
+/**
+ * A hosted Razorpay page for a fixed amount, sent to the buyer by the studio (WhatsApp, email).
+ * Razorpay's own SMS / email are off: the studio sends it in its own words.
+ */
+export async function createPaymentLink(params: {
+  amountPaise: number;
+  referenceId: string;
+  description: string;
+  customer: { name?: string; contact?: string; email?: string };
+  expireBy: number;
+  callbackUrl: string;
+  notes: Record<string, string>;
+}): Promise<GatewayPaymentLink> {
+  const customer: { name?: string; contact?: string; email?: string } = {};
+  if (params.customer.name) customer.name = params.customer.name;
+  if (params.customer.contact) customer.contact = params.customer.contact;
+  if (params.customer.email) customer.email = params.customer.email;
+  const link = await getClient().paymentLink.create({
+    amount: params.amountPaise,
+    currency: "INR",
+    accept_partial: false,
+    reference_id: params.referenceId,
+    description: params.description,
+    customer,
+    notify: { sms: false, email: false },
+    reminder_enable: false,
+    expire_by: params.expireBy,
+    callback_url: params.callbackUrl,
+    callback_method: "get",
+    notes: params.notes,
+  });
+  return normaliseLink(link);
+}
+
+export async function fetchPaymentLink(id: string): Promise<GatewayPaymentLink> {
+  return normaliseLink(await getClient().paymentLink.fetch(id));
+}
+
+/** Cancels an open link. One that is already paid, expired or cancelled is left as it is. */
+export async function cancelPaymentLink(id: string): Promise<GatewayPaymentLink> {
+  try {
+    return normaliseLink(await getClient().paymentLink.cancel(id));
+  } catch (error) {
+    if (isRazorpayError(error) && error.error.code === "BAD_REQUEST_ERROR") {
+      return fetchPaymentLink(id);
+    }
+    throw error;
+  }
 }

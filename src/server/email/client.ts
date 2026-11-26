@@ -45,6 +45,8 @@ export interface SendEmailInput {
   html: string;
   /** Where a reply goes, e.g. the customer who sent an enquiry. */
   replyTo?: string;
+  /** Files to attach; `href` is fetched by nodemailer when the mail is sent (e.g. a quotation PDF). */
+  attachments?: Array<{ filename: string; href: string; contentType?: string }>;
 }
 
 /** Returns true when the message was accepted by the SMTP server. */
@@ -64,6 +66,7 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
       replyTo: input.replyTo,
       subject: input.subject,
       html: input.html,
+      attachments: input.attachments,
     });
     return true;
   } catch (error) {

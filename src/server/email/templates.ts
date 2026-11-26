@@ -788,3 +788,133 @@ export function paymentReminderEmail(data: PaymentReminderEmailData): RenderedEm
     ),
   };
 }
+
+// --- Bikriup › Leads › Quotations ----------------------------------------------------
+
+export interface QuotationEmailData {
+  firstName: string;
+  quoteNo: string;
+  validTill: string;
+  items: Array<{
+    name: string;
+    capacity: string;
+    qty: number;
+    rateText: string;
+    amountText: string;
+    optional: boolean;
+  }>;
+  totalLabel: string;
+  totalText: string;
+  grandLabel: string;
+  grandText: string;
+  message: string;
+  pdfUrl: string;
+}
+
+/** A trade quotation: the rates in the mail, the full page as the attached PDF. */
+export function quotationEmail(data: QuotationEmailData): RenderedEmail {
+  const rows = data.items
+    .map(
+      (it) => `<tr>
+        <td style="padding:10px 0;border-bottom:1px solid ${RULE};font-family:${SANS};font-size:14px;color:${TEXT};">${it.optional ? "<b>Optional:</b> " : ""}${escapeHtml(it.name)}${it.capacity ? `<span style="color:${MUTED};"> · ${escapeHtml(it.capacity)}</span>` : ""}<div style="font-size:12px;color:${MUTED};margin-top:2px;">${it.qty.toLocaleString("en-IN")} pcs × ${escapeHtml(it.rateText)}</div></td>
+        <td align="right" style="padding:10px 0;border-bottom:1px solid ${RULE};font-family:${SANS};font-size:14px;color:${TEXT};white-space:nowrap;">${escapeHtml(it.amountText)}</td>
+      </tr>`,
+    )
+    .join("");
+  const total = (left: string, right: string, strong = false) =>
+    `<tr><td style="padding:10px 0 0;font-family:${SANS};font-size:${strong ? 16 : 14}px;font-weight:bold;color:${strong ? CLAY : TEXT};">${escapeHtml(left)}</td><td align="right" style="padding:10px 0 0;font-family:${SANS};font-size:${strong ? 16 : 14}px;font-weight:bold;color:${strong ? CLAY : TEXT};white-space:nowrap;">${escapeHtml(right)}</td></tr>`;
+  const message = data.message
+    ? section(
+        `<p style="margin:0;font-size:15px;line-height:1.65;color:${BODY};">${escapeHtml(data.message).replace(/\n/g, "<br>")}</p>`,
+        "20px 32px 0",
+      )
+    : "";
+  return {
+    subject: `Quotation ${data.quoteNo} from Mudkraft`,
+    html: layout(
+      `Quotation ${data.quoteNo}`,
+      `${intro("Your quotation", `Namaste ${escapeHtml(data.firstName)},`, `Thank you for your enquiry. Our quotation <b>${escapeHtml(data.quoteNo)}</b> is attached as a PDF, with the rates below. It is valid till ${escapeHtml(data.validTill)}.`)}
+       ${message}
+       ${section(
+         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}
+           ${total(data.totalLabel, data.totalText, !data.grandText)}
+           ${data.grandText ? total(data.grandLabel, data.grandText, true) : ""}
+         </table>`,
+         "24px 32px 0",
+       )}
+       ${ctaRow(button(data.pdfUrl, "Open the quotation (PDF)"))}
+       ${section(`<p style="margin:0;font-family:${SANS};font-size:13px;line-height:1.7;color:${MUTED};">Reply to this email or WhatsApp us to confirm the order, ask for samples or change the quantities.</p>`, "24px 32px 0")}
+       <tr><td style="height:32px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
+      "You are receiving this because you asked Mudkraft for a quotation.",
+    ),
+  };
+}
+
+// --- Bikriup › People › Prospects -------------------------------------------------------
+
+export interface BrochureEmailData {
+  subject: string;
+  /** The shop's message, already filled for this business in Bikriup; plain text, blank lines between paragraphs. */
+  message: string;
+  pdfUrl: string;
+  company: string;
+}
+
+/** The brochure to a business that has not written to us yet: the owner's own words, the PDF attached. */
+export function brochureEmail(data: BrochureEmailData): RenderedEmail {
+  const paragraphs = data.message
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map(
+      (p) =>
+        `<p style="margin:0 0 14px;font-family:${SANS};font-size:15px;line-height:1.65;color:${BODY};">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`,
+    )
+    .join("");
+  return {
+    subject: data.subject,
+    html: layout(
+      data.subject,
+      `${section(paragraphs, "28px 32px 0")}
+       ${ctaRow(button(data.pdfUrl, "Open the brochure (PDF)"))}
+       ${section(`<p style="margin:0;font-family:${SANS};font-size:12px;line-height:1.7;color:${MUTED};">Not the right person? Please forward this to whoever handles purchase. If you would rather not hear from us, reply “no thanks” and we will not write again.</p>`, "24px 32px 0")}
+       <tr><td style="height:32px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
+      `Sent once to ${escapeHtml(data.company)} by Mudkraft, a maker of clay kitchenware, to introduce our range.`,
+    ),
+  };
+}
+
+// --- Bikriup › Orders › Payment link ---------------------------------------------------
+
+export interface PaymentLinkEmailData {
+  firstName: string;
+  orderNo: string;
+  amountText: string;
+  part: boolean;
+  orderTotalText: string;
+  payUrl: string;
+  expiresOn: string;
+}
+
+/** A Razorpay link for what is due on an order (a COD order paid ahead, a trade order). */
+export function paymentLinkEmail(data: PaymentLinkEmailData): RenderedEmail {
+  const what = data.part
+    ? `${escapeHtml(data.amountText)}, a part payment on your order <b>${escapeHtml(data.orderNo)}</b> (order total ${escapeHtml(data.orderTotalText)})`
+    : `${escapeHtml(data.amountText)} for your order <b>${escapeHtml(data.orderNo)}</b>`;
+  return {
+    subject: `Payment link for order ${data.orderNo} · ${data.amountText}`,
+    html: layout(
+      `Payment for ${data.orderNo}`,
+      `${intro("Payment link", `Namaste ${escapeHtml(data.firstName)},`, `Here is your secure payment link: ${what}. Pay by UPI, card, net banking or wallet on Razorpay's page.`)}
+       ${metaStrip([
+         { label: "Order", value: data.orderNo },
+         { label: "Amount", value: data.amountText },
+         ...(data.expiresOn ? [{ label: "Link open till", value: data.expiresOn }] : []),
+       ])}
+       ${ctaRow(button(data.payUrl, `Pay ${data.amountText}`))}
+       ${section(`<p style="margin:0;font-family:${SANS};font-size:13px;line-height:1.7;color:${MUTED};">Once you pay, we send the receipt here and on WhatsApp. Already paid another way? Please ignore this email.</p>`, "24px 32px 0")}
+       <tr><td style="height:32px;font-size:0;line-height:0;">&nbsp;</td></tr>`,
+      "You are receiving this because you placed an order with Mudkraft.",
+    ),
+  };
+}

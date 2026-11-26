@@ -7,6 +7,7 @@ import {
   reportBikriupRefund,
   settleBikriupPayment,
 } from "@/server/bikriup-payments";
+import { linkFromWebhook, payLinkClosed, settlePaymentLink } from "@/server/bikriup-paylinks";
 import { db } from "@/server/db";
 import { order, orderEvent, paymentTransaction } from "@/server/db/schema/orders";
 import { sendAdminAlert } from "@/server/email/send";
@@ -25,6 +26,9 @@ import { claimWebhookEvent, releaseWebhookEvent } from "@/server/webhook-events"
  *   payment.failed    — record the failed attempt; the order stays payable
  *   refund.processed  — mark the order refunded when its own payment went back
  *   refund.failed     — alert the studio: money that should go back did not
+ *   payment_link.paid / .expired / .cancelled — Bikriup › Orders › Payment link
+ *                       (server/bikriup-paylinks.ts): record the payment on the order, or show the
+ *                       link as closed
  *
  * Every delivery is deduplicated on `x-razorpay-event-id`, and every step
  * behind it is idempotent as well, because the browser handler races this
@@ -40,6 +44,9 @@ const HANDLED = new Set([
   "payment.failed",
   "refund.processed",
   "refund.failed",
+  "payment_link.paid",
+  "payment_link.expired",
+  "payment_link.cancelled",
 ]);
 
 interface WebhookBody {
@@ -47,6 +54,7 @@ interface WebhookBody {
   payload?: {
     payment?: { entity?: GatewayPayment };
     refund?: { entity?: RefundEntity };
+    payment_link?: { entity?: Record<string, unknown> };
   };
 }
 
@@ -99,6 +107,14 @@ export async function POST(request: Request) {
 
 async function handleBikriup(event: string, body: WebhookBody): Promise<NextResponse> {
   const payment = body.payload?.payment?.entity;
+  const linkEntity = body.payload?.payment_link?.entity;
+  if (event.startsWith("payment_link.")) {
+    if (!linkEntity) return ok();
+    const link = linkFromWebhook(linkEntity);
+    if (event === "payment_link.paid") await settlePaymentLink(link, payment?.id);
+    else await payLinkClosed(link, event === "payment_link.expired" ? "expired" : "cancelled");
+    return ok();
+  }
 
   if (event === "payment.captured") {
     if (!payment?.order_id) return ok();
