@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gem, Globe, Hand, Leaf, MapPin } from "lucide-react";
-import { useId, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -89,137 +88,6 @@ const RIVER_TO_TABLE = [
     body: "48 hours in a wood kiln at 920–1040 °C. Slow heat makes a stronger pot.",
   },
 ];
-
-const FEATURES = [
-  { icon: Leaf, text: "100% Natural" },
-  { icon: Globe, text: "Eco-Friendly" },
-  { icon: Hand, text: "Handcrafted by Skilled Artisans" },
-  { icon: Gem, text: "Premium Export Quality" },
-  { icon: MapPin, text: "Made in India" },
-];
-
-/** The collection's promises: a column beside the grid on wide screens, a row above it otherwise. */
-function FeatureRail() {
-  return (
-    <ul className="mb-8 grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-5 xl:mb-0 xl:grid-cols-1 xl:content-start xl:gap-y-8 xl:border-r xl:border-gold/40 xl:pr-6 xl:pt-24">
-      {FEATURES.map(({ icon: Icon, text }) => (
-        <li key={text} className="flex flex-col items-center gap-2 text-center">
-          <span className="grid h-11 w-11 place-items-center rounded-full border border-gold/50 text-clay">
-            <Icon className="h-5 w-5" strokeWidth={1.4} aria-hidden="true" />
-          </span>
-          <span className="text-[11.5px] leading-snug text-earth/85">{text}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/** A point and the direction of travel along a quadratic curve, for laying leaves on a stem. */
-function onCurve(t: number, p0: number[], p1: number[], p2: number[]) {
-  const u = 1 - t;
-  const x = u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0];
-  const y = u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1];
-  const dx = 2 * u * (p1[0] - p0[0]) + 2 * t * (p2[0] - p1[0]);
-  const dy = 2 * u * (p1[1] - p0[1]) + 2 * t * (p2[1] - p1[1]);
-  return { x, y, angle: (Math.atan2(dy, dx) * 180) / Math.PI };
-}
-
-/**
- * A green leafy branch rising from the bottom-left of its box: a curved stem with
- * leaves set alternately along it and one at the tip. Flip it with scale to bring
- * it in from another corner. The box leaves room so no leaf is clipped.
- */
-function LeafBranch({ className = "", leaves = 9 }: { className?: string; leaves?: number }) {
-  const id = useId().replace(/:/g, "");
-  const p0 = [6, 214];
-  const p1 = [70, 70];
-  const p2 = [252, 38];
-  const set = Array.from({ length: leaves }, (_, i) => {
-    const t = 0.14 + (i / leaves) * 0.8;
-    const at = onCurve(t, p0, p1, p2);
-    const side = i % 2 === 0 ? -1 : 1;
-    return { ...at, rot: at.angle + side * 48, size: 1.08 - (i / leaves) * 0.38, tone: i % 3 };
-  });
-  const tip = onCurve(1, p0, p1, p2);
-  const leaf = "M0 0 C12 -12 38 -15 62 0 C38 15 12 12 0 0Z";
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="-20 -20 300 260"
-      className={`pointer-events-none absolute drop-shadow-[0_6px_8px_oklch(0.35_0.05_120/0.18)] ${className}`}
-    >
-      <defs>
-        <linearGradient id={`${id}a`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="oklch(0.42 0.08 135)" />
-          <stop offset="1" stopColor="oklch(0.6 0.11 128)" />
-        </linearGradient>
-        <linearGradient id={`${id}b`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="oklch(0.36 0.07 140)" />
-          <stop offset="1" stopColor="oklch(0.52 0.1 132)" />
-        </linearGradient>
-        <linearGradient id={`${id}c`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="oklch(0.5 0.09 128)" />
-          <stop offset="1" stopColor="oklch(0.7 0.1 120)" />
-        </linearGradient>
-      </defs>
-      <path
-        d={`M${p0[0]} ${p0[1]} Q${p1[0]} ${p1[1]} ${p2[0]} ${p2[1]}`}
-        fill="none"
-        stroke="oklch(0.45 0.06 100)"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      {[...set, { ...tip, rot: tip.angle, size: 0.7, tone: 2 }].map((l, i) => (
-        <g key={i} transform={`translate(${l.x} ${l.y}) rotate(${l.rot}) scale(${l.size})`}>
-          <path d={leaf} fill={`url(#${id}${"abc"[l.tone]})`} />
-          <path
-            d="M2 0 Q30 -1.5 58 0"
-            fill="none"
-            stroke="oklch(0.82 0.06 110 / 0.55)"
-            strokeWidth="0.9"
-          />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-/** A faint sandstone palace on the horizon, bottom-left of the collection. */
-function PalaceOutline({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 340 170"
-      className={`pointer-events-none absolute text-[oklch(0.62_0.05_70)] opacity-[0.13] ${className}`}
-    >
-      <g fill="currentColor">
-        {/* Side towers with domes */}
-        <rect x="18" y="70" width="34" height="100" />
-        <path d="M14 72 Q35 30 56 72Z" />
-        <rect x="33" y="24" width="4" height="14" />
-        <rect x="288" y="78" width="30" height="92" />
-        <path d="M284 80 Q303 42 322 80Z" />
-        {/* Main hall */}
-        <rect x="52" y="100" width="236" height="70" />
-        <path d="M120 102 Q170 30 220 102Z" />
-        <rect x="167" y="40" width="6" height="18" />
-        <rect x="96" y="86" width="24" height="16" />
-        <path d="M92 88 Q108 64 124 88Z" />
-        <rect x="220" y="86" width="24" height="16" />
-        <path d="M216 88 Q232 64 248 88Z" />
-      </g>
-      {/* Arched windows cut out of the hall */}
-      <g fill="var(--background)">
-        {[70, 100, 130, 190, 220, 250].map((x) => (
-          <path key={x} d={`M${x} 160 V132 Q${x + 9} 116 ${x + 18} 132 V160Z`} />
-        ))}
-        <path d="M155 170 V128 Q170 104 185 128 V170Z" />
-        <path d="M28 160 V120 Q35 108 42 120 V160Z" />
-        <path d="M296 160 V124 Q303 112 310 124 V160Z" />
-      </g>
-    </svg>
-  );
-}
 
 function Eyebrow({ children, tone = "light" }: { children: string; tone?: "light" | "dark" }) {
   return (
@@ -315,13 +183,6 @@ export function HomePage({
         id="collection"
         className="relative overflow-hidden px-4 sm:px-6 md:px-10 pt-14 md:pt-20 pb-24 md:pb-32 bg-[radial-gradient(ellipse_70%_55%_at_50%_30%,oklch(0.99_0.01_85),transparent_70%),linear-gradient(to_bottom,var(--background),oklch(0.945_0.03_80)_18%,oklch(0.93_0.035_78)_82%,var(--background))]"
       >
-        {/* Branches come in from the page edges, the way they do on the printed catalogue. */}
-        <LeafBranch className="-left-4 top-0 w-[200px] md:w-[340px] -scale-y-100" leaves={11} />
-        <LeafBranch className="-right-4 top-0 w-[180px] md:w-[300px] -scale-x-100 -scale-y-100" leaves={10} />
-        <LeafBranch className="-right-4 bottom-0 w-[150px] md:w-[240px] -scale-x-100" leaves={7} />
-        <LeafBranch className="-left-4 bottom-0 w-[120px] md:w-[180px] opacity-90" leaves={6} />
-        <PalaceOutline className="left-0 bottom-0 hidden md:block w-[340px]" />
-
         <div className="relative max-w-[84rem] mx-auto">
           <header className="relative text-center">
             <p className="text-[11px] tracking-[0.4em] uppercase font-medium text-gold-deep">
@@ -345,8 +206,7 @@ export function HomePage({
             </div>
           </header>
 
-          <div className="relative mt-10 md:mt-12 xl:grid xl:grid-cols-[112px_1fr] xl:gap-8">
-            <FeatureRail />
+          <div className="relative mt-10 md:mt-12">
             <div>
               <div className="flex flex-wrap-reverse items-center justify-between gap-x-8 gap-y-4 mb-8 md:mb-10">
                 <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
