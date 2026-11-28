@@ -184,31 +184,10 @@ export function HomePage({
         className="relative overflow-hidden px-4 sm:px-6 md:px-10 pt-14 md:pt-20 pb-24 md:pb-32 bg-[radial-gradient(ellipse_70%_55%_at_50%_30%,oklch(0.99_0.01_85),transparent_70%),linear-gradient(to_bottom,var(--background),oklch(0.945_0.03_80)_18%,oklch(0.93_0.035_78)_82%,var(--background))]"
       >
         <div className="relative max-w-[84rem] mx-auto">
-          <header className="relative text-center">
-            <p className="text-[11px] tracking-[0.4em] uppercase font-medium text-gold-deep">
-              Water · Dining · Living
-            </p>
-            <h2 className="mt-3 font-display font-normal text-[clamp(2.25rem,4.6vw,3.9rem)] leading-[1.05] text-earth">
-              Timeless Terracotta Collection
-            </h2>
-            <div className="mt-3 flex items-center justify-center gap-4">
-              <span
-                aria-hidden="true"
-                className="h-px w-12 sm:w-24 bg-gradient-to-r from-transparent to-gold"
-              />
-              <p className="font-display italic text-[clamp(1.15rem,1.8vw,1.5rem)] text-clay">
-                Tradition. Wellness. Elegance.
-              </p>
-              <span
-                aria-hidden="true"
-                className="h-px w-12 sm:w-24 bg-gradient-to-l from-transparent to-gold"
-              />
-            </div>
-          </header>
-
-          <div className="relative mt-10 md:mt-12">
+          <div className="relative">
             <div>
-              <div className="flex flex-wrap-reverse items-center justify-between gap-x-8 gap-y-4 mb-8 md:mb-10">
+              {/* Filters and sort are hidden for now; change `hidden` back to `flex` to bring them back. */}
+              <div className="hidden flex-wrap-reverse items-center justify-between gap-x-8 gap-y-4 mb-8 md:mb-10">
                 <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
                   {filterOptions.map((c) => {
                     const n =
